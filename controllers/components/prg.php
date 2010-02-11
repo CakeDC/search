@@ -168,7 +168,7 @@ class PrgComponent extends Object {
 		$defaults = array(
 			'form' => null,
 			'action' => null,
-			'modelMethod' => 'validates');
+			'modelMethod' => 'validateSearch');
 		extract(Set::merge($defaults, $options));
 
 		if (empty($modelName)) {
