@@ -139,7 +139,7 @@ class PrgComponent extends Object {
 	public function exclude($array, $exclude) {
 		$data = array();
 		foreach ($array as $key => $value) {
-			if (!is_numeric($key) && !in_array($key,$exclude)) {
+			if (!is_numeric($key) && !in_array($key, $exclude)) {
 				$data[$key] = $value;
 			}
 		}
@@ -167,6 +167,7 @@ class PrgComponent extends Object {
 	public function commonProcess($modelName = null, $options = array()) {
 		$defaults = array(
 			'form' => null,
+			'keepPassed' => true,
 			'action' => null,
 			'modelMethod' => 'validateSearch');
 		extract(Set::merge($defaults, $options));
@@ -191,8 +192,12 @@ class PrgComponent extends Object {
 			}
 
 			if ($valid) {
+				$passed = $this->controller->params['pass'];
 				$params = $this->controller->data[$modelName];
 				$params = $this->exclude($params, array());
+				if ($keepPassed) {
+					$params = array_merge($passed, $params);
+				}
 				$this->serializeParams($params);
 				$this->connectNamed($params, array());
 				$params['action'] = $action;
