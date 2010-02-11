@@ -1,37 +1,6 @@
 <?php
-/* SVN FILE: $Id: prg.php 1358 2009-10-15 10:49:11Z skie $ */
 /**
- * Short description for file.
- *
- * Long description for file
- *
- * PHP versions 4 and 5
- *
- *
- * Copyright 2007-2008, Cake Development Corporation
- * 							1785 E. Sahara Avenue, Suite 490-423
- * 							Las Vegas, Nevada 89104
- *
- * You may obtain a copy of the License at:
- * License page: http://projects.cakedc.com/licenses/TBD  TBD
- * Copyright page: 
- *
- * @filesource
- * @copyright		Copyright 2007-2008, Cake Development Corporation
- * @link			
- * @package			
- * @subpackage		
- * @since			
- * @version			$Revision: 1358 $
- * @modifiedby		$LastChangedBy: skie $
- * @lastmodified	$Date: 2009-10-15 21:49:11 +1100 (Thu, 15 Oct 2009) $
- * @license			http://projects.cakedc.com/licenses/TBD  TBD
- */
-/**
- * Maps POST Requests to GET Requests
- *
- * @package		converge.views
- * @subpackage	converge.views.helpers
+ * Post-Redirect-Get: Transfers POST Requests to GET Requests
  */
 class PrgComponent extends Object {
 /**
@@ -48,6 +17,7 @@ class PrgComponent extends Object {
  * @access public
  */
 	public $actions = array();
+
 /**
  * Intialize Callback
  *
@@ -57,49 +27,68 @@ class PrgComponent extends Object {
 	public function initialize(&$controller) {
 		$this->controller = $controller;
 	}
+
 /**
- * Poplulates controller->data with allowed values from the named/passed params.
- * Fields in $controller::$presetVars that have a type of 'lookup' the foreignKey value will be inserted.
+ * Poplulates controller->data with allowed values from the named/passed get params
+ *
+ * Fields in $controller::$presetVars that have a type of 'lookup' the foreignKey value will be inserted
  * 
+ * 1) 'lookup'
+ *    Is used for autocomplete selectors
+ *    For autocomplete we have hidden field with value and autocomplete text box
+ *    Component fills text part on id from hidden field
+ * 2) 'value'
+ *    The value as it is entered in form
+ * 3) 'checkbox'
+ *    Allows to pass several values internaly encoded as string
+ *
+ * 1 use field, model, formField, and modelField
+ * 2, 3 need only field parameter
+ *
  * @param array
  * @access public
  */
 	public function presetForm($model) {
 		$data = array($model => array());
 		$args = $this->controller->passedArgs;
+
 		foreach ($this->controller->presetVars as $field) {
 			if ($field['type'] == 'lookup') {
 				if (isset($args[$field['field']])) {
 					$searchModel = $field['model'];
 					$this->controller->loadModel($searchModel);
 					$this->controller->{$searchModel}->recursive = -1;
-					$user = $this->controller->{$searchModel}->findById($args[$field['field']]);
+					$result = $this->controller->{$searchModel}->findById($args[$field['field']]);
 					$data[$model][$field['field']] = $args[$field['field']];
-					$data[$model][$field['formField']] = $user[$searchModel][$field['modelField']];
+					$data[$model][$field['formField']] = $result[$searchModel][$field['modelField']];
 				}
 			}
+	
 			if ($field['type'] == 'checkbox') {
 				if (isset($args[$field['field']])) {
 					$values = split('\|', $args[$field['field']]);
 					$data[$model][$field['field']] = $values;
 				}
 			}
+
 			if ($field['type'] == 'value') {
 				if (isset($args[$field['field']])) {
 					$data[$model][$field['field']] = $args[$field['field']];
 				}
 			}
 		}
+
 		$this->controller->data = $data;
 		$this->controller->parsedData = $data;
 	}
+
 /**
- * Restore form params for ckeckboxs and other url encoded params
+ * Restores form params for checkboxs and other url encoded params
  * 
  * @param array
  * @access public
  */
-	public function fixFormValues(&$data) {
+	public function serializeParams(&$data) {
 		foreach ($this->controller->presetVars as $field) {
 			if ($field['type'] == 'checkbox') {
 				if (is_array($data[$field['field']])) {
@@ -107,12 +96,12 @@ class PrgComponent extends Object {
 				} else {
 					$values = '';
 				}
-				
 				$data[$field['field']] = $values;
 			}
 		}
 		return $data;
 	}
+
 /**
  * Connect named arguments
  *
@@ -136,14 +125,14 @@ class PrgComponent extends Object {
 			}
 		}
 	}
+
 /**
  * Exclude 
  * 
  * Removes key/values from $array based on $exclude 
- *
- * @todo more detailed description
- * @param array $array Array of data to be filtered
- * @param array $exclude Array of keys to exclude from other $array
+
+ * @param array Array of data to be filtered
+ * @param array Array of keys to exclude from other $array
  * @return array
  * @access public
  */
@@ -156,42 +145,55 @@ class PrgComponent extends Object {
 		}
 		return $data;
 	}
+
 /**
- * Common search method. Handles processes common to all PRG forms.
- *  
- * - Handles validation of post data.
+ * Common search method
+ * 
+ * Handles processes common to all PRG forms
+ *
+ * - Handles validation of post data
  * - converting post data into named params
  * - Issuing redirect(), and connecting named parameters before redirect
  * - Setting named parameter form data to view
- *  
  *
  * @param string $modelName Name of the model class being used for the prg form
- * @param string $formName Name of the form involved in the prg
- * @param string $action The action to redirect to. Defaults to the current action
- * @param boolean $validate Whether or not the form data should be validated.
+ * @param array $options Optional parameters:
+ *  - string form Name of the form involved in the prg
+ *  - string action The action to redirect to. Defaults to the current action
+ *  - mixed modelMethod If not false a string that is the model method that will be used to process the data 
  * @return void
  * @access public
  */
-	public function commonProcess($modelName = null, $formName = null, $action = null, $validate = true) {
+	public function commonProcess($modelName = null, $options = array()) {
+		$defaults = array(
+			'form' => null,
+			'action' => null,
+			'modelMethod' => 'validates');
+		extract(Set::merge($defaults, $options));
+
 		if (empty($modelName)) {
 			$modelName = $this->controller->modelClass;
 		}
+
 		if (empty($formName)) {
 			$formName = $modelName;
 		}
+
 		if (empty($action)) {
 			$action = $this->controller->action;
 		}
+
 		if (!empty($this->controller->data)) {
 			$this->controller->{$modelName}->data = $this->controller->data;
 			$valid = true;
-			if ($validate) {
-				$valid = $this->controller->{$modelName}->validateSearch();
+			if ($modelMethod !== false) {
+				$valid = $this->controller->{$modelName}->{$modelMethod}();
 			}
+
 			if ($valid) {
 				$params = $this->controller->data[$modelName];
 				$params = $this->exclude($params, array());
-				$this->fixFormValues($params);
+				$this->serializeParams($params);
 				$this->connectNamed($params, array());
 				$params['action'] = $action;
 				$params = array_merge($this->controller->params['named'], $params);
@@ -206,5 +208,6 @@ class PrgComponent extends Object {
 			$this->presetForm($formName);
 		}
 	}
+
 }
 ?>

@@ -1,5 +1,5 @@
 <?php
-/* SVN FILE: $Id: searchable.php 1358 2009-10-15 10:49:11Z skie $ */
+
 class SearchableBehavior extends ModelBehavior {
 /**
  * settings indexed by model name.
@@ -8,12 +8,14 @@ class SearchableBehavior extends ModelBehavior {
  * @access private
  */
 	public $settings = array();
+
 /**
  * Default settings
  *
  * @var string
  **/
 	protected $_defaults = array();
+
 /**
  * Configuration of model
  *
@@ -23,6 +25,7 @@ class SearchableBehavior extends ModelBehavior {
 	public function setup(Model $model, $config = array()) {
 		$this->settings[$model->alias] = array_merge($this->_defaults, $config);
 	}
+
 /**
  * Helper method to build search conditions
  *
@@ -50,6 +53,7 @@ class SearchableBehavior extends ModelBehavior {
 		}
 		return $conditions;
 	}
+
 /**
  * Helper method to build search conditions
  *
@@ -77,6 +81,7 @@ class SearchableBehavior extends ModelBehavior {
 		}
 		return $conditions;
 	}
+
 /**
  * Add Conditions based query to search conditions.
  *
@@ -99,6 +104,7 @@ class SearchableBehavior extends ModelBehavior {
 		}
 		return $conditions;
 	}
+
 /**
  * Add Conditions based expressions to search conditions.
  *
@@ -120,6 +126,7 @@ class SearchableBehavior extends ModelBehavior {
 		}
 		return $found;
 	}
+
 /**
  * Add Conditions based expressions to search conditions.
  *
@@ -147,6 +154,7 @@ class SearchableBehavior extends ModelBehavior {
 		}
 		return $conditions;
 	}
+
 /**
  * Add Conditions based subquery to search conditions.
  *
@@ -170,6 +178,7 @@ class SearchableBehavior extends ModelBehavior {
 		}
 		return $conditions;
 	}
+
 /**
  * Validate search
  *
@@ -185,6 +194,7 @@ class SearchableBehavior extends ModelBehavior {
 		}
 		return true;
 	}
+
 /**
  * filter retrieving variables only that present in  Model::filterArgs
  *
@@ -202,6 +212,7 @@ class SearchableBehavior extends ModelBehavior {
 		}
 		return $result;
 	}
+
 /**
  * Method to generated DML SQL queries using find* style.
  *
@@ -276,6 +287,7 @@ class SearchableBehavior extends ModelBehavior {
 		}
 		return $this->__queryGet($model, $query, $recursive);
 	}
+
 /**
  * parseCriteria
  * parses the GET data and returns the conditions for the find('all')/paginate
@@ -306,6 +318,7 @@ class SearchableBehavior extends ModelBehavior {
 		}
 		return $conditions;
 	}
+
 /**
  * Helper method for getQuery.
  * extension of dbosource method. Create association query.
@@ -361,6 +374,7 @@ class SearchableBehavior extends ModelBehavior {
 		}
 		return $db->generateAssociationQuery($model, $null, null, null, null, $queryData, false, $null);
 	}
+
 /**
  * Clear all associations
  *
