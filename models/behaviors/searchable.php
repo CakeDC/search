@@ -1,4 +1,26 @@
 <?php
+/**
+ * CakePHP Tags Plugin
+ *
+ * Copyright 2009 - 2010, Cake Development Corporation
+ *                        1785 E. Sahara Avenue, Suite 490-423
+ *                        Las Vegas, Nevada 89104
+ *
+ * Licensed under The MIT License
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright 2009 - 2010, Cake Development Corporation (http://cakedc.com)
+ * @link      http://github.com/CakeDC/Tags
+ * @package   plugins.tags
+ * @license   MIT License (http://www.opensource.org/licenses/mit-license.php)
+ */
+
+/**
+ * Searchable behavior
+ *
+ * @package		plugins.search
+ * @subpackage	plugins.search.models.behaviors
+ */
 
 class SearchableBehavior extends ModelBehavior {
 /**
@@ -27,154 +49,27 @@ class SearchableBehavior extends ModelBehavior {
 	}
 
 /**
- * Helper method to build search conditions
+ * parseCriteria
+ * parses the GET data and returns the conditions for the find('all')/paginate
+ * we are just going to test if the params are legit
  *
- * @param AppModel $model Reference to the model
- * @param array $conditions existing Conditions collected for the model
- * @param array $data Array of data used in search query
- * @param array $field Field definition information
- * @param string $modelName Name of model (defaults to current model name)
- * @return array of conditions.
- * @access public
+ * @param array $data Criteria of key->value pairs from post/named parameters
+ * @return array Array of conditions that express the conditions needed for the search.
  */
-	public function addCondStr(Model $model, &$conditions, $data, $field, $modelName = '') {
-		if ($modelName == '') {
-			$modelName = $model->name;
-		}
-		if (isset($field['model'])) {
-			$modelName = $field['model'];
-		}
-		$fieldName = $field['name'];
-		if (isset($field['realname'])) {
-			$fieldName = $field['realname'];
-		}
-		if (!empty($data[$field['name']])) {
-			$conditions[$modelName.".$fieldName LIKE"] = "%" . $data[$field['name']] . "%";
-		}
-		return $conditions;
-	}
-
-/**
- * Helper method to build search conditions
- *
- * @param AppModel $model Reference to the model
- * @param array $conditions existing Conditions collected for the model
- * @param array $data Array of data used in search query
- * @param array $field Field definition information
- * @param string $modelName Name of model (defaults to current model name)
- * @return array of conditions.
- * @access public
- */
-	public function addCondInt(Model $model, &$conditions, $data, $field, $modelName = '') {
-		if ($modelName == '') {
-			$modelName = $model->name;
-		}
-		if (isset($field['model'])) {
-			$modelName = $field['model'];
-		}
-		$fieldName = $field['name'];
-		if (isset($field['realname'])) {
-			$fieldName = $field['realname'];
-		}
-		if (!empty($data[$field['name']]) || (isset($data[$field['name']]) && (int)$data[$field['name']] === 0)) {
-			$conditions[$modelName.".$fieldName"] = $data[$field['name']];
-		}
-		return $conditions;
-	}
-
-/**
- * Add Conditions based query to search conditions.
- *
- * @param Object $model  Instance of AppModel
- * @param array $conditions Existing conditions.
- * @param array $data Data for a field.
- * @param array $field Info for field.
- * @return array of conditions modified by this method.
- **/
-	public function addCondQuery(Model $model, &$conditions, $data, $field, $modelName = '') {
-		if ($modelName == '') {
-			$modelName = $model->name;
-		}
-		if (isset($field['model'])) {
-			$modelName = $field['model'];
-		}
-		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && !empty($data[$field['name']])) {
-			$conditionsAdd = $model->{$field['method']}($data);
-			$conditions = array_merge($conditions, (array)$conditionsAdd);
-		}
-		return $conditions;
-	}
-
-/**
- * Add Conditions based expressions to search conditions.
- *
- * @param array $field Info for field.
- * @return array of conditions modified by this method.
- **/
-	private function __checkBehaviorMethods(AppModel $Model, $method) {
-		$behaviors = $Model->Behaviors->enabled();
-		$count = count($behaviors);
-		$found = false;
-		for ($i = 0; $i < $count; $i++) {
-			$name = $behaviors[$i];
-			$methods = get_class_methods($Model->Behaviors->{$name});
-			$check = array_flip($methods);
-			$found = isset($check[$method]);
-			if ($found) {
-				return true;
+	public function parseCriteria(Model $model, $data) {
+		$conditions = array();
+		foreach ($model->filterArgs as $field) {
+			if (in_array($field['type'], array('string', 'like'))) {
+				$this->_addCondLike($model, $conditions, $data, $field);
+			} elseif (in_array($field['type'], array('int', 'value'))) {
+				$this->_addCondValue($model, $conditions, $data, $field);
+			} elseif ($field['type'] == 'expression') {
+				$this->_addCondExpression($model, $conditions, $data, $field);
+			} elseif ($field['type'] == 'query') {
+				$this->_addCondQuery($model, $conditions, $data, $field);
+			} elseif ($field['type'] == 'subquery') {
+				$this->_addCondSubquery($model, $conditions, $data, $field);
 			}
-		}
-		return $found;
-	}
-
-/**
- * Add Conditions based expressions to search conditions.
- *
- * @param Object $model  Instance of AppModel
- * @param array $conditions Existing conditions.
- * @param array $data Data for a field.
- * @param array $field Info for field.
- * @return array of conditions modified by this method.
- **/
-	public function addCondExpression(Model $model, &$conditions, $data, $field, $modelName = '') {
-		if ($modelName == '') {
-			$modelName = $model->name;
-		}
-		if (isset($field['model'])) {
-			$modelName = $field['model'];
-		}
-		$fieldName = $field['field'];
-		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && !empty($data[$field['name']])) {
-			$fieldValues = $model->{$field['method']}($data);
-			if (!empty($conditions[$fieldName]) && is_array($conditions[$fieldName])) {
-				$conditions[$fieldName] = array_unique(array_merge($conditions[$fieldName], (array)$fieldValues));
-			} else {
-				$conditions[$fieldName] = $fieldValues;
-			}
-		}
-		return $conditions;
-	}
-
-/**
- * Add Conditions based subquery to search conditions.
- *
- * @param Object $model  Instance of AppModel
- * @param array $conditions Existing conditions.
- * @param array $data Data for a field.
- * @param array $field Info for field.
- * @return array of conditions modified by this method.
- **/
-	public function addCondSubquery(Model $model, &$conditions, $data, $field, $modelName = '') {
-		if ($modelName == '') {
-			$modelName = $model->name;
-		}
-		if (isset($field['model'])) {
-			$modelName = $field['model'];
-		}
-		$fieldName = $field['field'];
-		if (method_exists($model, $field['method']) && !empty($data[$field['name']])) {
-			$subquery = $model->{$field['method']}($data);
-			$conditions[] = array("$fieldName in ($subquery)");
 		}
 		return $conditions;
 	}
@@ -185,11 +80,14 @@ class SearchableBehavior extends ModelBehavior {
  * @param object Model
  * @return boolean always true
  */
-	public function validateSearch(Model $model) {
-		$keys = array_keys($model->data[$model->name]);
+	public function validateSearch(Model $model, $data = null) {
+		if (!empty($data)) {
+			$model->set($data);
+		}
+		$keys = array_keys($model->data[$model->alias]);
 		foreach ($keys as $key) {
-			if (empty($model->data[$model->name][$key])) {
-				unset($model->data[$model->name][$key]);
+			if (empty($model->data[$model->alias][$key])) {
+				unset($model->data[$model->alias][$key]);
 			}
 		}
 		return true;
@@ -205,7 +103,7 @@ class SearchableBehavior extends ModelBehavior {
  */
 	public function passedArgs(Model $model, $vars) {
 		$result = array();
-		foreach ($vars as $var=>$val) {
+		foreach ($vars as $var => $val) {
 			if (in_array($var, Set::extract($model->filterArgs, '{n}.name'))) {
 				$result[$var] = $val;
 			}
@@ -217,7 +115,7 @@ class SearchableBehavior extends ModelBehavior {
  * Method to generated DML SQL queries using find* style.
  *
  * Specifying 'fields' for new-notation 'list':
- *  - If no fields are specified, then 'id' is used for key and 'model->displayField' is used for value.
+ *  - If no fields are specified, then 'id' is used for key and Model::$displayField is used for value.
  *  - If a single field is specified, 'id' is used for key and specified field is used for value.
  *  - If three fields are specified, they are used (in order) for key, value and group.
  *  - Otherwise, first and second fields are used for key and value.
@@ -244,8 +142,9 @@ class SearchableBehavior extends ModelBehavior {
 
 		$query = array_merge(
 			array(
-				'conditions' => null, 'fields' => null, 'joins' => array(), 'limit' => null,
-				'offset' => null, 'order' => null, 'page' => null, 'group' => null, 'callbacks' => true
+				'conditions' => null, 'fields' => null, 'joins' => array(), 
+				'limit' => null, 'offset' => null, 'order' => null, 'page' => null, 
+				'group' => null, 'callbacks' => true
 			),
 			(array)$query
 		);
@@ -289,32 +188,123 @@ class SearchableBehavior extends ModelBehavior {
 	}
 
 /**
- * parseCriteria
- * parses the GET data and returns the conditions for the find('all')/paginate
- * we are just going to test if the params are legit
+ * Clear all associations
  *
- * @param array $data Criteria of key->value pairs from post/named parameters
- * @return array Array of conditions that express the conditions needed for the search.
+ * @param AppModel $model
+ * @param bool $reset
  */
-	public function parseCriteria(Model $model, $data) {
-		$conditions = array();
-		foreach ($model->filterArgs as $field) {
-			if (isset($field['model'])) {
-				$modelName = $field['model'];
+	public function unbindAllModels(Model $model, $reset = false) {
+		$assocs = array('belongsTo', 'hasOne', 'hasMany', 'hasAndBelongsToMany');
+		$unbind = array();
+		foreach ($assocs as $assoc) {
+		  $unbind[$assoc] = array_keys($model->{$assoc});
+		}
+		$model->unbindModel($unbind, $reset);
+	}
+
+/**
+ * Add Conditions based on fuzzy comparrison
+ *
+ * @param AppModel $model Reference to the model
+ * @param array $conditions existing Conditions collected for the model
+ * @param array $data Array of data used in search query
+ * @param array $field Field definition information
+ * @return array of conditions.
+ * @access protected
+ */
+	protected function _addCondLike(Model $model, &$conditions, $data, $field) {
+		$fieldName = $field['name'];
+		if (isset($field['field'])) {
+			$fieldName = $field['field'];
+		}
+		if (strpos($fieldName, '.') === false) {
+			$fieldName = $model->alias . '.' . $fieldName;
+		}
+		if (!empty($data[$field['name']])) {
+			$conditions[$fieldName . " LIKE"] = "%" . $data[$field['name']] . "%";
+		}
+		return $conditions;
+	}
+
+/**
+ * Add Conditions based on exacltly comparrison
+ *
+ * @param AppModel $model Reference to the model
+ * @param array $conditions existing Conditions collected for the model
+ * @param array $data Array of data used in search query
+ * @param array $field Field definition information
+ * @return array of conditions.
+ * @access protected
+ */
+	protected function _addCondValue(Model $model, &$conditions, $data, $field) {
+		$fieldName = $field['name'];
+		if (isset($field['field'])) {
+			$fieldName = $field['field'];
+		}
+		if (strpos($fieldName, '.') === false) {
+			$fieldName = $model->alias . '.' . $fieldName;
+		}
+		if (!empty($data[$field['name']]) || (isset($data[$field['name']]) && (int)$data[$field['name']] === 0)) {
+			$conditions[$fieldName] = $data[$field['name']];
+		}
+		return $conditions;
+	}
+
+/**
+ * Add Conditions based query to search conditions.
+ *
+ * @param Object $model  Instance of AppModel
+ * @param array $conditions Existing conditions.
+ * @param array $data Data for a field.
+ * @param array $field Info for field.
+ * @return array of conditions modified by this method.
+ * @access protected
+ */
+	protected function _addCondQuery(Model $model, &$conditions, $data, $field) {
+		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && !empty($data[$field['name']])) {
+			$conditionsAdd = $model->{$field['method']}($data);
+			$conditions = array_merge($conditions, (array)$conditionsAdd);
+		}
+		return $conditions;
+	}
+
+/**
+ * Add Conditions based expressions to search conditions.
+ *
+ * @param Object $model  Instance of AppModel
+ * @param array $conditions Existing conditions.
+ * @param array $data Data for a field.
+ * @param array $field Info for field.
+ * @return array of conditions modified by this method.
+ */
+	protected function _addCondExpression(Model $model, &$conditions, $data, $field) {
+		$fieldName = $field['field'];
+		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && !empty($data[$field['name']])) {
+			$fieldValues = $model->{$field['method']}($data, $field);
+			if (!empty($conditions[$fieldName]) && is_array($conditions[$fieldName])) {
+				$conditions[$fieldName] = array_unique(array_merge(array($conditions[$fieldName]), array($fieldValues)));
 			} else {
-				$modelName = '';
+				$conditions[$fieldName] = $fieldValues;
 			}
-			if (in_array($field['type'], array('string', 'like'))) {
-				$this->addCondStr($model, $conditions, $data, $field);
-			} elseif (in_array($field['type'], array('int', 'value'))) {
-				$this->addCondInt($model, $conditions, $data, $field);
-			} elseif ($field['type'] == 'expression') {
-				$this->addCondExpression($model, $conditions, $data, $field);
-			} elseif ($field['type'] == 'query') {
-				$this->addCondQuery($model, $conditions, $data, $field);
-			} elseif ($field['type'] == 'subquery') {
-				$this->addCondSubquery($model, $conditions, $data, $field);
-			}
+		}
+		return $conditions;
+	}
+
+/**
+ * Add Conditions based subquery to search conditions.
+ *
+ * @param Object $model  Instance of AppModel
+ * @param array $conditions Existing conditions.
+ * @param array $data Data for a field.
+ * @param array $field Info for field.
+ * @return array of conditions modified by this method.
+ * @access protected
+ */
+	protected function _addCondSubquery(Model $model, &$conditions, $data, $field) {
+		$fieldName = $field['field'];
+		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && !empty($data[$field['name']])) {
+			$subquery = $model->{$field['method']}($data);
+			$conditions[] = array("$fieldName in ($subquery)");
 		}
 		return $conditions;
 	}
@@ -376,18 +366,26 @@ class SearchableBehavior extends ModelBehavior {
 	}
 
 /**
- * Clear all associations
+ * Check if model have some method in attached behaviors
  *
- * @param AppModel $model
- * @param bool $reset
- */
-	public function unbindAllModels(Model $model, $reset = false) {
-		$assocs = array('belongsTo', 'hasOne', 'hasMany', 'hasAndBelongsToMany');
-		$unbind = array();
-		foreach ($assocs as $assoc) {
-		  $unbind[$assoc] = array_keys($model->{$assoc});
+ * @param Model $Model
+ * @param string $method
+ * @return boolean, true if method exists in attached and enabled behaviors
+ **/
+	private function __checkBehaviorMethods(Model $Model, $method) {
+		$behaviors = $Model->Behaviors->enabled();
+		$count = count($behaviors);
+		$found = false;
+		for ($i = 0; $i < $count; $i++) {
+			$name = $behaviors[$i];
+			$methods = get_class_methods($Model->Behaviors->{$name});
+			$check = array_flip($methods);
+			$found = isset($check[$method]);
+			if ($found) {
+				return true;
+			}
 		}
-		$model->unbindModel($unbind, $reset);
+		return $found;
 	}
 
 }
