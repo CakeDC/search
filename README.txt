@@ -3,17 +3,17 @@ Copyright 2009 - 2010, Cake Development Corporation
                         Las Vegas, Nevada 89104
                         http://cakedc.com
 
-The search plugin will allow you to make any kind of data searchable, i.e. allow you to implement searching really quickly.
+The search plugin will allow you to make any kind of data searchable, i.e. allow you to implement robust searching rapidily.
 
 == Search plugin ==
 
-Search plugin is a easiest way to include search into your application. 
+Search plugin is an easy way to include search into your application. 
 Using this plugin you will able to have paginable search in any controller.
-Plugin support simple methods to search inside models using strict and non-strict comparing, but also allow you to implement any complex type of searching.
+Plugin support simple methods to search inside models using strict and non-strict comparing, but also allows you to implement any complex type of searching.
 
 === Sample of usage === 
 
- Sample example how to implement complex search in your application.
+ Example of how to implement complex search in your application.
 
 {{{
 	class Article extends AppModel {
@@ -46,7 +46,7 @@ Plugin support simple methods to search inside models using strict and non-stric
 }}}
 
 
-Part of controler class
+Applicable snippet of controller class
 
 {{{
 	class ArticlesController extends AppController {
@@ -66,7 +66,7 @@ Part of controler class
 	}
 }}}
 
-The find.ctp view is same as index.ctp but additional we will add search form inside:
+The find.ctp view is same as index.ctp with the addition of the search form:
 
 {{{
 
@@ -85,11 +85,11 @@ The find.ctp view is same as index.ctp but additional we will add search form in
 
 === Behavior and Model configuration === 
 
- All search fields need to configure in the Model::filterArgs array. 
+ All search fields need to be configured in the Model::filterArgs array. 
  
  Each filter record should contain array with several keys:
-  * name - the parameter stored in Model::data. In sample above the 'search' name used to search in the Article.description field.
-  * type - one of supported search types described bellow.
+  * name - the parameter stored in Model::data. In the example above the 'search' name used to search in the Article.description field.
+  * type - one of supported search types described below.
   * field - Real field name used for seach should be used. 
   * method - model method name or behavior used to generate expression, subquery or query.
 
@@ -104,13 +104,13 @@ The find.ctp view is same as index.ctp but additional we will add search form in
 === Post, redirect, get conception === 
 
 	Post/Redirect/Get (PRG) is a common design pattern for web developers to help avoid certain duplicate form  submissions and allow user agents to behave more intuitively with bookmarks and the refresh button.
-	When a web form is submitted to a server through an HTTP POST  request, a web user that attempts to refresh the server response in certain user agents can cause the contents of the original HTTP POST  request to be resubmitted, possibly causing undesired results. To avoid this problem possible to use the PRG pattern — instead of returning a web page directly, the POST operation returns a redirection command, instructing the browser to load a different page (or same page) using an HTTP GET request. See [http://en.wikipedia.org/wiki/Post/Redirect/Get].
+	When a web form is submitted to a server through an HTTP POST request, a web user that attempts to refresh the server response in certain user agents can cause the contents of the original HTTP POST request to be resubmitted, possibly causing undesired results. To avoid this problem possible to use the PRG pattern instead of returning a web page directly, the POST operation returns a redirection command, instructing the browser to load a different page (or same page) using an HTTP GET request. See [http://en.wikipedia.org/wiki/Post/Redirect/Get].
 	
 === PRG Component features === 
 
-Frist of all Prg component implement PRG pattern. So you able to use it separately from search tasks when you need it.
-Second thing it care about passed and named parameters that come as POST parameters and transform it to the named during redirect, and set Controller::data back if used GET method during component call. 
-And last but may be main feature that component implements - it implement glue between your app and searchable behavior.
+The Prg component implement PRG pattern. So you able to use it separately from search tasks when you need it.
+The component maintains passed and named parameters that come as POST parameters and transform it to the named during redirect, and set Controller::data back if used GET method during component call. 
+Most importantly the component acts as the glue between your app and searchable behavior.
 
 ==== Controller configuration ====
 
