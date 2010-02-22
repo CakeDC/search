@@ -27,7 +27,7 @@ class SearchableBehavior extends ModelBehavior {
  * settings indexed by model name.
  *
  * @var array
- * @access private
+ * @access public
  */
 	public $settings = array();
 
@@ -55,6 +55,7 @@ class SearchableBehavior extends ModelBehavior {
  *
  * @param array $data Criteria of key->value pairs from post/named parameters
  * @return array Array of conditions that express the conditions needed for the search.
+ * @access public
  */
 	public function parseCriteria(Model $model, $data) {
 		$conditions = array();
@@ -79,6 +80,7 @@ class SearchableBehavior extends ModelBehavior {
  *
  * @param object Model
  * @return boolean always true
+ * @access public
  */
 	public function validateSearch(Model $model, $data = null) {
 		if (!empty($data)) {
@@ -96,9 +98,9 @@ class SearchableBehavior extends ModelBehavior {
 /**
  * filter retrieving variables only that present in  Model::filterArgs
  *
- * @param
- * @param
- * @return
+ * @param object Model
+ * @param array $vars
+ * @return array, filtered args
  * @access public
  */
 	public function passedArgs(Model $model, $vars) {
@@ -316,8 +318,9 @@ class SearchableBehavior extends ModelBehavior {
  * @param AppModel $model
  * @param array $queryData
  * @param integer $recursive
+ * @access private
  */
-	public function __queryGet(Model $model, $queryData = array(), $recursive = null) {
+	private function __queryGet(Model $model, $queryData = array(), $recursive = null) {
 		$db =& ConnectionManager::getDataSource($model->useDbConfig);
 		$db->__scrubQueryData($queryData);
 		$null = null;
