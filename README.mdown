@@ -19,6 +19,8 @@ Example of how to implement complex search in your application.
 	class Article extends AppModel {
 
 		public $actsAs = array('Search.Searchable');
+		
+		public $belongsTo = array('User');
 
 		public $hasAndBelongsToMany = array('Tag' => array('with' => 'Tagged'));
 
@@ -28,6 +30,7 @@ Example of how to implement complex search in your application.
 			array('name' => 'blog_id', 'type' => 'value'),
 			array('name' => 'search', 'type' => 'like', 'field' => 'Article.description'),
 			array('name' => 'range', 'type' => 'expression', 'method' => 'makeRangeCondition', 'field' => 'Article.views BETWEEN ? AND ?'),
+			array('name' => 'username', 'type' => 'like', 'field' => 'User.username'),
 			array('name' => 'tags', 'type' => 'subquery', 'method' => 'findByTags', 'field' => 'Article.id'),
 		);
 
@@ -76,6 +79,7 @@ The find.ctp view is same as index.ctp with the addition of the search form:
 		echo $form->input('title', array('div' => false));
 		echo $form->input('blog_id', array('div' => false, 'options' => $blogs));
 		echo $form->input('status', array('div' => false, 'multiple' => 'checkbox', 'options' => array('open', 'closed')));
+		echo $form->input('username', array('div' => false));
 		echo $form->submit(__('Search', true), array('div' => false));
 		echo $form->end();
 	?>
@@ -86,6 +90,7 @@ The find.ctp view is same as index.ctp with the addition of the search form:
 All search fields need to be configured in the Model::filterArgs array. 
  
 Each filter record should contain array with several keys:
+
   * name - the parameter stored in Model::data. In the example above the 'search' name used to search in the Article.description field.
   * type - one of supported search types described below.
   * field - Real field name used for seach should be used. 
@@ -129,9 +134,10 @@ Each preset variable is a array record that contains next keys:
 commonProcess method defined in Prg component allow you to inject search in any index controller with just 1-2 lines of additional code.
  You should pass model name that used for search. By default it is default Controller::modelClass model.
  Aditonal options parameters.
+
  * form - search form name.
- * keepPassed - parameter that describe if you need to ' => true,
- * action - some times you want to have diferent actions for post and get. In this case you can define get action using this parameter.
+ * keepPassed - parameter that describe if you need to merge passedArgs to Get url where you will Redirect after Post
+ * action - sometimes you want to have diferent actions for post and get. In this case you can define get action using this parameter.
  * modelMethod - method, used to filter named parameters, passed from form. By default it is validateSearch, and it defined in Searchable behavior.
  
  
