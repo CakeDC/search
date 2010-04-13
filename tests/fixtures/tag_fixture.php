@@ -1,6 +1,6 @@
 <?php
 /**
- * CakePHP Tags Plugin
+ * CakePHP Search Plugin
  *
  * Copyright 2009 - 2010, Cake Development Corporation
  *                        1785 E. Sahara Avenue, Suite 490-423
