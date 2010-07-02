@@ -38,6 +38,14 @@ class PrgComponent extends Object {
 	public $actions = array();
 
 /**
+ * Enables encoding on all presetVar fields
+ *
+ * @var boolean
+ * @access public
+ */
+	public $encode = false;
+
+/**
  * Intialize Callback
  *
  * @param object Controller object
@@ -72,6 +80,10 @@ class PrgComponent extends Object {
 		$args = $this->controller->passedArgs;
 
 		foreach ($this->controller->presetVars as $field) {
+			if ($this->encode == true || isset($field['encode']) && $field['encode'] == true) {
+				$args[$field['field']] = base64_decode($args[$field['field']]);
+			}
+
 			if ($field['type'] == 'lookup') {
 				if (isset($args[$field['field']])) {
 					$searchModel = $field['model'];
@@ -116,6 +128,10 @@ class PrgComponent extends Object {
 					$values = '';
 				}
 				$data[$field['field']] = $values;
+			}
+
+			if ($this->encode == true || isset($field['encode']) && $field['encode'] == true) {
+				$data[$field['field']] = base64_encode($data[$field['field']]);
 			}
 		}
 		return $data;
@@ -214,9 +230,11 @@ class PrgComponent extends Object {
 				$passed = $this->controller->params['pass'];
 				$params = $this->controller->data[$modelName];
 				$params = $this->exclude($params, array());
+
 				if ($keepPassed) {
 					$params = array_merge($passed, $params);
 				}
+
 				$this->serializeParams($params);
 				$this->connectNamed($params, array());
 				$params['action'] = $action;
