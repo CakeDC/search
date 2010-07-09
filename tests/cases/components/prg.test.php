@@ -162,6 +162,33 @@ class PrgComponentTest extends CakeTestCase {
 	}
 
 /**
+ * This test checks that the search on an integer type field in the database
+ * works correctly when a 0 (zero) is entered in the form.
+ *
+ * @access public
+ * @return void
+ * @link http://github.com/CakeDC/Search/issues#issue/3
+ */
+	public function testPresetFormWithIntegerField() {
+		$this->Controller->presetVars = array(
+			array(
+				'field' => 'views',
+				'type' => 'value'));
+		$this->Controller->passedArgs = array(
+			'views' => '0');
+		$this->Controller->Component->init($this->Controller);
+		$this->Controller->Component->initialize($this->Controller);
+		$this->Controller->beforeFilter();
+		ClassRegistry::addObject('view', new View($this->Controller));
+
+		$this->Controller->Prg->presetForm('Post');
+		$expected = array(
+			'Post' => array(
+				'views' => '0'));
+		$this->assertEqual($this->Controller->data, $expected);
+	}
+
+/**
  * testFixFormValues
  *
  * @access public

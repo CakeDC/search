@@ -128,16 +128,18 @@ class SearchableTestCase extends CakeTestCase {
 /**
  * test value condition
  *
+ * @return void
  * @access public
+ * @link http://github.com/CakeDC/Search/issues#issue/3
  */ 
 	public function testValueCondition() {
 		$this->Article->filterArgs = array(
 			array('name' => 'slug', 'type' => 'value'));
-			
+
 		$data = array();
 		$result = $this->Article->parseCriteria($data);
 		$this->assertEqual($result, array());
-			
+
 		$data = array('slug' => 'first_article');
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('Article.slug' => 'first_article');
@@ -149,8 +151,15 @@ class SearchableTestCase extends CakeTestCase {
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('Article2.slug' => 'first_article');
 		$this->assertEqual($result, $expected);
+
+		// Testing http://github.com/CakeDC/Search/issues#issue/3
+		$this->Article->filterArgs = array(
+			array('name' => 'views', 'type' => 'value'));
+		$data = array('views' => '0');
+		$result = $this->Article->parseCriteria($data);
+		$this->assertEqual($result, array('Article.views' => 0));
 	}
- 
+
 /**
  * test like condition
  *
@@ -159,25 +168,24 @@ class SearchableTestCase extends CakeTestCase {
 	public function testLikeCondition() {
 		$this->Article->filterArgs = array(
 			array('name' => 'title', 'type' => 'like'));
-			
+
 		$data = array();
 		$result = $this->Article->parseCriteria($data);
 		$this->assertEqual($result, array());
-			
+
 		$data = array('title' => 'First');
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('Article.title LIKE' => '%First%');
 		$this->assertEqual($result, $expected);
-		
+
 		$this->Article->filterArgs = array(
 			array('name' => 'faketitle', 'type' => 'like', 'field' => 'Article.title'));
 		$data = array('faketitle' => 'First');
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('Article.title LIKE' => '%First%');
 		$this->assertEqual($result, $expected);
-		
 	}
- 
+
 /**
  * test subquery condition
  *
@@ -196,7 +204,7 @@ class SearchableTestCase extends CakeTestCase {
 		$expected = array(array("Article.id in (SELECT `Tagged`.`foreign_key` FROM `tagged` AS `Tagged` LEFT JOIN `tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = 'Cake'   )"));
 		$this->assertEqual($result, $expected);
 	}
- 
+
 /**
  * test query condition
  *
@@ -216,7 +224,7 @@ class SearchableTestCase extends CakeTestCase {
 		$expected = array('Article.views > 10');
 		$this->assertEqual($result, $expected);
 	}
-  
+
 /**
  * test expression condition
  *
@@ -239,7 +247,6 @@ class SearchableTestCase extends CakeTestCase {
 		$data = array('range' => '10');
 		$result = $this->Article->parseCriteria($data);
 		$this->assertEqual($result, array());
-
 	}
 
 /**
