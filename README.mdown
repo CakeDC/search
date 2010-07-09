@@ -128,6 +128,7 @@ Each preset variable is a array record that contains next keys:
   * model - param that specifies what model used in Controller::data at a key for this field.
   * formField - field in the form that contain text, and will populated using model.modelField based on field value.
   * modelField - field in the model that contain text, and will used to fill formField in view.
+  * encode - boolean, by default false. If you want to use search strings in URL's with special characters like % or / you need to use encoding
   
 #### Prg::commonProcess method usage
 

@@ -57,6 +57,7 @@ Applicable snippet of controller class
 		public $components = array('Search.Prg');
 		
 		public $presetVars = array(
+			array('field' => 'search' 'type' => 'value', 'encode' => true,
 			array('field' => 'title', 'type' => 'value'),
 			array('field' => 'status', 'type' => 'checkbox'),
 			array('field' => 'blog_id', 'type' => 'lookup', 'formField' => 'blog_input', 'modelField' => 'title', 'model' => 'Blog'));
@@ -130,6 +131,7 @@ Each preset variable is a array record that contains next keys:
   * model - param that specifies what model used in Controller::data at a key for this field.
   * formField - field in the form that contain text, and will populated using model.modelField based on field value.
   * modelField - field in the model that contain text, and will used to fill formField in view.
+  * encode - boolean, by default false. If you want to use search strings in URL's with special characters like % or / you need to use encoding
   
 ==== Prg::commonProcess method usage ====
 
