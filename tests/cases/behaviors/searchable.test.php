@@ -169,6 +169,18 @@ class SearchableTestCase extends CakeTestCase {
 		$data = array('views' => '0');
 		$result = $this->Article->parseCriteria($data);
 		$this->assertEqual($result, array('Article.views' => 0));
+		
+		$this->Article->filterArgs = array(
+			array('name' => 'views', 'type' => 'value'));
+		$data = array('views' => 0);
+		$result = $this->Article->parseCriteria($data);
+		$this->assertEqual($result, array('Article.views' => 0));
+		
+		$this->Article->filterArgs = array(
+			array('name' => 'views', 'type' => 'value'));
+		$data = array('views' => '');
+		$result = $this->Article->parseCriteria($data);
+		$this->assertEqual($result, array());
 	}
 
 /**

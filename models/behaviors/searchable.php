@@ -246,7 +246,7 @@ class SearchableBehavior extends ModelBehavior {
 		if (strpos($fieldName, '.') === false) {
 			$fieldName = $model->alias . '.' . $fieldName;
 		}
-		if (!empty($data[$field['name']]) || (isset($data[$field['name']]) && (int)$data[$field['name']] === 0)) {
+		if (!empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0'))) {
 			$conditions[$fieldName] = $data[$field['name']];
 		}
 		return $conditions;
