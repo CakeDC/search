@@ -93,6 +93,17 @@ class Article extends CakeTestModel {
 				return array(0, 0);
 		}
 	}
+
+	public function orConditions($data = array()) {
+		$filter = $data['filter'];
+		$cond = array(
+			'OR' => array(
+				$this->alias . '.title LIKE' => '%' . $filter . '%',
+				$this->alias . '.body LIKE' => '%' . $filter . '%',
+			));
+		return $cond;
+	}
+	
 }
 
 class SearchableTestCase extends CakeTestCase { 
@@ -202,6 +213,27 @@ class SearchableTestCase extends CakeTestCase {
 		$data = array('tags' => 'Cake');
 		$result = $this->Article->parseCriteria($data);
 		$expected = array(array("Article.id in (SELECT `Tagged`.`foreign_key` FROM `tagged` AS `Tagged` LEFT JOIN `tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = 'Cake'   )"));
+		$this->assertEqual($result, $expected);
+	}
+
+/**
+ * test query condition as sample of OR usage
+ *
+ * @access public
+ */ 
+	public function testQueryOrExample() {		
+		$this->Article->filterArgs = array(
+			array('name' => 'filter', 'type' => 'query', 'method' => 'orConditions'));
+
+		$data = array();
+		$result = $this->Article->parseCriteria($data);
+		$this->assertEqual($result, array());
+
+		$data = array('filter' => 'ticl');
+		$result = $this->Article->parseCriteria($data);
+		$expected = array('OR' => array(
+		'Article.title LIKE' => '%ticl%',
+		'Article.body LIKE' => '%ticl%'));
 		$this->assertEqual($result, $expected);
 	}
 

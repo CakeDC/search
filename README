@@ -32,6 +32,7 @@ Plugin support simple methods to search inside models using strict and non-stric
 			array('name' => 'range', 'type' => 'expression', 'method' => 'makeRangeCondition', 'field' => 'Article.views BETWEEN ? AND ?'),
 			array('name' => 'username', 'type' => 'like', 'field' => 'User.username'),
 			array('name' => 'tags', 'type' => 'subquery', 'method' => 'findByTags', 'field' => 'Article.id'),
+			array('name' => 'filter', 'type' => 'query', 'method' => 'orConditions'),
 		);
 
 		public function findByTags($data = array()) {
@@ -45,6 +46,16 @@ Plugin support simple methods to search inside models using strict and non-stric
 			return $query;
 		}
 
+		public function orConditions($data = array()) {
+			$filter = $data['filter'];
+			$cond = array(
+				'OR' => array(
+					$this->alias . '.title LIKE' => '%' . $filter . '%',
+					$this->alias . '.body LIKE' => '%' . $filter . '%',
+				));
+			return $cond;
+		}
+		
 	}
 }}}
 
@@ -57,7 +68,7 @@ Applicable snippet of controller class
 		public $components = array('Search.Prg');
 		
 		public $presetVars = array(
-			array('field' => 'search' 'type' => 'value', 'encode' => true,
+			array('field' => 'search' 'type' => 'value', 'encode' => true),
 			array('field' => 'title', 'type' => 'value'),
 			array('field' => 'status', 'type' => 'checkbox'),
 			array('field' => 'blog_id', 'type' => 'lookup', 'formField' => 'blog_input', 'modelField' => 'title', 'model' => 'Blog'));
@@ -75,15 +86,15 @@ The find.ctp view is same as index.ctp with the addition of the search form:
 {{{
 
 <?php
-	echo $form->create('Article', array(
+	echo $this->Form->create('Article', array(
 		'url' => array_merge(array('action' => 'find'), $this->params['pass'])
 		));
-	echo $form->input('title', array('div' => false));
-	echo $form->input('blog_id', array('div' => false, 'options' => $blogs));
-	echo $form->input('status', array('div' => false, 'multiple' => 'checkbox', 'options' => array('open', 'closed')));
-	echo $form->input('username', array('div' => false));
-	echo $form->submit(__('Search', true), array('div' => false));
-	echo $form->end();
+	echo $this->Form->input('title', array('div' => false));
+	echo $this->Form->input('blog_id', array('div' => false, 'options' => $blogs));
+	echo $this->Form->input('status', array('div' => false, 'multiple' => 'checkbox', 'options' => array('open', 'closed')));
+	echo $this->Form->input('username', array('div' => false));
+	echo $this->Form->submit(__('Search', true), array('div' => false));
+	echo $this->Form->end();
 ?>
 
 }}} 
