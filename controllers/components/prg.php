@@ -242,7 +242,7 @@ class PrgComponent extends Object {
 				$params = array_merge($this->controller->params['named'], $params);
 				$this->controller->redirect($params);
 			} else {
-				$this->controller->Session->setFlash(__('Please correct the errors below.', true));
+				$this->controller->Session->setFlash(__d('search', 'Please correct the errors below.', true));
 			}
 		}
 
