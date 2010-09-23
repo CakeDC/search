@@ -1,18 +1,12 @@
 <?php
 /**
- * CakePHP Search Plugin
- *
- * Copyright 2009 - 2010, Cake Development Corporation
- *                        1785 E. Sahara Avenue, Suite 490-423
- *                        Las Vegas, Nevada 89104
+ * Copyright 2009-2010, Cake Development Corporation (http://cakedc.com)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright 2009 - 2010, Cake Development Corporation (http://cakedc.com)
- * @link      http://github.com/CakeDC/Search
- * @package   plugins.search
- * @license   MIT License (http://www.opensource.org/licenses/mit-license.php)
+ * @copyright Copyright 2009-2010, Cake Development Corporation (http://cakedc.com)
+ * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
 /**
@@ -22,6 +16,7 @@
  * @subpackage	plugins.search.controllers.components
  */
 class PrgComponent extends Object {
+
 /**
  * Actions used to fetch the post data
  *
@@ -33,7 +28,6 @@ class PrgComponent extends Object {
  * array('search' => array('controller' => 'results');
  *
  * @var array actions
- * @access public
  */
 	public $actions = array();
 
@@ -41,7 +35,6 @@ class PrgComponent extends Object {
  * Enables encoding on all presetVar fields
  *
  * @var boolean
- * @access public
  */
 	public $encode = false;
 
@@ -49,7 +42,6 @@ class PrgComponent extends Object {
  * Intialize Callback
  *
  * @param object Controller object
- * @access public
  */
 	public function initialize(&$controller) {
 		$this->controller = $controller;
@@ -73,7 +65,6 @@ class PrgComponent extends Object {
  * 2, 3 need only field parameter
  *
  * @param array
- * @access public
  */
 	public function presetForm($model) {
 		$data = array($model => array());
@@ -118,7 +109,6 @@ class PrgComponent extends Object {
  * Restores form params for checkboxs and other url encoded params
  * 
  * @param array
- * @access public
  */
 	public function serializeParams(&$data) {
 		foreach ($this->controller->presetVars as $field) {
@@ -144,7 +134,6 @@ class PrgComponent extends Object {
  * @param array $data
  * @param array $exclude
  * @return void
- * @access public
  */
 	public function connectNamed($data = null, $exclude = array()) {
 		if (!isset($data)) {
@@ -170,7 +159,6 @@ class PrgComponent extends Object {
  * @param array Array of data to be filtered
  * @param array Array of keys to exclude from other $array
  * @return array
- * @access public
  */
 	public function exclude($array, $exclude) {
 		$data = array();
@@ -198,7 +186,6 @@ class PrgComponent extends Object {
  *  - string action The action to redirect to. Defaults to the current action
  *  - mixed modelMethod If not false a string that is the model method that will be used to process the data 
  * @return void
- * @access public
  */
 	public function commonProcess($modelName = null, $options = array()) {
 		$defaults = array(
@@ -251,6 +238,4 @@ class PrgComponent extends Object {
 			$this->presetForm($formName);
 		}
 	}
-
 }
-?>

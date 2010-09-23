@@ -1,30 +1,31 @@
 <?php
 /**
- * CakePHP Search Plugin
- *
- * Copyright 2009 - 2010, Cake Development Corporation
- *                        1785 E. Sahara Avenue, Suite 490-423
- *                        Las Vegas, Nevada 89104
+ * Copyright 2009-2010, Cake Development Corporation (http://cakedc.com)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright 2009 - 2010, Cake Development Corporation (http://cakedc.com)
- * @link      http://github.com/CakeDC/Search
- * @package   plugins.search
- * @license   MIT License (http://www.opensource.org/licenses/mit-license.php)
- */
-
-/**
- * Searchable behavior tests
- *
- * @package		plugins.search
- * @subpackage	plugins.search.tests.cases.behaviors
+ * @copyright Copyright 2009-2010, Cake Development Corporation (http://cakedc.com)
+ * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
 App::import('Core', 'Model');
 
+/**
+ * Searchable behavior tests
+ *
+ * @package search
+ * @subpackage search.tests.cases.behaviors
+ */
 class FilterBehavior extends ModelBehavior {
+
+/**
+ * mostFilterConditions
+ *
+ * @param Model $Model 
+ * @param string $data 
+ * @return array
+ */
 	public function mostFilterConditions(Model $Model, $data = array()) {
 		$filter = $data['filter'];
 		if (!in_array($filter, array('views', 'comments'))) {
@@ -42,19 +43,66 @@ class FilterBehavior extends ModelBehavior {
 	}
 }
 
+/**
+ * Tag model
+ *
+ * @package search
+ * @subpackage search.tests.cases.behaviors
+ */
 class Tag extends CakeTestModel {
 }
 
+/**
+ * Tagged model
+ *
+ * @package search
+ * @subpackage search.tests.cases.behaviors
+ */
 class Tagged extends CakeTestModel {
+
+/**
+ * Table to use
+ *
+ * @var string
+ */
 	public $useTable = 'tagged';
+
+/**
+ * Belongs To Assocaitions
+ *
+ * @var array
+ */
 	public $belongsTo = array('Tag');
 }
 
+/**
+ * Article model
+ *
+ * @package search
+ * @subpackage search.tests.cases.behaviors
+ */
 class Article extends CakeTestModel {
+
+/**
+ * Behaviors
+ *
+ * @var array
+ */
 	public $actsAs = array('Search.Searchable');
-	
+
+/**
+ * HABTM associations
+ *
+ * @var array
+ */
 	public $hasAndBelongsToMany = array('Tag' => array('with' => 'Tagged'));
-	
+
+/**
+ * Find by tags
+ *
+ * @param string $data 
+ * @return array
+ */
 	public function findByTags($data = array()) {
 		$this->Tagged->Behaviors->attach('Containable', array('autoFields' => false));
 		$this->Tagged->Behaviors->attach('Search.Searchable');
@@ -69,7 +117,7 @@ class Article extends CakeTestModel {
 /**
  * Makes an array of range numbers that matches the ones on the interface.
  *
- * @return void
+ * @return array
  */
 	public function makeRangeCondition($data, $field = null) {
 		if (is_string($data)) {
@@ -94,6 +142,12 @@ class Article extends CakeTestModel {
 		}
 	}
 
+/**
+ * orConditions
+ *
+ * @param array $data 
+ * @return array
+ */
 	public function orConditions($data = array()) {
 		$filter = $data['filter'];
 		$cond = array(
@@ -103,16 +157,20 @@ class Article extends CakeTestModel {
 			));
 		return $cond;
 	}
-	
 }
 
+/**
+ * SearchableTestCase
+ *
+ * @package search
+ * @subpackage search.tests.cases.behaviors
+ */
 class SearchableTestCase extends CakeTestCase { 
 
 /**
  * Fixtures used in the SessionTest
  *
  * @var array
- * @access public
  */
 	var $fixtures = array('plugin.search.article', 'plugin.search.tag', 'plugin.search.tagged'); 
 
@@ -120,7 +178,6 @@ class SearchableTestCase extends CakeTestCase {
  * startTest
  *
  * @return void
- * @access public
  */
 	public function startTest() {
 		$this->Article = ClassRegistry::init('Article');
@@ -130,17 +187,15 @@ class SearchableTestCase extends CakeTestCase {
  * endTest
  *
  * @return void
- * @access public
  */
 	public function endTest() {
 		unset($this->Article);
 	}
 
 /**
- * test value condition
+ * testValueCondition
  *
  * @return void
- * @access public
  * @link http://github.com/CakeDC/Search/issues#issue/3
  */ 
 	public function testValueCondition() {
@@ -184,10 +239,10 @@ class SearchableTestCase extends CakeTestCase {
 	}
 
 /**
- * test like condition
+ * testLikeCondition
  *
- * @access public
- */ 
+ * @return void
+ */
 	public function testLikeCondition() {
 		$this->Article->filterArgs = array(
 			array('name' => 'title', 'type' => 'like'));
@@ -210,10 +265,10 @@ class SearchableTestCase extends CakeTestCase {
 	}
 
 /**
- * test subquery condition
+ * testSubQueryCondition
  *
- * @access public
- */ 
+ * @return void
+ */
 	public function testSubQueryCondition() {
 		$this->Article->filterArgs = array(
 			array('name' => 'tags', 'type' => 'subquery', 'method' => 'findByTags', 'field' => 'Article.id'));
@@ -229,10 +284,10 @@ class SearchableTestCase extends CakeTestCase {
 	}
 
 /**
- * test query condition as sample of OR usage
+ * testQueryOrExample
  *
- * @access public
- */ 
+ * @return void
+ */
 	public function testQueryOrExample() {		
 		$this->Article->filterArgs = array(
 			array('name' => 'filter', 'type' => 'query', 'method' => 'orConditions'));
@@ -250,10 +305,10 @@ class SearchableTestCase extends CakeTestCase {
 	}
 
 /**
- * test query condition
+ * testQueryWithBehaviorCallCondition
  *
- * @access public
- */ 
+ * @return void
+ */
 	public function testQueryWithBehaviorCallCondition() {		
 		$this->Article->Behaviors->attach('Filter');
 		$this->Article->filterArgs = array(
@@ -270,10 +325,10 @@ class SearchableTestCase extends CakeTestCase {
 	}
 
 /**
- * test expression condition
+ * testExpressionCallCondition
  *
- * @access public
- */ 
+ * @return void
+ */
 	public function testExpressionCallCondition() {
 		$this->Article->filterArgs = array(
 			array('name' => 'range', 'type' => 'expression', 'method' => 'makeRangeCondition', 'field' => 'Article.views BETWEEN ? AND ?'));
@@ -294,10 +349,10 @@ class SearchableTestCase extends CakeTestCase {
 	}
 
 /**
- * test unbind all
+ * testUnbindAll
  *
- * @access public
- */ 
+ * @return void
+ */
 	public function testUnbindAll() {
 		$this->Article->unbindAllModels();
 		$this->assertEqual($this->Article->belongsTo, array());
@@ -307,10 +362,10 @@ class SearchableTestCase extends CakeTestCase {
 	}
 
 /**
- * test validate search
+ * testValidateSearch
  *
- * @access public
- */ 
+ * @return void
+ */
 	public function testValidateSearch() {
 		$this->Article->filterArgs = array();
 		$data = array('Article' => array('title' => 'Last Article'));
@@ -328,10 +383,10 @@ class SearchableTestCase extends CakeTestCase {
 	}
 
 /**
- * test passed args
+ * testPassedArgs
  *
- * @access public
- */ 
+ * @return void
+ */
 	public function testPassedArgs() {
 		$this->Article->filterArgs = array(
 			array('name' => 'slug', 'type' => 'value'));
@@ -341,6 +396,11 @@ class SearchableTestCase extends CakeTestCase {
 		$this->assertEqual($result, $expected);
 	}
 
+/**
+ * testGetQuery
+ *
+ * @return void
+ */
 	public function testGetQuery() {
 		$conditions = array('Article.id' => 1);
 		$result = $this->Article->getQuery($conditions, array('id', 'title'));
@@ -359,4 +419,3 @@ class SearchableTestCase extends CakeTestCase {
 		$this->assertEqual($result, $expected);
 	}
 }
-?>

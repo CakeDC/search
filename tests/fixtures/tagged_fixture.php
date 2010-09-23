@@ -1,34 +1,26 @@
 <?php
 /**
- * CakePHP Search Plugin
- *
- * Copyright 2009 - 2010, Cake Development Corporation
- *                        1785 E. Sahara Avenue, Suite 490-423
- *                        Las Vegas, Nevada 89104
+ * Copyright 2009-2010, Cake Development Corporation (http://cakedc.com)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright 2009 - 2010, Cake Development Corporation (http://cakedc.com)
- * @link      http://github.com/CakeDC/Search
- * @package   plugins.search
- * @license   MIT License (http://www.opensource.org/licenses/mit-license.php)
+ * @copyright Copyright 2009-2010, Cake Development Corporation (http://cakedc.com)
+ * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
 /**
- * Short description for class.
+ * Tagged Fixture
  *
- * @package		plugins.search
- * @subpackage	plugins.search.tests.fixtures
+ * @package search
+ * @subpackage search.tests.fixtures
  */ 
-
 class TaggedFixture extends CakeTestFixture {
 
 /**
  * Name
  *
  * @var string $name
- * @access public
  */
 	public $name = 'Tagged';
 
@@ -36,7 +28,6 @@ class TaggedFixture extends CakeTestFixture {
  * Table
  *
  * @var string name$table
- * @access public
  */
 	public $table = 'tagged';
 
@@ -44,7 +35,6 @@ class TaggedFixture extends CakeTestFixture {
  * Fields
  *
  * @var array $fields
- * @access public
  */
 	public $fields = array(
 		'id' => array('type' => 'string', 'null' => false, 'default' => NULL, 'length' => 36, 'key' => 'primary'),
@@ -66,7 +56,6 @@ class TaggedFixture extends CakeTestFixture {
  * Records
  *
  * @var array $records
- * @access public
  */
 	public $records = array(
 		array(
@@ -98,4 +87,3 @@ class TaggedFixture extends CakeTestFixture {
 		),
 	);
 }
-?>
