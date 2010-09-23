@@ -1,18 +1,12 @@
 <?php
 /**
- * CakePHP Search Plugin
- *
- * Copyright 2009 - 2010, Cake Development Corporation
- *                        1785 E. Sahara Avenue, Suite 490-423
- *                        Las Vegas, Nevada 89104
+ * Copyright 2009-2010, Cake Development Corporation (http://cakedc.com)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright 2009 - 2010, Cake Development Corporation (http://cakedc.com)
- * @link      http://github.com/CakeDC/Search
- * @package   plugins.search
- * @license   MIT License (http://www.opensource.org/licenses/mit-license.php)
+ * @copyright Copyright 2009-2010, Cake Development Corporation (http://cakedc.com)
+ * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
 /**
@@ -21,13 +15,12 @@
  * @package		plugins.search
  * @subpackage	plugins.search.models.behaviors
  */
-
 class SearchableBehavior extends ModelBehavior {
+
 /**
  * settings indexed by model name.
  *
  * @var array
- * @access public
  */
 	public $settings = array();
 
@@ -35,7 +28,7 @@ class SearchableBehavior extends ModelBehavior {
  * Default settings
  *
  * @var string
- **/
+ */
 	protected $_defaults = array();
 
 /**
@@ -55,7 +48,6 @@ class SearchableBehavior extends ModelBehavior {
  *
  * @param array $data Criteria of key->value pairs from post/named parameters
  * @return array Array of conditions that express the conditions needed for the search.
- * @access public
  */
 	public function parseCriteria(Model $model, $data) {
 		$conditions = array();
@@ -80,7 +72,6 @@ class SearchableBehavior extends ModelBehavior {
  *
  * @param object Model
  * @return boolean always true
- * @access public
  */
 	public function validateSearch(Model $model, $data = null) {
 		if (!empty($data)) {
@@ -101,7 +92,6 @@ class SearchableBehavior extends ModelBehavior {
  * @param object Model
  * @param array $vars
  * @return array, filtered args
- * @access public
  */
 	public function passedArgs(Model $model, $vars) {
 		$result = array();
@@ -127,7 +117,6 @@ class SearchableBehavior extends ModelBehavior {
  * @param string $order SQL ORDER BY conditions (e.g. "price DESC" or "name ASC")
  * @param integer $recursive The number of levels deep to fetch associated records
  * @return string SQL query string.
- * @access public
  * @link http://book.cakephp.org/view/449/find
  */
 	public function getQuery(Model $model, $conditions = null, $fields = array(), $order = null, $recursive = null) {
@@ -205,14 +194,13 @@ class SearchableBehavior extends ModelBehavior {
 	}
 
 /**
- * Add Conditions based on fuzzy comparrison
+ * Add Conditions based on fuzzy comparison
  *
  * @param AppModel $model Reference to the model
  * @param array $conditions existing Conditions collected for the model
  * @param array $data Array of data used in search query
  * @param array $field Field definition information
  * @return array of conditions.
- * @access protected
  */
 	protected function _addCondLike(Model $model, &$conditions, $data, $field) {
 		$fieldName = $field['name'];
@@ -229,14 +217,13 @@ class SearchableBehavior extends ModelBehavior {
 	}
 
 /**
- * Add Conditions based on exacltly comparrison
+ * Add Conditions based on exact comparison
  *
  * @param AppModel $model Reference to the model
  * @param array $conditions existing Conditions collected for the model
  * @param array $data Array of data used in search query
  * @param array $field Field definition information
  * @return array of conditions.
- * @access protected
  */
 	protected function _addCondValue(Model $model, &$conditions, $data, $field) {
 		$fieldName = $field['name'];
@@ -260,7 +247,6 @@ class SearchableBehavior extends ModelBehavior {
  * @param array $data Data for a field.
  * @param array $field Info for field.
  * @return array of conditions modified by this method.
- * @access protected
  */
 	protected function _addCondQuery(Model $model, &$conditions, $data, $field) {
 		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && !empty($data[$field['name']])) {
@@ -300,7 +286,6 @@ class SearchableBehavior extends ModelBehavior {
  * @param array $data Data for a field.
  * @param array $field Info for field.
  * @return array of conditions modified by this method.
- * @access protected
  */
 	protected function _addCondSubquery(Model $model, &$conditions, $data, $field) {
 		$fieldName = $field['field'];
@@ -318,7 +303,6 @@ class SearchableBehavior extends ModelBehavior {
  * @param AppModel $model
  * @param array $queryData
  * @param integer $recursive
- * @access private
  */
 	private function __queryGet(Model $model, $queryData = array(), $recursive = null) {
 		$db =& ConnectionManager::getDataSource($model->useDbConfig);
@@ -374,7 +358,7 @@ class SearchableBehavior extends ModelBehavior {
  * @param Model $Model
  * @param string $method
  * @return boolean, true if method exists in attached and enabled behaviors
- **/
+ */
 	private function __checkBehaviorMethods(Model $Model, $method) {
 		$behaviors = $Model->Behaviors->enabled();
 		$count = count($behaviors);
@@ -390,6 +374,4 @@ class SearchableBehavior extends ModelBehavior {
 		}
 		return $found;
 	}
-
 }
-?>

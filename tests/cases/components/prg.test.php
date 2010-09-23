@@ -1,36 +1,29 @@
 <?php
 /**
- * CakePHP Search Plugin
- *
- * Copyright 2009 - 2010, Cake Development Corporation
- *                        1785 E. Sahara Avenue, Suite 490-423
- *                        Las Vegas, Nevada 89104
+ * Copyright 2009-2010, Cake Development Corporation (http://cakedc.com)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright 2009 - 2010, Cake Development Corporation (http://cakedc.com)
- * @link      http://github.com/CakeDC/Search
- * @package   plugins.search
- * @license   MIT License (http://www.opensource.org/licenses/mit-license.php)
- */
-
-/**
- * Post-Redirect-Get: Transfers POST Requests to GET Requests tests
- *
- * @package		plugins.search
- * @subpackage	plugins.search.tests.cases.components
+ * @copyright Copyright 2009-2010, Cake Development Corporation (http://cakedc.com)
+ * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
 App::import('Controller', 'Controller', false);
 App::import('Component', 'Search.Prg');
 
+/**
+ * Post-Redirect-Get: Transfers POST Requests to GET Requests tests
+ *
+ * @package search
+ * @subpackage search.tests.cases.components
+ */
 class Post extends CakeTestModel {
+
 /**
  * Name
  *
  * @var string
- * @access public
  */
 	public $name = 'Post';
 
@@ -38,33 +31,43 @@ class Post extends CakeTestModel {
  * Behaviors
  *
  * @var array
- * @access public
  */
 	public $actsAs = array('Search.Searchable');
 }
 
+/**
+ * PostsTest Controller
+ *
+ * @package search
+ * @subpackage search.tests.cases.components
+ */
 class PostsTestController extends Controller {
 
 /**
+ * Controller name
+ *
  * @var string
- * @access public
  */
 	public $name = 'PostsTest';
 
 /**
+ * Models to use
+ *
  * @var array
- * @access public
  */
 	public $uses = array('Post');
 
 /**
+ * Components
+ *
  * @var array
- * @access public
  */
 	public $components = array('Search.Prg', 'Session');
 
 /**
- * 
+ * beforeFilter
+ *
+ * @return void
  */
 	public function beforeFilter() {
 		parent::beforeFilter();
@@ -75,28 +78,36 @@ class PostsTestController extends Controller {
 	}
 
 /**
- * 
+ * Overwrite redirect
+ *
+ * @param string $url 
+ * @param string $status 
+ * @param string $exit 
+ * @return void
  */
 	public function redirect($url, $status = NULL, $exit = true) {
 		$this->redirectUrl = $url;
 	}
-
 }
 
-
+/**
+ * PRG Component Test
+ *
+ * @package search
+ * @subpackage search.tests.cases.components
+ */
 class PrgComponentTest extends CakeTestCase {
+
 /**
  * Fixtures
  *
  * @var array
- * @access public
  */
-	public $fixtures = array(
-		'plugin.search.Post');
+	public $fixtures = array('plugin.search.Post');
+
 /**
- * setUp method
+ * startTest
  *
- * @access public
  * @return void
  */
 	function startTest() {
@@ -109,9 +120,8 @@ class PrgComponentTest extends CakeTestCase {
 	}
 
 /**
- * tearDown method
+ * endTest
  *
- * @access public
  * @return void
  */
 	function endTest() {
@@ -122,7 +132,6 @@ class PrgComponentTest extends CakeTestCase {
 /**
  * test
  *
- * @access public
  * @return void
  */
 	public function testPresetForm() {
@@ -165,7 +174,6 @@ class PrgComponentTest extends CakeTestCase {
  * This test checks that the search on an integer type field in the database
  * works correctly when a 0 (zero) is entered in the form.
  *
- * @access public
  * @return void
  * @link http://github.com/CakeDC/Search/issues#issue/3
  */
@@ -191,7 +199,6 @@ class PrgComponentTest extends CakeTestCase {
 /**
  * testFixFormValues
  *
- * @access public
  * @return void
  */
 	public function testSerializeParams() {
@@ -219,7 +226,6 @@ class PrgComponentTest extends CakeTestCase {
 /**
  * testConnectNamed
  *
- * @access public
  * @return void
  */
 	public function testConnectNamed() {
@@ -234,7 +240,6 @@ class PrgComponentTest extends CakeTestCase {
 /**
  * testExclude
  *
- * @access public
  * @return void
  */
 	public function testExclude() {
@@ -250,7 +255,6 @@ class PrgComponentTest extends CakeTestCase {
 /**
  * testCommonProcess
  *
- * @access public
  * @return void
  */
 	public function testCommonProcess() {
@@ -287,7 +291,6 @@ class PrgComponentTest extends CakeTestCase {
  * testCommonProcessGet
  *
  * @return void
- * @access public
  */
 	public function testCommonProcessGet() {
 		$this->Controller->Component->init($this->Controller);
@@ -308,7 +311,6 @@ class PrgComponentTest extends CakeTestCase {
  * testSerializeParamsWithEncoding
  *
  * @return void
- * @access public
  */
 	public function testSerializeParamsWithEncoding() {
 		$this->Controller->Component->init($this->Controller);
@@ -330,7 +332,6 @@ class PrgComponentTest extends CakeTestCase {
  * testPresetFormWithEncodedParams
  *
  * @return void
- * @access public
  */
 	public function testPresetFormWithEncodedParams() {
 		$this->Controller->presetVars = array(
@@ -368,6 +369,4 @@ class PrgComponentTest extends CakeTestCase {
 				'lookup_input' => 'First Post'));
 		$this->assertEqual($this->Controller->data, $expected);
 	}
-
 }
-?>
