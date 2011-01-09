@@ -215,7 +215,7 @@ class PrgComponent extends Object {
 			}
 
 			if ($valid) {
-				$passed = $this->controller->params['pass'];
+				$passed = $this->controller->request->params['pass'];
 				$params = $this->controller->data[$modelName];
 				$params = $this->exclude($params, array());
 
@@ -226,7 +226,7 @@ class PrgComponent extends Object {
 				$this->serializeParams($params);
 				$this->connectNamed($params, array());
 				$params['action'] = $action;
-				$params = array_merge($this->controller->params['named'], $params);
+				$params = array_merge($this->controller->request->params['named'], $params);
 				$this->controller->redirect($params);
 			} else {
 				$this->controller->Session->setFlash(__d('search', 'Please correct the errors below.', true));
