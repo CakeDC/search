@@ -82,7 +82,9 @@ class PrgComponent extends Object {
 		foreach ($this->controller->presetVars as $field) {
 			if ($this->encode == true || isset($field['encode']) && $field['encode'] == true) {
 				// Its important to set it also back to the controllers passed args!
-				$this->controller->passedArgs[$field['field']] = $args[$field['field']] = base64_decode($args[$field['field']]);
+				if (isset($args[$field['field']])) {
+					$this->controller->passedArgs[$field['field']] = $args[$field['field']] = base64_decode($args[$field['field']]);
+				}
 			}
 
 			if ($field['type'] == 'lookup') {
@@ -192,17 +194,17 @@ class PrgComponent extends Object {
  * - Issuing redirect(), and connecting named parameters before redirect
  * - Setting named parameter form data to view
  *
- * @param string $modelName Name of the model class being used for the prg form
+ * @param string $modelName - Name of the model class being used for the prg form
  * @param array $options Optional parameters:
- *  - string form Name of the form involved in the prg
- *  - string action The action to redirect to. Defaults to the current action
- *  - mixed modelMethod If not false a string that is the model method that will be used to process the data 
+ *  - string formName - name of the form involved in the prg
+ *  - string action - The action to redirect to. Defaults to the current action
+ *  - mixed modelMethod - If not false a string that is the model method that will be used to process the data 
  * @return void
  * @access public
  */
 	public function commonProcess($modelName = null, $options = array()) {
 		$defaults = array(
-			'form' => null,
+			'formName' => null,
 			'keepPassed' => true,
 			'action' => null,
 			'modelMethod' => 'validateSearch');
@@ -253,4 +255,3 @@ class PrgComponent extends Object {
 	}
 
 }
-?>
