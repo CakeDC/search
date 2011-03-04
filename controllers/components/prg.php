@@ -15,7 +15,7 @@
  * @package		plugins.search
  * @subpackage	plugins.search.controllers.components
  */
-class PrgComponent extends Object {
+class PrgComponent extends Component {
 
 /**
  * Actions used to fetch the post data
@@ -39,12 +39,12 @@ class PrgComponent extends Object {
 	public $encode = false;
 
 /**
- * Intialize Callback
+ * Constructor
  *
  * @param object Controller object
  */
-	public function initialize(&$controller) {
-		$this->controller = $controller;
+	public function __construct(ComponentCollection $collection) {
+		$this->controller = $collection->getController();
 	}
 
 /**
