@@ -288,6 +288,34 @@ class PrgComponentTest extends CakeTestCase {
 	}
 
 /**
+ * testCommonProcessExtraParams
+ *
+ * @return void
+ */
+	public function testCommonProcessAllowedParams() {
+		$this->Controller->params = array_merge($this->Controller->params, array(
+			'named' => array(),
+			'lang' => 'en',
+			));
+		$this->Controller->Component->init($this->Controller);
+		$this->Controller->Component->initialize($this->Controller);
+		$this->Controller->presetVars = array();
+		$this->Controller->action = 'search';
+		$this->Controller->data = array(
+			'Post' => array(
+				'title' => 'test'));
+
+		$this->Controller->Prg->commonProcess('Post', array(
+			'form' => 'Post',
+			'modelMethod' => false,
+			'allowedParams' => array('lang')));
+		$this->assertEqual($this->Controller->redirectUrl, array(
+			'title' => 'test',
+			'action' => 'search',
+			'lang' => 'en'));
+	}
+
+/**
  * testCommonProcessGet
  *
  * @return void

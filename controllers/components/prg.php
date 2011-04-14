@@ -157,7 +157,7 @@ class PrgComponent extends Object {
  * Exclude 
  * 
  * Removes key/values from $array based on $exclude 
-
+ *
  * @param array Array of data to be filtered
  * @param array Array of keys to exclude from other $array
  * @return array
@@ -187,6 +187,7 @@ class PrgComponent extends Object {
  *  - string formName - name of the form involved in the prg
  *  - string action - The action to redirect to. Defaults to the current action
  *  - mixed modelMethod - If not false a string that is the model method that will be used to process the data 
+ *  - array allowedParams - An array of additional top level route params that should be included in the params processed
  * @return void
  */
 	public function commonProcess($modelName = null, $options = array()) {
@@ -194,7 +195,8 @@ class PrgComponent extends Object {
 			'formName' => null,
 			'keepPassed' => true,
 			'action' => null,
-			'modelMethod' => 'validateSearch');
+			'modelMethod' => 'validateSearch',
+			'allowedParams' => array());
 		extract(Set::merge($defaults, $options));
 
 		if (empty($modelName)) {
@@ -229,6 +231,13 @@ class PrgComponent extends Object {
 				$this->connectNamed($params, array());
 				$params['action'] = $action;
 				$params = array_merge($this->controller->params['named'], $params);
+
+				foreach ($allowedParams as $key) {
+					if (isset($this->controller->params[$key])) {
+						$params[$key] = $this->controller->params[$key];
+					}
+				}
+
 				$this->controller->redirect($params);
 			} else {
 				$this->controller->Session->setFlash(__d('search', 'Please correct the errors below.', true));
