@@ -39,12 +39,22 @@ class PrgComponent extends Object {
 	public $encode = false;
 
 /**
+ * Default options
+ *
+ * @var array
+ */
+	protected $_defaults = array(
+		'commonProcess' => array()
+	);
+
+/**
  * Intialize Callback
  *
  * @param object Controller object
  */
-	public function initialize(&$controller) {
+	public function initialize(&$controller, $settings = array()) {
 		$this->controller = $controller;
+		$this->_defaults = Set::merge($this->_defaults, $settings);
 	}
 
 /**
@@ -197,6 +207,7 @@ class PrgComponent extends Object {
 			'action' => null,
 			'modelMethod' => 'validateSearch',
 			'allowedParams' => array());
+		$defaults = Set::merge($defaults, $this->_defaults['commonProcess']);
 		extract(Set::merge($defaults, $options));
 
 		if (empty($modelName)) {
