@@ -10,6 +10,7 @@
  */
 
 App::import('Core', 'Model');
+App::import('Model', 'ModelBehavior');
 
 /**
  * Searchable behavior tests

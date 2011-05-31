@@ -120,7 +120,7 @@ class SearchableBehavior extends ModelBehavior {
  * @link http://book.cakephp.org/view/449/find
  */
 	public function getQuery(Model $model, $conditions = null, $fields = array(), $order = null, $recursive = null) {
-		if (!is_string($conditions) || (is_string($conditions) && !array_key_exists($conditions, $model->_findMethods))) {
+		if (!is_string($conditions) || (is_string($conditions) && !array_key_exists($conditions, $model->findMethods))) {
 			$type = 'first';
 			$query = compact('conditions', 'fields', 'order', 'recursive');
 		} else {
@@ -141,8 +141,8 @@ class SearchableBehavior extends ModelBehavior {
 		);
 
 		if ($type != 'all') {
-			if ($model->_findMethods[$type] === true) {
-				$query = $model->{'_find' . ucfirst($type)}('before', $query);
+			if ($model->findMethods[$type] === true) {
+				$query = $model->{'find' . ucfirst($type)}('before', $query);
 			}
 		}
 
