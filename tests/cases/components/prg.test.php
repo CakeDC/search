@@ -126,7 +126,7 @@ class PrgComponentTest extends CakeTestCase {
  *
  * @var array
  */
-	public $fixtures = array('plugin.search.Post');
+	public $fixtures = array('plugin.search.post');
 
 /**
  * startTest
