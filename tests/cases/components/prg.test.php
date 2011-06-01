@@ -126,7 +126,7 @@ class PrgComponentTest extends CakeTestCase {
  *
  * @var array
  */
-	public $fixtures = array('plugin.search.Post');
+	public $fixtures = array('plugin.search.post');
 
 /**
  * startTest
@@ -277,6 +277,10 @@ class PrgComponentTest extends CakeTestCase {
 
 		$testData = array('options' => '');
 
+		$result = $this->Controller->Prg->serializeParams($testData);
+		$this->assertEqual($result, array('options' => ''));
+
+		$testData = array();
 		$result = $this->Controller->Prg->serializeParams($testData);
 		$this->assertEqual($result, array('options' => ''));
 	}
