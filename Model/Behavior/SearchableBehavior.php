@@ -159,9 +159,12 @@ class SearchableBehavior extends ModelBehavior {
 
 
 		if ($query['callbacks'] === true || $query['callbacks'] === 'before') {
-			$return = $model->Behaviors->trigger($model, 'beforeFind', array($query), array(
-				'break' => true, 'breakOn' => false, 'modParams' => true
-			));
+			$return = $model->Behaviors->trigger(
+				'beforeFind',
+				array(&$model, $query),
+				array('break' => true, 'breakOn' => array(false, null), 'modParams' => 1)
+			);
+
 			$query = (is_array($return)) ? $return : $query;
 
 			if ($return === false) {
@@ -305,13 +308,12 @@ class SearchableBehavior extends ModelBehavior {
  * @param integer $recursive
  */
 	private function __queryGet(Model $model, $queryData = array(), $recursive = null) {
-		$db =& ConnectionManager::getDataSource($model->useDbConfig);
-		$db->__scrubQueryData($queryData);
+		$db = $model->getDataSource();
+		$queryData = $db->__scrubQueryData($queryData);
+		$byPass = false;
 		$null = null;
 		$array = array();
 		$linkedModels = array();
-		$db->__bypass = false;
-		$db->__booleans = array();
 
 		if ($recursive === null && isset($queryData['recursive'])) {
 			$recursive = $queryData['recursive'];
@@ -323,33 +325,38 @@ class SearchableBehavior extends ModelBehavior {
 		}
 
 		if (!empty($queryData['fields'])) {
-			$db->__bypass = true;
+			$byPass = true;
 			$queryData['fields'] = $db->fields($model, null, $queryData['fields']);
 		} else {
 			$queryData['fields'] = $db->fields($model);
 		}
 
-		foreach ($model->__associations as $type) {
-			foreach ($model->{$type} as $assoc => $assocData) {
-				if ($model->recursive > -1) {
-					$linkModel =& $model->{$assoc};
+		$_associations = $model->associations();
 
-					$external = isset($assocData['external']);
-					if ($model->alias == $linkModel->alias && $type != 'hasAndBelongsToMany' && $type != 'hasMany') {
-						if (true === $db->generateSelfAssociationQuery($model, $linkModel, $type, $assoc, $assocData, $queryData, $external, $null)) {
-							$linkedModels[] = $type . '/' . $assoc;
-						}
-					} else {
-						if ($model->useDbConfig == $linkModel->useDbConfig) {
-							if (true === $db->generateAssociationQuery($model, $linkModel, $type, $assoc, $assocData, $queryData, $external, $null)) {
-								$linkedModels[] = $type . '/' . $assoc;
-							}
-						}
+		if ($model->recursive == -1) {
+			$_associations = array();
+		} elseif ($model->recursive == 0) {
+			unset($_associations[2], $_associations[3]);
+		}
+
+		foreach ($_associations as $type) {
+			foreach ($model->{$type} as $assoc => $assocData) {
+				$linkModel = $model->{$assoc};
+				$external = isset($assocData['external']);
+
+				$linkModel->getDataSource();
+				if ($model->useDbConfig === $linkModel->useDbConfig) {
+					if ($byPass) {
+						$assocData['fields'] = false;
+					}
+					if (true === $db->generateAssociationQuery($model, $linkModel, $type, $assoc, $assocData, $queryData, $external, $null)) {
+						$linkedModels[$type . '/' . $assoc] = true;
 					}
 				}
 			}
 		}
-		return $db->generateAssociationQuery($model, $null, null, null, null, $queryData, false, $null);
+
+		return trim($db->generateAssociationQuery($model, null, null, null, null, $queryData, false, $null));
 	}
 
 /**

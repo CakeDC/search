@@ -280,7 +280,7 @@ class SearchableTestCase extends CakeTestCase {
 			
 		$data = array('tags' => 'Cake');
 		$result = $this->Article->parseCriteria($data);
-		$expected = array(array("Article.id in (SELECT `Tagged`.`foreign_key` FROM `tagged` AS `Tagged` LEFT JOIN `tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = 'Cake'   )"));
+		$expected = array(array("Article.id in (SELECT `Tagged`.`foreign_key` FROM `tagged` AS `Tagged` LEFT JOIN `tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = 'Cake')"));
 		$this->assertEqual($result, $expected);
 	}
 
