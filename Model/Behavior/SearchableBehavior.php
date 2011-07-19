@@ -104,81 +104,20 @@ class SearchableBehavior extends ModelBehavior {
 	}
 
 /**
- * Method to generated DML SQL queries using find* style.
+ * Generates a query string using the same API Model::find() uses, calling the beforeFind process for the model
  *
- * Specifying 'fields' for new-notation 'list':
- *  - If no fields are specified, then 'id' is used for key and Model::$displayField is used for value.
- *  - If a single field is specified, 'id' is used for key and specified field is used for value.
- *  - If three fields are specified, they are used (in order) for key, value and group.
- *  - Otherwise, first and second fields are used for key and value.
- *
- * @param array $conditions SQL conditions array, or type of find operation (all / first / count / neighbors / list / threaded)
- * @param mixed $fields Either a single string of a field name, or an array of field names, or options for matching
- * @param string $order SQL ORDER BY conditions (e.g. "price DESC" or "name ASC")
- * @param integer $recursive The number of levels deep to fetch associated records
- * @return string SQL query string.
- * @link http://book.cakephp.org/view/449/find
+ * 
+ * @param string $type Type of find operation (all / first / count / neighbors / list / threaded)
+ * @param array $query Option fields (conditions / fields / joins / limit / offset / order / page / group / callbacks)
+ * @return array Array of records
+ * @link http://book.cakephp.org/view/1018/find
  */
-	public function getQuery(Model $model, $conditions = null, $fields = array(), $order = null, $recursive = null) {
-		if (!is_string($conditions) || (is_string($conditions) && !array_key_exists($conditions, $model->findMethods))) {
-			$type = 'first';
-			$query = compact('conditions', 'fields', 'order', 'recursive');
-		} else {
-			list($type, $query) = array($conditions, $fields);
-		}
-
-		$db =& ConnectionManager::getDataSource($model->useDbConfig);
+	public function getQuery(Model $model, $type = 'first', $query = array()) {
 		$model->findQueryType = $type;
 		$model->id = $model->getID();
-
-		$query = array_merge(
-			array(
-				'conditions' => null, 'fields' => null, 'joins' => array(), 
-				'limit' => null, 'offset' => null, 'order' => null, 'page' => null, 
-				'group' => null, 'callbacks' => true
-			),
-			(array)$query
-		);
-
-		if ($type != 'all') {
-			if ($model->findMethods[$type] === true) {
-				$query = $model->{'find' . ucfirst($type)}('before', $query);
-			}
-		}
-
-		if (!is_numeric($query['page']) || intval($query['page']) < 1) {
-			$query['page'] = 1;
-		}
-		if ($query['page'] > 1 && !empty($query['limit'])) {
-			$query['offset'] = ($query['page'] - 1) * $query['limit'];
-		}
-		if ($query['order'] === null && $model->order !== null) {
-			$query['order'] = $model->order;
-		}
-		$query['order'] = array($query['order']);
-
-
-		if ($query['callbacks'] === true || $query['callbacks'] === 'before') {
-			$return = $model->Behaviors->trigger(
-				'beforeFind',
-				array(&$model, $query),
-				array('break' => true, 'breakOn' => array(false, null), 'modParams' => 1)
-			);
-
-			$query = (is_array($return)) ? $return : $query;
-
-			if ($return === false) {
-				return null;
-			}
-
-			$return = $model->beforeFind($query);
-			$query = (is_array($return)) ? $return : $query;
-
-			if ($return === false) {
-				return null;
-			}
-		}
-		return $this->__queryGet($model, $query, $recursive);
+		$query = $model->buildQuery($type, $query);
+		$this->findQueryType = null;
+		return $this->__queryGet($model, $query);
 	}
 
 /**
@@ -307,15 +246,16 @@ class SearchableBehavior extends ModelBehavior {
  * @param array $queryData
  * @param integer $recursive
  */
-	private function __queryGet(Model $model, $queryData = array(), $recursive = null) {
+	private function __queryGet(Model $model, $queryData = array()) {
 		$db = $model->getDataSource();
 		$queryData = $db->__scrubQueryData($queryData);
+		$recursive = null;
 		$byPass = false;
 		$null = null;
 		$array = array();
 		$linkedModels = array();
 
-		if ($recursive === null && isset($queryData['recursive'])) {
+		if (isset($queryData['recursive'])) {
 			$recursive = $queryData['recursive'];
 		}
 
