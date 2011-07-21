@@ -9,8 +9,8 @@
  * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
-App::import('Controller', 'Controller', false);
-App::import('Component', 'Search.Prg');
+App::uses('Controller', 'Controller');
+App::uses('Component', 'Search.Prg');
 
 /**
  * Post-Redirect-Get: Transfers POST Requests to GET Requests tests

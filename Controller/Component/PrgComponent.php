@@ -15,7 +15,9 @@
  * @package		plugins.search
  * @subpackage	plugins.search.controllers.components
  */
-class PrgComponent extends Object {
+App::uses('Component', 'Controller');
+
+class PrgComponent extends Component {
 
 /**
  * Actions used to fetch the post data
