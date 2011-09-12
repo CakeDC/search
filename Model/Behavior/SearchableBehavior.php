@@ -247,8 +247,13 @@ class SearchableBehavior extends ModelBehavior {
  * @param integer $recursive
  */
 	private function __queryGet(Model $model, $queryData = array()) {
+	  if (!isset($queryData['table'])) {
+      $queryData['table'] = $model->useTable;
+	  }
+    if (!isset($queryData['alias'])) {
+      $queryData['alias'] = $model->alias;
+    }
 		$db = $model->getDataSource();
-		$queryData = $db->__scrubQueryData($queryData);
 		$recursive = null;
 		$byPass = false;
 		$null = null;
