@@ -41,12 +41,12 @@ class PrgComponent extends Component {
 	public $encode = false;
 
 /**
- * Intialize Callback
+ * Constructor
  *
  * @param object Controller object
  */
-	public function initialize(&$controller) {
-		$this->controller = $controller;
+	public function __construct(ComponentCollection $collection) {
+		$this->controller = $collection->getController();
 	}
 
 /**
