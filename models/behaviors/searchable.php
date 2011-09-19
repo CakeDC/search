@@ -267,7 +267,7 @@ class SearchableBehavior extends ModelBehavior {
  */
 	protected function _addCondExpression(Model $model, &$conditions, $data, $field) {
 		$fieldName = $field['field'];
-		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && !empty($data[$field['name']])) {
+		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && array_key_exists($field['name'], $data)) {
 			$fieldValues = $model->{$field['method']}($data, $field);
 			if (!empty($conditions[$fieldName]) && is_array($conditions[$fieldName])) {
 				$conditions[$fieldName] = array_unique(array_merge(array($conditions[$fieldName]), array($fieldValues)));
@@ -289,7 +289,7 @@ class SearchableBehavior extends ModelBehavior {
  */
 	protected function _addCondSubquery(Model $model, &$conditions, $data, $field) {
 		$fieldName = $field['field'];
-		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && !empty($data[$field['name']])) {
+		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && array_key_exists($field['name'], $data)) {
 			$subquery = $model->{$field['method']}($data);
 			$conditions[] = array("$fieldName in ($subquery)");
 		}
