@@ -91,6 +91,29 @@ class PostsTestController extends Controller {
 }
 
 /**
+ * Posts Options Test Controller
+ *
+ * @package search
+ * @subpackage search.tests.cases.components
+ */
+class PostOptionsTestController extends PostsTestController {
+
+/**
+ * Components
+ *
+ * @var array
+ */
+	public $components = array(
+		'Search.Prg' => array(
+			'commonProcess' => array(
+				'form' => 'Post',
+				'modelMethod' => false,
+				'allowedParams' => array('lang'))),
+		'Session'
+	);
+}
+
+/**
  * PRG Component Test
  *
  * @package search
@@ -103,7 +126,7 @@ class PrgComponentTest extends CakeTestCase {
  *
  * @var array
  */
-	public $fixtures = array('plugin.search.Post');
+	public $fixtures = array('plugin.search.post');
 
 /**
  * startTest
@@ -127,6 +150,41 @@ class PrgComponentTest extends CakeTestCase {
 	function endTest() {
 		unset($this->Controller);
 		ClassRegistry::flush();
+	}
+
+/**
+ * testOptions
+ *
+ * @return void
+ */
+	public function testOptions() {
+		$this->Controller = new PostOptionsTestController();
+		$this->Controller->constructClasses();
+		$this->Controller->params = array(
+			'named' => array(),
+			'pass' => array(),
+			'url' => array());
+		$this->Controller->Component->init($this->Controller);
+		$this->Controller->Component->initialize($this->Controller);
+		$this->Controller->presetVars = array();
+		$this->Controller->action = 'search';
+		$this->Controller->data = array(
+			'Post' => array(
+				'title' => 'test'));
+
+		$this->Controller->Prg->commonProcess('Post');
+		$this->assertEqual($this->Controller->redirectUrl, array(
+			'title' => 'test',
+			'action' => 'search'));
+
+		$this->Controller->params = array_merge($this->Controller->params, array(
+			'lang' => 'en',
+			));
+		$this->Controller->Prg->commonProcess('Post');
+		$this->assertEqual($this->Controller->redirectUrl, array(
+			'title' => 'test',
+			'action' => 'search',
+			'lang' => 'en'));
 	}
 
 /**
@@ -221,6 +279,10 @@ class PrgComponentTest extends CakeTestCase {
 
 		$result = $this->Controller->Prg->serializeParams($testData);
 		$this->assertEqual($result, array('options' => ''));
+
+		$testData = array();
+		$result = $this->Controller->Prg->serializeParams($testData);
+		$this->assertEqual($result, array('options' => ''));
 	}
 
 /**
@@ -288,6 +350,34 @@ class PrgComponentTest extends CakeTestCase {
 	}
 
 /**
+ * testCommonProcessExtraParams
+ *
+ * @return void
+ */
+	public function testCommonProcessAllowedParams() {
+		$this->Controller->params = array_merge($this->Controller->params, array(
+			'named' => array(),
+			'lang' => 'en',
+			));
+		$this->Controller->Component->init($this->Controller);
+		$this->Controller->Component->initialize($this->Controller);
+		$this->Controller->presetVars = array();
+		$this->Controller->action = 'search';
+		$this->Controller->data = array(
+			'Post' => array(
+				'title' => 'test'));
+
+		$this->Controller->Prg->commonProcess('Post', array(
+			'form' => 'Post',
+			'modelMethod' => false,
+			'allowedParams' => array('lang')));
+		$this->assertEqual($this->Controller->redirectUrl, array(
+			'title' => 'test',
+			'action' => 'search',
+			'lang' => 'en'));
+	}
+
+/**
  * testCommonProcessGet
  *
  * @return void
@@ -325,7 +415,7 @@ class PrgComponentTest extends CakeTestCase {
 		$this->Controller->Prg->encode = true;
 		$test = array('title' => 'Something new');
 		$result = $this->Controller->Prg->serializeParams($test);
-		$this->assertEqual($result['title'], bin2hex('Something new'));
+		$this->assertEqual($result['title'], base64_encode('Something new'));
 	}
 
 /**
@@ -348,9 +438,10 @@ class PrgComponentTest extends CakeTestCase {
 				'modelField' => 'title',
 				'model' => 'Post'));
 		$this->Controller->passedArgs = array(
-			'title' => bin2hex('test'),
-			'checkbox' => bin2hex('test|test2|test3'),
-			'lookup' => bin2hex('1'));
+			'title' => base64_encode('test'),
+			'checkbox' => base64_encode('test|test2|test3'),
+			'lookup' => base64_encode('1'));
+
 		$this->Controller->Component->init($this->Controller);
 		$this->Controller->Component->initialize($this->Controller);
 		$this->Controller->beforeFilter();
