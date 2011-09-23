@@ -192,7 +192,7 @@ class SearchableBehavior extends ModelBehavior {
  */
 	protected function _addCondQuery(Model $model, &$conditions, $data, $field) {
 		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && !empty($data[$field['name']])) {
-			$conditionsAdd = $model->{$field['method']}($data);
+			$conditionsAdd = $model->{$field['method']}($data, $field);
 			$conditions = array_merge($conditions, (array)$conditionsAdd);
 		}
 		return $conditions;
@@ -232,7 +232,7 @@ class SearchableBehavior extends ModelBehavior {
 	protected function _addCondSubquery(Model $model, &$conditions, $data, $field) {
 		$fieldName = $field['field'];
 		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && !empty($data[$field['name']])) {
-			$subquery = $model->{$field['method']}($data);
+			$subquery = $model->{$field['method']}($data, $field);
 			$conditions[] = array("$fieldName in ($subquery)");
 		}
 		return $conditions;
@@ -247,8 +247,9 @@ class SearchableBehavior extends ModelBehavior {
  * @param integer $recursive
  */
 	private function __queryGet(Model $model, $queryData = array()) {
+		/** @var DboSource $db  */
 		$db = $model->getDataSource();
-		$queryData = $db->__scrubQueryData($queryData);
+		$queryData = $this->_scrubQueryData($queryData);
 		$recursive = null;
 		$byPass = false;
 		$null = null;
@@ -297,6 +298,20 @@ class SearchableBehavior extends ModelBehavior {
 		}
 
 		return trim($db->generateAssociationQuery($model, null, null, null, null, $queryData, false, $null));
+	}
+
+/**
+ * Private helper method to remove query metadata in given data array.
+ *
+ * @param array $data
+ * @return array
+ */
+	protected function _scrubQueryData($data) {
+		static $base = null;
+		if ($base === null) {
+			$base = array_fill_keys(array('conditions', 'fields', 'joins', 'order', 'limit', 'offset', 'group'), array());
+		}
+		return (array)$data + $base;
 	}
 
 /**
