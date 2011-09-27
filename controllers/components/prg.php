@@ -73,7 +73,10 @@ class PrgComponent extends Object {
 		foreach ($this->controller->presetVars as $field) {
 			if ($this->encode == true || isset($field['encode']) && $field['encode'] == true) {
 				// Its important to set it also back to the controllers passed args!
-				$this->controller->passedArgs[$field['field']] = $args[$field['field']] = pack('H*', $args[$field['field']]);
+				$name = $field['field'];
+				if (isset($args[$name])) {
+					$this->controller->params['named'][$name] = $this->controller->passedArgs[$name] = $args[$name] = pack('H*', $args[$name]);
+				}
 			}
 
 			if ($field['type'] == 'lookup') {
