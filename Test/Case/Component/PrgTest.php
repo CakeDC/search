@@ -11,6 +11,7 @@
 
 App::uses('Controller', 'Controller');
 App::uses('Component', 'Search.Prg');
+App::uses('Router', 'Routing');
 
 /**
  * Post-Redirect-Get: Transfers POST Requests to GET Requests tests
