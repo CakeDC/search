@@ -29,7 +29,9 @@ class SearchableBehavior extends ModelBehavior {
  *
  * @var string
  */
-	protected $_defaults = array();
+	protected $_defaults = array(
+		'like' => array('before'=>true, 'after'=>true)
+	);
 
 /**
  * Configuration of model
@@ -210,10 +212,28 @@ class SearchableBehavior extends ModelBehavior {
 		if (strpos($fieldName, '.') === false) {
 			$fieldName = $model->alias . '.' . $fieldName;
 		}
+		$field = array_merge($this->settings[$model->alias]['like'], $field);
+		if ($field['before'] === true) {
+			$field['before'] = '%';
+		}
+		if ($field['after'] === true) {
+			$field['after'] = '%';
+		}
 		if (!empty($data[$field['name']])) {
-			$conditions[$fieldName . " LIKE"] = "%" . $data[$field['name']] . "%";
+			$conditions[$fieldName . " LIKE"] = $field['before'] . $data[$field['name']] . $field['after'];
 		}
 		return $conditions;
+	}
+	
+	/**
+	 * for custom queries inside the model
+	 * example "makePhoneCondition": $cond = array('OR' => array_merge($this->condLike('cell_number', $filter), $this->condLike('landline_number', $filter, array('before'=>false))));
+	 * 2011-07-06 ms
+	 */
+	public function condLike($model, $name, $data, $field = array()) {
+		$conditions = array();
+		$field['name'] = $name;
+		return $this->_addCondLike($model, $conditions, $data, $field);
 	}
 
 /**

@@ -97,16 +97,16 @@ class PrgComponent extends Object {
 					$data[$model][$field['field']] = $args[$field['field']];
 					$data[$model][$field['formField']] = $result[$searchModel][$field['modelField']];
 				}
-			}
-	
-			if ($field['type'] == 'checkbox') {
+			} elseif ($field['type'] == 'checkbox') {
 				if (isset($args[$field['field']])) {
 					$values = split('\|', $args[$field['field']]);
 					$data[$model][$field['field']] = $values;
 				}
-			}
-
-			if ($field['type'] == 'value') {
+			} elseif ($field['type'] == 'value' || $field['type'] == 'like') {
+				if (isset($args[$field['field']])) {
+					$data[$model][$field['field']] = $args[$field['field']];
+				}
+			} else {
 				if (isset($args[$field['field']])) {
 					$data[$model][$field['field']] = $args[$field['field']];
 				}
