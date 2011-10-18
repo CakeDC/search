@@ -1,5 +1,7 @@
 # Search Plugin for CakePHP #
 
+Version 1.1
+
 The Search plugin allows you to make any kind of data searchable, enabling you to implement a robust searching rapidly.
 
 The Search plugin is an easy way to include search into your application, and provides you with a paginate-able search in any controller.
@@ -164,7 +166,7 @@ Redistributions of files must retain the above copyright notice.
 
 ## Copyright ###
 
-Copyright 2009-2010<br/>
+Copyright 2009-2011<br/>
 [Cake Development Corporation](http://cakedc.com)<br/>
 1785 E. Sahara Avenue, Suite 490-423<br/>
 Las Vegas, Nevada 89104<br/>
