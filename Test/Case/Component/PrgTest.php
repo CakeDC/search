@@ -392,6 +392,29 @@ class PrgComponentTest extends CakeTestCase {
 	}
 
 /**
+ * testSerializeParamsWithEncoding
+ *
+ * @return void
+ */
+	public function testSerializeParamsWithEncodingAndSpace() {
+		$this->Controller->action = 'search';
+		$this->Controller->presetVars = array(
+			array('field' => 'title', 'type' => 'value', 'encode' => true));
+		$this->Controller->data = array();
+		$this->Controller->Post->filterArgs = array(
+			array('name' => 'title', 'type' => 'value'));
+
+		$this->Controller->Prg->encode = true;
+		$testData = $test = array('title' => 'Something new');
+		$result = $this->Controller->Prg->serializeParams($test);
+		$this->assertEqual($result['title'], base64_encode('Something new'));
+		
+		$this->Controller->passedArgs = $result;
+		$this->Controller->Prg->presetForm('Post');		
+		$this->assertEqual($this->Controller->data, array('Post' => $testData));
+	}
+
+/**
  * testPresetFormWithEncodedParams
  *
  * @return void
