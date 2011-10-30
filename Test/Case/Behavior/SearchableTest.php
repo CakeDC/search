@@ -278,7 +278,7 @@ class SearchableTestCase extends CakeTestCase {
 		$result = $this->Article->parseCriteria($data);
 		$this->assertEqual($result, array());
 
-		if ($this->skipIf($this->db->config['driver'] != 'mysql', 'Test require mysql db. %s')) { 
+		if ($this->skipIf($this->db->config['datasource'] != 'Database/Mysql', 'Test requires mysql db. %s')) {
 			return; 
 		}		
 		
@@ -407,7 +407,7 @@ class SearchableTestCase extends CakeTestCase {
  * @return void
  */
 	public function testGetQuery() {
-		if ($this->skipIf($this->db->config['driver'] != 'mysql', 'Test require mysql db. %s')) { 
+		if ($this->skipIf($this->db->config['datasource'] != 'Database/Mysql', 'Test requires mysql db. %s')) {
 			return; 
 		}		
 		$conditions = array('Article.id' => 1);
