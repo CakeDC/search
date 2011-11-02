@@ -277,7 +277,11 @@ class SearchableTestCase extends CakeTestCase {
 		$data = array();
 		$result = $this->Article->parseCriteria($data);
 		$this->assertEqual($result, array());
-			
+
+		if ($this->skipIf($this->db->config['datasource'] != 'Database/Mysql', 'Test requires mysql db. %s')) {
+			return; 
+		}		
+		
 		$data = array('tags' => 'Cake');
 		$result = $this->Article->parseCriteria($data);
 		$expected = array(array("Article.id in (SELECT `Tagged`.`foreign_key` FROM `tagged` AS `Tagged` LEFT JOIN `tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = 'Cake')"));
@@ -403,6 +407,9 @@ class SearchableTestCase extends CakeTestCase {
  * @return void
  */
 	public function testGetQuery() {
+		if ($this->skipIf($this->db->config['datasource'] != 'Database/Mysql', 'Test requires mysql db. %s')) {
+			return; 
+		}		
 		$conditions = array('Article.id' => 1);
 		$result = $this->Article->getQuery('all', array('conditions' => $conditions, 'order' => 'title', 'page' => 2, 'limit' => 2, 'fields' => array('id', 'title')));
 		$expected = 'SELECT `Article`.`id`, `Article`.`title` FROM `articles` AS `Article`   WHERE `Article`.`id` = 1   ORDER BY `title` ASC  LIMIT 2, 2';
