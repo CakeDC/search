@@ -41,12 +41,22 @@ class PrgComponent extends Component {
 	public $encode = false;
 
 /**
+ * Default options
+ *
+ * @var array
+ */
+	protected $_defaults = array(
+		'commonProcess' => array()
+	);
+
+/**
  * Constructor
  *
  * @param object Controller object
  */
-	public function __construct(ComponentCollection $collection) {
+	public function __construct(ComponentCollection $collection, $settings) {
 		$this->controller = $collection->getController();
+		$this->_defaults = Set::merge($this->_defaults, $settings);
 	}
 
 /**
@@ -75,7 +85,9 @@ class PrgComponent extends Component {
 		foreach ($this->controller->presetVars as $field) {
 			if ($this->encode == true || isset($field['encode']) && $field['encode'] == true) {
 				// Its important to set it also back to the controllers passed args!
-				$this->controller->passedArgs[$field['field']] = $args[$field['field']] = pack('H*', $args[$field['field']]);
+				if (isset($args[$field['field']])) {
+					$this->controller->passedArgs[$field['field']] = $args[$field['field']] = base64_decode(str_replace(array('-', '_'), array('+', '/'), $args[$field['field']]));
+				}
 			}
 
 			if ($field['type'] == 'lookup') {
@@ -115,8 +127,8 @@ class PrgComponent extends Component {
 	public function serializeParams(&$data) {
 		foreach ($this->controller->presetVars as $field) {
 			if ($field['type'] == 'checkbox') {
-				if (is_array($data[$field['field']])) {
-					$values = join('|', $data[$field['field']]);
+				if (array_key_exists($field['field'], $data)) {
+					$values = join('|', (array)$data[$field['field']]);
 				} else {
 					$values = '';
 				}
@@ -124,7 +136,7 @@ class PrgComponent extends Component {
 			}
 
 			if ($this->encode == true || isset($field['encode']) && $field['encode'] == true) {
-				$data[$field['field']] = bin2hex($data[$field['field']]);
+				$data[$field['field']] = base64_encode(str_replace(array('+', '/'), array('-', '_'), $data[$field['field']]));
 			}
 		}
 		return $data;
@@ -157,7 +169,7 @@ class PrgComponent extends Component {
  * Exclude 
  * 
  * Removes key/values from $array based on $exclude 
-
+ *
  * @param array Array of data to be filtered
  * @param array Array of keys to exclude from other $array
  * @return array
@@ -182,19 +194,22 @@ class PrgComponent extends Component {
  * - Issuing redirect(), and connecting named parameters before redirect
  * - Setting named parameter form data to view
  *
- * @param string $modelName Name of the model class being used for the prg form
+ * @param string $modelName - Name of the model class being used for the prg form
  * @param array $options Optional parameters:
- *  - string form Name of the form involved in the prg
- *  - string action The action to redirect to. Defaults to the current action
- *  - mixed modelMethod If not false a string that is the model method that will be used to process the data 
+ *  - string formName - name of the form involved in the prg
+ *  - string action - The action to redirect to. Defaults to the current action
+ *  - mixed modelMethod - If not false a string that is the model method that will be used to process the data 
+ *  - array allowedParams - An array of additional top level route params that should be included in the params processed
  * @return void
  */
 	public function commonProcess($modelName = null, $options = array()) {
 		$defaults = array(
-			'form' => null,
+			'formName' => null,
 			'keepPassed' => true,
 			'action' => null,
-			'modelMethod' => 'validateSearch');
+			'modelMethod' => 'validateSearch',
+			'allowedParams' => array());
+		$defaults = Set::merge($defaults, $this->_defaults['commonProcess']);
 		extract(Set::merge($defaults, $options));
 
 		if (empty($modelName)) {
@@ -229,6 +244,13 @@ class PrgComponent extends Component {
 				$this->connectNamed($params, array());
 				$params['action'] = $action;
 				$params = array_merge($this->controller->request->params['named'], $params);
+
+				foreach ($allowedParams as $key) {
+					if (isset($this->controller->request->params[$key])) {
+						$params[$key] = $this->controller->request->params[$key];
+					}
+				}
+
 				$this->controller->redirect($params);
 			} else {
 				$this->controller->Session->setFlash(__d('search', 'Please correct the errors below.'));
