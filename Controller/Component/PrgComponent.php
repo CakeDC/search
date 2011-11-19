@@ -57,6 +57,33 @@ class PrgComponent extends Component {
 	public function __construct(ComponentCollection $collection, $settings) {
 		$this->controller = $collection->getController();
 		$this->_defaults = Set::merge($this->_defaults, $settings);
+		# fix for not throwing warning
+		if (!isset($this->controller->presetVars)) {
+			$this->controller->presetVars = array();
+		}
+		
+		$model = $this->controller->modelClass;
+		if (!empty($settings['model'])) {
+			$model = $settings['model'];
+		}
+		
+		if ($this->controller->presetVars === true) {
+			// auto-set the presetVars based on search defitions in model
+			$this->controller->presetVars = array();
+			$filterArgs = $this->controller->$model->filterArgs;
+			foreach ($filterArgs as $arg) {
+				$this->controller->presetVars[] = $this->_parseFromModel($arg);
+			}
+		}
+		foreach ($this->controller->presetVars as $key => $field) {
+			if ($field === true) {
+				$field = $this->_parseFromModel($this->controller->$model->filterArgs[$key]);
+			}
+			if (!isset($field['field'])) {
+				$field['field'] = $key;
+			}
+			$this->controller->presetVars[$key] = $field;
+		}
 	}
 
 /**
@@ -86,7 +113,8 @@ class PrgComponent extends Component {
 			if ($this->encode == true || isset($field['encode']) && $field['encode'] == true) {
 				// Its important to set it also back to the controllers passed args!
 				if (isset($args[$field['field']])) {
-					$this->controller->passedArgs[$field['field']] = $args[$field['field']] = base64_decode(str_replace(array('-', '_'), array('+', '/'), $args[$field['field']]));
+					$fieldContent = $args[$field['field']]; //str_replace(array('-', '_'), array('+', '/'), $args[$field['field']]);
+					$this->controller->passedArgs[$field['field']] = $args[$field['field']] = base64_decode($fieldContent);
 				}
 			}
 
@@ -136,7 +164,8 @@ class PrgComponent extends Component {
 			}
 
 			if ($this->encode == true || isset($field['encode']) && $field['encode'] == true) {
-				$data[$field['field']] = base64_encode(str_replace(array('+', '/'), array('-', '_'), $data[$field['field']]));
+				$fieldContent = $data[$field['field']]; //str_replace(array('+', '/'), array('-', '_'), $data[$field['field']]);
+				$data[$field['field']] = base64_encode($fieldContent);
 			}
 		}
 		return $data;
@@ -262,4 +291,12 @@ class PrgComponent extends Component {
 			$this->presetForm($formName);
 		}
 	}
+	
+	protected function _parseFromModel($arg) {
+		if (!isset($arg['type']) || $arg['type'] != 'value') {
+			$arg['type'] = 'value';
+		}
+		return array('field'=>$arg['name'], 'type'=>$arg['type']);
+	}
+	
 }

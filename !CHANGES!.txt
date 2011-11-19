@@ -1,0 +1,51 @@
+SearchableBehavior:
+	condLike() added
+
+	formatLike() added (now has like search functionality)
+
+	like before/after enhancement
+	
+	wildcard enhancement (one ~ and any *)
+
+	redundance reducable (using string keys for definitions and a simple "true")
+
+PRGComponent:
+	fix for not throwing warnings
+
+	encode/decode fix with / and - (removal of the str_replace)
+
+
+
+EXAMPLE WITH ENHANCEMENTS:
+
+//model
+	public $filterArgs = array(
+		'sent' => array('type' => 'value'),
+		'partner_id' => array('type' => 'value'),
+		'name'=> array('type' => 'query', 'method' => 'searchNameCondition')
+	);	
+	
+	public function searchNameCondition($data = array()) {
+		$filter = $data['name'];
+		
+		$cond = array(
+			'OR' => array(
+				$this->alias . '.name LIKE' => '' . $this->formatLike($filter) . '',
+				$this->alias . '.invoice_number LIKE' => '' . $this->formatLike($filter) . '',
+		));
+		return $cond;
+	}
+
+//controller
+	public $presetVars = array(
+		'name'=> array(
+			'type' => 'value',
+			'encode' => true
+		),		
+		'partner_id' => true,
+		'sent' => true,
+	);
+
+//search
+20~~BE*
+=> matches 2011BES and 2012BET etc

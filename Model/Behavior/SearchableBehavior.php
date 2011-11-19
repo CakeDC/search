@@ -26,10 +26,19 @@ class SearchableBehavior extends ModelBehavior {
 
 /**
  * Default settings
+ * - wildcards: set to false if you dont want to allow wildcards in like statements
+ * - wildcardAny: the character used instead of % (% is a normal character then)
+ * - wildcardOne: the character used instead of _ (_ is a normal character then)
+ * - like (can be used if wildcards is disabled - auto add % wildcard to beginning, end or both)
  *
  * @var string
  */
-	protected $_defaults = array();
+	protected $_defaults = array(
+		'wildcards' => true,
+		'wildcardAny' => '*',
+		'wildcardOne' => '~',
+		'like' => array('before'=>true, 'after'=>true)
+	);
 
 /**
  * Configuration of model
@@ -39,6 +48,11 @@ class SearchableBehavior extends ModelBehavior {
  */
 	public function setup(Model $model, $config = array()) {
 		$this->settings[$model->alias] = array_merge($this->_defaults, $config);
+		foreach ($model->filterArgs as $key => $val) {
+			if (!isset($val['name'])) {
+				$model->filterArgs[$key]['name'] = $key;
+			}
+		}
 	}
 
 /**
@@ -135,6 +149,63 @@ class SearchableBehavior extends ModelBehavior {
 		$model->unbindModel($unbind, $reset);
 	}
 
+	/**
+	 * for custom queries inside the model
+	 * example "makePhoneCondition": $cond = array('OR' => array_merge($this->condLike('cell_number', $filter), $this->condLike('landline_number', $filter, array('before'=>false))));
+	 * 2011-07-06 ms
+	 */
+	public function condLike(Model $model, $name, $data, $field = array()) {
+		$conditions = array();
+		$field['name'] = $name;
+		if (!is_array($data)) {
+			$data = array($name=>$data);
+		}
+		return $this->_addCondLike($model, $conditions, $data, $field);
+	}
+	
+	/**
+	 * replace substitions with original wildcards
+	 * but first, escape the original wildcards in the text to use them as normal search text
+	 * @param Model $model
+	 * @param string $queryLikeString
+	 * @return string $queryLikeString
+	 */
+	public function formatLike(Model $model, $data, $options = array()) {
+		$options = am($this->settings[$model->alias], $options);
+		if (!$options['wildcards']) {
+			return $data;
+		}
+		$from = $to = $substFrom = $substTo = array();
+		if ($options['wildcardAny'] != '%') {
+			$from[] = '%';
+			$to[] = '\%';
+			$substFrom[] = $options['wildcardAny'];
+			$substTo[] = '%';
+		}
+		if ($options['wildcardOne'] != '_') {
+			$from[] = '_';
+			$to[] = '\_';
+			$substFrom[] = $options['wildcardOne'];
+			$substTo[] = '_';
+		}
+		
+		/* escape first */
+		$data = str_replace($from, $to, $data);
+		/* replace wildcards */
+		$data = str_replace($substFrom, $substTo, $data);
+		return $data;
+	}
+	
+	/**
+	 * return the current chars for querying LIKE statements on this model
+	 * @param Model $model Reference to the model
+	 * @return array, [one=>..., any=>...]
+	 */
+	public function getLikeQueryChars(Model $model, $options) {
+		$options = am($this->settings[$model->alias], $options);
+		return array('one' => $options['wildcardOne'], 'any' => $options['wildcardAny']);
+	}
+
 /**
  * Add Conditions based on fuzzy comparison
  *
@@ -152,8 +223,15 @@ class SearchableBehavior extends ModelBehavior {
 		if (strpos($fieldName, '.') === false) {
 			$fieldName = $model->alias . '.' . $fieldName;
 		}
+		$field = array_merge($this->settings[$model->alias]['like'], $field);
+		if ($field['before'] === true) {
+			$field['before'] = '%';
+		}
+		if ($field['after'] === true) {
+			$field['after'] = '%';
+		}
 		if (!empty($data[$field['name']])) {
-			$conditions[$fieldName . " LIKE"] = "%" . $data[$field['name']] . "%";
+			$conditions[$fieldName . " LIKE"] = $field['before'] . $data[$field['name']] . $field['after'];
 		}
 		return $conditions;
 	}
