@@ -263,6 +263,49 @@ class SearchableTestCase extends CakeTestCase {
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('Article.title LIKE' => '%First%');
 		$this->assertEqual($result, $expected);
+		
+		# wildcards should be treated as normal text
+		$this->Article->filterArgs = array(
+			array('name' => 'faketitle', 'type' => 'like', 'field' => 'Article.title')
+		);
+		$data = array('faketitle' => '%First_');
+		$result = $this->Article->parseCriteria($data);
+		$expected = array('Article.title LIKE' => '%\%First\_%');
+		$this->assertEqual($result, $expected);
+		
+		# working with like settings
+		pr($this->Article->Behaviors->Searchable->settings);
+		
+		$this->Article->Behaviors->Searchable->settings['Article']['like']['before'] = false;
+		$result = $this->Article->parseCriteria($data);
+		$expected = array('Article.title LIKE' => '\%First\_%');
+		$this->assertEqual($result, $expected);
+		
+		$this->Article->Behaviors->Searchable->settings['Article']['like']['after'] = false;
+		$result = $this->Article->parseCriteria($data);
+		$expected = array('Article.title LIKE' => '\%First\_');
+		$this->assertEqual($result, $expected);
+		
+		# now custom like should be possible
+		$data = array('faketitle' => '*First~');
+		$this->Article->Behaviors->Searchable->settings['Article']['like']['after'] = false;
+		$result = $this->Article->parseCriteria($data);
+		$expected = array('Article.title LIKE' => '%First_');
+		$this->assertEqual($result, $expected);
+		
+		# now we try the default wildcards % and _
+		$data = array('faketitle' => '*First~');
+		$this->Article->Behaviors->Searchable->settings['Article']['like']['after'] = false;
+		$this->Article->Behaviors->Searchable->settings['Article']['wildcardAny'] = '%';
+		$this->Article->Behaviors->Searchable->settings['Article']['wildcardOne'] = '_';
+		$result = $this->Article->parseCriteria($data);
+		$expected = array('Article.title LIKE' => '*First~');
+		$this->assertEqual($result, $expected);
+		
+		$data = array('faketitle' => '%First_');
+		$result = $this->Article->parseCriteria($data);
+		$expected = array('Article.title LIKE' => '%First_');
+		$this->assertEqual($result, $expected);
 	}
 
 /**
