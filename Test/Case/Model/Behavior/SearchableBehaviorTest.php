@@ -274,8 +274,7 @@ class SearchableTestCase extends CakeTestCase {
 		$this->assertEqual($result, $expected);
 		
 		# working with like settings
-		pr($this->Article->Behaviors->Searchable->settings);
-		
+		//pr($this->Article->Behaviors->Searchable->settings);
 		$this->Article->Behaviors->Searchable->settings['Article']['like']['before'] = false;
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('Article.title LIKE' => '\%First\_%');
@@ -302,9 +301,10 @@ class SearchableTestCase extends CakeTestCase {
 		$expected = array('Article.title LIKE' => '*First?');
 		$this->assertEqual($result, $expected);
 		
-		$data = array('faketitle' => '%First_');
+		# now it is possible and makes sense to allow wildcards in between (custom wildcard use case)
+		$data = array('faketitle' => '%Fi_st_');
 		$result = $this->Article->parseCriteria($data);
-		$expected = array('Article.title LIKE' => '%First_');
+		$expected = array('Article.title LIKE' => '%Fi_st_');
 		$this->assertEqual($result, $expected);
 	}
 

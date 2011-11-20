@@ -71,13 +71,13 @@ class PrgComponent extends Component {
 			// auto-set the presetVars based on search defitions in model
 			$this->controller->presetVars = array();
 			$filterArgs = $this->controller->$model->filterArgs;
-			foreach ($filterArgs as $arg) {
-				$this->controller->presetVars[] = $this->_parseFromModel($arg);
+			foreach ($filterArgs as $key => $arg) {
+				$this->controller->presetVars[] = $this->_parseFromModel($arg, $key);
 			}
 		}
 		foreach ($this->controller->presetVars as $key => $field) {
 			if ($field === true) {
-				$field = $this->_parseFromModel($this->controller->$model->filterArgs[$key]);
+				$field = $this->_parseFromModel($this->controller->$model->filterArgs[$key], $key);
 			}
 			if (!isset($field['field'])) {
 				$field['field'] = $key;
@@ -296,11 +296,16 @@ class PrgComponent extends Component {
 		}
 	}
 	
-	protected function _parseFromModel($arg) {
+	protected function _parseFromModel($arg, $key = null) {
 		if (!isset($arg['type']) || $arg['type'] != 'value') {
 			$arg['type'] = 'value';
 		}
-		return array('field'=>$arg['name'], 'type'=>$arg['type']);
+		if (isset($arg['name']) || is_numeric($key)) {
+			$field = $arg['name'];
+		} else {
+			$field = $key; 
+		}
+		return array('field'=>$field, 'type'=>$arg['type']);
 	}
 	
 }

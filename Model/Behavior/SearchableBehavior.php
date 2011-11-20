@@ -26,15 +26,13 @@ class SearchableBehavior extends ModelBehavior {
 
 /**
  * Default settings
- * - wildcards: set to false if you dont want to allow wildcards in like statements
  * - wildcardAny: the character used instead of % (% is a normal character then)
  * - wildcardOne: the character used instead of _ (_ is a normal character then)
- * - like (can be used if wildcards is disabled - auto add % wildcard to beginning, end or both)
+ * - like: auto add % wildcard to beginning, end or both (both false => user can enter wildcards himself)
  *
  * @var string
  */
 	protected $_defaults = array(
-		'wildcards' => true,
 		'wildcardAny' => '*', //on windows/unix/mac thats the default one
 		'wildcardOne' => '?', //on windows/unix/mac thats the default one
 		'like' => array('before'=>true, 'after'=>true)
@@ -175,9 +173,6 @@ class SearchableBehavior extends ModelBehavior {
 	 */
 	public function formatLike(Model $Model, $data, $options = array()) {
 		$options = am($this->settings[$Model->alias], $options);
-		if (!$options['wildcards']) {
-			return $data;
-		}
 		$from = $to = $substFrom = $substTo = array();
 		if ($options['wildcardAny'] != '%') {
 			$from[] = '%';

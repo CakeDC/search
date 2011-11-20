@@ -372,6 +372,38 @@ class PrgComponentTest extends CakeTestCase {
 		$this->assertEqual($this->Controller->data, array('Post' => array('title' => 'test')));	
 	}
 
+	public function testCommonProcessGetWithStringKeys() {
+		$this->Controller->action = 'search';
+		$this->Controller->presetVars = array(
+			'title'=> array('type' => 'value'));
+		$this->Controller->Post->filterArgs = array(
+			'title' => array('type' => 'value'));
+			
+		$this->Controller->Prg->__construct($this->Controller->Components, array());
+		$this->Controller->data = array();
+		
+		$this->Controller->request->params['named'] = array('title' => 'test');
+		$this->Controller->passedArgs = array_merge($this->Controller->request->params['named'], $this->Controller->request->params['pass']);
+		$this->Controller->Prg->commonProcess('Post');
+		$this->assertEqual($this->Controller->data, array('Post' => array('title' => 'test')));	
+	}
+
+	public function testCommonProcessGetWithStringKeysShort() {
+		$this->Controller->action = 'search';
+		$this->Controller->presetVars = array(
+			'title'=> true);
+		$this->Controller->Post->filterArgs = array(
+			'title' => array('type' => 'value'));
+			
+		$this->Controller->Prg->__construct($this->Controller->Components, array());
+		$this->Controller->data = array();
+		
+		$this->Controller->request->params['named'] = array('title' => 'test');
+		$this->Controller->passedArgs = array_merge($this->Controller->request->params['named'], $this->Controller->request->params['pass']);
+		$this->Controller->Prg->commonProcess('Post');
+		$this->assertEqual($this->Controller->data, array('Post' => array('title' => 'test')));	
+	}
+
 /**
  * testSerializeParamsWithEncoding
  *
@@ -389,6 +421,10 @@ class PrgComponentTest extends CakeTestCase {
 		$test = array('title' => 'Something new');
 		$result = $this->Controller->Prg->serializeParams($test);
 		$this->assertEqual($result['title'], str_replace(array('/', '='), array('-', '_'), base64_encode('Something new')));
+		
+		$test = array('title' => 'ef?');
+		$result = $this->Controller->Prg->serializeParams($test);
+		$this->assertEqual($result['title'], str_replace(array('/', '='), array('-', '_'), base64_encode('ef?')));
 	}
 
 /**
