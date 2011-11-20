@@ -287,19 +287,19 @@ class SearchableTestCase extends CakeTestCase {
 		$this->assertEqual($result, $expected);
 		
 		# now custom like should be possible
-		$data = array('faketitle' => '*First~');
+		$data = array('faketitle' => '*First?');
 		$this->Article->Behaviors->Searchable->settings['Article']['like']['after'] = false;
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('Article.title LIKE' => '%First_');
 		$this->assertEqual($result, $expected);
 		
 		# now we try the default wildcards % and _
-		$data = array('faketitle' => '*First~');
+		$data = array('faketitle' => '*First?');
 		$this->Article->Behaviors->Searchable->settings['Article']['like']['after'] = false;
 		$this->Article->Behaviors->Searchable->settings['Article']['wildcardAny'] = '%';
 		$this->Article->Behaviors->Searchable->settings['Article']['wildcardOne'] = '_';
 		$result = $this->Article->parseCriteria($data);
-		$expected = array('Article.title LIKE' => '*First~');
+		$expected = array('Article.title LIKE' => '*First?');
 		$this->assertEqual($result, $expected);
 		
 		$data = array('faketitle' => '%First_');

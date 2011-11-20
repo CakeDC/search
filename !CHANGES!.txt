@@ -12,7 +12,7 @@ SearchableBehavior:
 PRGComponent:
 	fix for not throwing warnings
 
-	encode/decode fix with / and - (removal of the str_replace)
+	encode/decode fix with / and - str_replace was at the wrong side of the encoding process!)
 
 
 

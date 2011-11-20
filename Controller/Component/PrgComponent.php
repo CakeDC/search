@@ -113,7 +113,8 @@ class PrgComponent extends Component {
 			if ($this->encode == true || isset($field['encode']) && $field['encode'] == true) {
 				// Its important to set it also back to the controllers passed args!
 				if (isset($args[$field['field']])) {
-					$fieldContent = $args[$field['field']]; //str_replace(array('-', '_'), array('+', '/'), $args[$field['field']]);
+					$fieldContent = $args[$field['field']];
+					$fieldContent = str_replace(array('-', '_'), array('/', '='), $fieldContent);
 					$this->controller->passedArgs[$field['field']] = $args[$field['field']] = base64_decode($fieldContent);
 				}
 			}
@@ -164,8 +165,11 @@ class PrgComponent extends Component {
 			}
 
 			if ($this->encode == true || isset($field['encode']) && $field['encode'] == true) {
-				$fieldContent = $data[$field['field']]; //str_replace(array('+', '/'), array('-', '_'), $data[$field['field']]);
-				$data[$field['field']] = base64_encode($fieldContent);
+				$fieldContent = $data[$field['field']];
+				$tmp = base64_encode($fieldContent);
+				//replace chars base64 uses that would mess up the url
+				$tmp = str_replace(array('/', '='), array('-', '_'), $tmp);
+				$data[$field['field']] = $tmp;
 			}
 		}
 		return $data;
