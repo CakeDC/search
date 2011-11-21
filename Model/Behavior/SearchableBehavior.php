@@ -33,7 +33,7 @@ class SearchableBehavior extends ModelBehavior {
  * @var string
  */
 	protected $_defaults = array(
-		'wildcardAny' => '*', //on windows/unix/mac thats the default one
+		'wildcardAny' => '*', //on windows/unix/mac/google/... thats the default one
 		'wildcardOne' => '?', //on windows/unix/mac thats the default one
 		'like' => array('before'=>true, 'after'=>true)
 	);
@@ -200,9 +200,9 @@ class SearchableBehavior extends ModelBehavior {
 	 * @param Model $Model Reference to the model
 	 * @return array, [one=>..., any=>...]
 	 */
-	public function getLikeQueryChars(Model $Model, $options) {
+	public function getWildcards(Model $Model, $options = array()) {
 		$options = am($this->settings[$Model->alias], $options);
-		return array('one' => $options['wildcardOne'], 'any' => $options['wildcardAny']);
+		return array('any' => $options['wildcardAny'], 'one' => $options['wildcardOne']);
 	}
 
 /**
@@ -219,46 +219,64 @@ class SearchableBehavior extends ModelBehavior {
 		if (isset($field['field'])) {
 			$fieldName = $field['field'];
 		}
-		if (strpos($fieldName, '.') === false) {
-			$fieldName = $Model->alias . '.' . $fieldName;
+		$fieldNames = (array)$fieldName;
+		if (!is_array($this->settings[$Model->alias]['like'])) {
+			$this->settings[$Model->alias]['like'] = array('before'=>$this->settings[$Model->alias]['like'], 'after'=>$this->settings[$Model->alias]['like']);
 		}
 		$field = array_merge($this->settings[$Model->alias]['like'], $field);
 		if (empty($data[$field['name']])) {
 			return $conditions;
 		}
-		if ($field['before'] === true) {
-			$field['before'] = '%';
-		}
-		if ($field['after'] === true) {
-			$field['after'] = '%';
-		}
-		//if both before and after are false, LIKE allows custom placeholders, % and _ are always treated as normal chars
-		$options = $this->settings[$Model->alias];
-		$from = $to = $substFrom = $substTo = array();
-		if ($options['wildcardAny'] != '%' || ($field['before'] !== false || $field['after'] !== false)) {
-			$from[] = '%';
-			$to[] = '\%';
-		}
-		if ($options['wildcardOne'] != '_' || ($field['before'] !== false || $field['after'] !== false)) {
-			$from[] = '_';
-			$to[] = '\_';
-		}
-		if (!empty($from)) {	
-			$data[$field['name']] = str_replace($from, $to, $data[$field['name']]);
-		}
-		if ($field['before'] === false && $field['after'] === false) {
-			if ($options['wildcardAny'] != '%') {
-				$substFrom[] = $options['wildcardAny'];
-				$substTo[] = '%';
-			}
-			if ($options['wildcardOne'] != '_') {
-				$substFrom[] = $options['wildcardOne'];
-				$substTo[] = '_';
-			}				
-			$data[$field['name']] = str_replace($substFrom, $substTo, $data[$field['name']]);
-		}
 		
-		$conditions[$fieldName . " LIKE"] = $field['before'] . $data[$field['name']] . $field['after'];
+		$cond = array();
+		foreach ($fieldNames as $fieldName) {
+			if (strpos($fieldName, '.') === false) {
+				$fieldName = $Model->alias . '.' . $fieldName;
+			}
+			
+			if ($field['before'] === true) {
+				$field['before'] = '%';
+			}
+			if ($field['after'] === true) {
+				$field['after'] = '%';
+			}
+			//if both before and after are false, LIKE allows custom placeholders, % and _ are always treated as normal chars
+			$options = $this->settings[$Model->alias];
+			$from = $to = $substFrom = $substTo = array();
+			if ($options['wildcardAny'] != '%' || ($field['before'] !== false || $field['after'] !== false)) {
+				$from[] = '%';
+				$to[] = '\%';
+			}
+			if ($options['wildcardOne'] != '_' || ($field['before'] !== false || $field['after'] !== false)) {
+				$from[] = '_';
+				$to[] = '\_';
+			}
+			if (!empty($from)) {	
+				$data[$field['name']] = str_replace($from, $to, $data[$field['name']]);
+			}
+			if ($field['before'] === false && $field['after'] === false) {
+				if ($options['wildcardAny'] != '%') {
+					$substFrom[] = $options['wildcardAny'];
+					$substTo[] = '%';
+				}
+				if ($options['wildcardOne'] != '_') {
+					$substFrom[] = $options['wildcardOne'];
+					$substTo[] = '_';
+				}				
+				$data[$field['name']] = str_replace($substFrom, $substTo, $data[$field['name']]);
+			}
+		
+			$cond[$fieldName . " LIKE"] = $field['before'] . $data[$field['name']] . $field['after'];
+		}
+		if (count($cond) > 1) {
+			if (isset($conditions['OR'])) {
+				$conditions['AND']['OR'] = $cond;
+			} else {
+				$conditions['OR'] = $cond;
+			}
+		} else {
+			$conditions = am($conditions, $cond);
+		}
 		return $conditions;
 	}
 
