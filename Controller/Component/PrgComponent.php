@@ -86,7 +86,7 @@ class PrgComponent extends Component {
 			if ($this->encode == true || isset($field['encode']) && $field['encode'] == true) {
 				// Its important to set it also back to the controllers passed args!
 				if (isset($args[$field['field']])) {
-					$this->controller->passedArgs[$field['field']] = $args[$field['field']] = base64_decode(str_replace(array('-', '_'), array('+', '/'), $args[$field['field']]));
+					$this->controller->passedArgs[$field['field']] = $args[$field['field']] = str_replace(array('-', '_'), array('+', '/'), base64_decode($args[$field['field']]));
 				}
 			}
 
