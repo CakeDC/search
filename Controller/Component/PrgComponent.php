@@ -135,7 +135,7 @@ class PrgComponent extends Component {
 				$data[$field['field']] = $values;
 			}
 
-			if ($this->encode == true || isset($field['encode']) && $field['encode'] == true && isset($data[$field['field']])) {
+			if (($this->encode == true || isset($field['encode']) && $field['encode'] == true) && isset($data[$field['field']])) {
 				$data[$field['field']] = base64_encode(str_replace(array('+', '/'), array('-', '_'), $data[$field['field']]));
 			}
 		}
