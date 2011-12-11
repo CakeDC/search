@@ -15,7 +15,9 @@
  * @package		plugins.search
  * @subpackage	plugins.search.controllers.components
  */
-class PrgComponent extends Object {
+App::uses('Component', 'Controller');
+
+class PrgComponent extends Component {
 
 /**
  * Actions used to fetch the post data
@@ -48,13 +50,42 @@ class PrgComponent extends Object {
 	);
 
 /**
- * Intialize Callback
+ * Constructor
  *
  * @param object Controller object
  */
-	public function initialize(&$controller, $settings = array()) {
-		$this->controller = $controller;
+	public function __construct(ComponentCollection $collection, $settings) {
+		$this->controller = $collection->getController();
 		$this->_defaults = Set::merge($this->_defaults, $settings);
+		# fix for not throwing warning
+		if (!isset($this->controller->presetVars)) {
+			$this->controller->presetVars = array();
+		}
+		
+		$model = $this->controller->modelClass;
+		if (!empty($settings['model'])) {
+			$model = $settings['model'];
+		}
+		
+		if ($this->controller->presetVars === true) {
+			// auto-set the presetVars based on search defitions in model
+			$this->controller->presetVars = array();
+			$filterArgs = $this->controller->$model->filterArgs;
+			foreach ($filterArgs as $key => $arg) {
+				if ($var = $this->_parseFromModel($arg, $key)) { 
+					$this->controller->presetVars[] = $var;
+				}
+			}
+		}
+		foreach ($this->controller->presetVars as $key => $field) {
+			if ($field === true) {
+				$field = $this->_parseFromModel($this->controller->$model->filterArgs[$key], $key);
+			}
+			if (!isset($field['field'])) {
+				$field['field'] = $key;
+			}
+			$this->controller->presetVars[$key] = $field;
+		}
 	}
 
 /**
@@ -84,7 +115,9 @@ class PrgComponent extends Object {
 			if ($this->encode == true || isset($field['encode']) && $field['encode'] == true) {
 				// Its important to set it also back to the controllers passed args!
 				if (isset($args[$field['field']])) {
-					$this->controller->passedArgs[$field['field']] = $args[$field['field']] = base64_decode(str_replace(array('-', '_'), array('+', '/'), $args[$field['field']]));
+					$fieldContent = $args[$field['field']];
+					$fieldContent = str_replace(array('-', '_'), array('/', '='), $fieldContent);
+					$this->controller->passedArgs[$field['field']] = $args[$field['field']] = base64_decode($fieldContent);
 				}
 			}
 
@@ -134,7 +167,11 @@ class PrgComponent extends Object {
 			}
 
 			if ($this->encode == true || isset($field['encode']) && $field['encode'] == true) {
-				$data[$field['field']] = base64_encode(str_replace(array('+', '/'), array('-', '_'), $data[$field['field']]));
+				$fieldContent = $data[$field['field']];
+				$tmp = base64_encode($fieldContent);
+				//replace chars base64 uses that would mess up the url
+				$tmp = str_replace(array('/', '='), array('-', '_'), $tmp);
+				$data[$field['field']] = $tmp;
 			}
 		}
 		return $data;
@@ -206,6 +243,7 @@ class PrgComponent extends Object {
 			'keepPassed' => true,
 			'action' => null,
 			'modelMethod' => 'validateSearch',
+			'persistent' => false, //TODO
 			'allowedParams' => array());
 		$defaults = Set::merge($defaults, $this->_defaults['commonProcess']);
 		extract(Set::merge($defaults, $options));
@@ -221,7 +259,13 @@ class PrgComponent extends Object {
 		if (empty($action)) {
 			$action = $this->controller->action;
 		}
-
+		/*
+		if ($persistent && !$this->controller->request->is('post')) {
+			$params = (array)$this->controller->Session->read('Search.'.$modelName.'.'.$formName.'.'.$action);
+			$this->controller->request->data = $params;
+		}
+		*/
+		//$this->controller->request->is('post') && 
 		if (!empty($this->controller->data)) {
 			$this->controller->{$modelName}->data = $this->controller->data;
 			$valid = true;
@@ -230,7 +274,7 @@ class PrgComponent extends Object {
 			}
 
 			if ($valid) {
-				$passed = $this->controller->params['pass'];
+				$passed = $this->controller->request->params['pass'];
 				$params = $this->controller->data[$modelName];
 				$params = $this->exclude($params, array());
 
@@ -241,17 +285,24 @@ class PrgComponent extends Object {
 				$this->serializeParams($params);
 				$this->connectNamed($params, array());
 				$params['action'] = $action;
-				$params = array_merge($this->controller->params['named'], $params);
+				$params = array_merge($this->controller->request->params['named'], $params);
 
 				foreach ($allowedParams as $key) {
-					if (isset($this->controller->params[$key])) {
-						$params[$key] = $this->controller->params[$key];
+					if (isset($this->controller->request->params[$key])) {
+						$params[$key] = $this->controller->request->params[$key];
 					}
 				}
-
+				/*
+				if ($persistent && $this->controller->request->is('post')) {
+					$this->controller->Session->write('Search.'.$modelName.'.'.$formName.'.'.$action, $params);
+				}
+				if ($this->controller->request->is('post')) {
+					$this->controller->redirect($params);
+				}
+				*/
 				$this->controller->redirect($params);
 			} else {
-				$this->controller->Session->setFlash(__d('search', 'Please correct the errors below.', true));
+				$this->controller->Session->setFlash(__d('search', 'Please correct the errors below.'));
 			}
 		}
 
@@ -260,4 +311,24 @@ class PrgComponent extends Object {
 			$this->presetForm($formName);
 		}
 	}
+	
+	protected function _parseFromModel($arg, $key = null) {
+		if (isset($arg['preset']) && !$arg['preset']) {
+			return false;
+		}
+		if (!isset($arg['type']) || $arg['type'] != 'value') {
+			$arg['type'] = 'value';
+		}
+		if (isset($arg['name']) || is_numeric($key)) {
+			$field = $arg['name'];
+		} else {
+			$field = $key; 
+		}
+		$res = array('field'=>$field, 'type'=>$arg['type']);
+		if (!empty($arg['encode'])) {
+			$res['encode'] = $arg['encode'];
+		}
+		return $res;
+	}
+	
 }
