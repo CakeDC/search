@@ -72,7 +72,9 @@ class PrgComponent extends Component {
 			$this->controller->presetVars = array();
 			$filterArgs = $this->controller->$model->filterArgs;
 			foreach ($filterArgs as $key => $arg) {
-				$this->controller->presetVars[] = $this->_parseFromModel($arg, $key);
+				if ($var = $this->_parseFromModel($arg, $key)) { 
+					$this->controller->presetVars[] = $var;
+				}
 			}
 		}
 		foreach ($this->controller->presetVars as $key => $field) {
@@ -241,6 +243,7 @@ class PrgComponent extends Component {
 			'keepPassed' => true,
 			'action' => null,
 			'modelMethod' => 'validateSearch',
+			'persistent' => false, //TODO
 			'allowedParams' => array());
 		$defaults = Set::merge($defaults, $this->_defaults['commonProcess']);
 		extract(Set::merge($defaults, $options));
@@ -256,7 +259,13 @@ class PrgComponent extends Component {
 		if (empty($action)) {
 			$action = $this->controller->action;
 		}
-
+		/*
+		if ($persistent && !$this->controller->request->is('post')) {
+			$params = (array)$this->controller->Session->read('Search.'.$modelName.'.'.$formName.'.'.$action);
+			$this->controller->request->data = $params;
+		}
+		*/
+		//$this->controller->request->is('post') && 
 		if (!empty($this->controller->data)) {
 			$this->controller->{$modelName}->data = $this->controller->data;
 			$valid = true;
@@ -283,7 +292,14 @@ class PrgComponent extends Component {
 						$params[$key] = $this->controller->request->params[$key];
 					}
 				}
-
+				/*
+				if ($persistent && $this->controller->request->is('post')) {
+					$this->controller->Session->write('Search.'.$modelName.'.'.$formName.'.'.$action, $params);
+				}
+				if ($this->controller->request->is('post')) {
+					$this->controller->redirect($params);
+				}
+				*/
 				$this->controller->redirect($params);
 			} else {
 				$this->controller->Session->setFlash(__d('search', 'Please correct the errors below.'));
@@ -297,6 +313,9 @@ class PrgComponent extends Component {
 	}
 	
 	protected function _parseFromModel($arg, $key = null) {
+		if (isset($arg['preset']) && !$arg['preset']) {
+			return false;
+		}
 		if (!isset($arg['type']) || $arg['type'] != 'value') {
 			$arg['type'] = 'value';
 		}
@@ -305,7 +324,11 @@ class PrgComponent extends Component {
 		} else {
 			$field = $key; 
 		}
-		return array('field'=>$field, 'type'=>$arg['type']);
+		$res = array('field'=>$field, 'type'=>$arg['type']);
+		if (!empty($arg['encode'])) {
+			$res['encode'] = $arg['encode'];
+		}
+		return $res;
 	}
 	
 }

@@ -270,7 +270,7 @@ class SearchableBehavior extends ModelBehavior {
 		}
 		if (count($cond) > 1) {
 			if (isset($conditions['OR'])) {
-				$conditions['AND']['OR'] = $cond;
+				$conditions[]['OR'] = $cond;
 			} else {
 				$conditions['OR'] = $cond;
 			}

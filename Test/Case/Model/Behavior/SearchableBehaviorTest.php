@@ -173,7 +173,7 @@ class SearchableTestCase extends CakeTestCase {
  *
  * @var array
  */
-	var $fixtures = array('plugin.search.article', 'plugin.search.tag', 'plugin.search.tagged'); 
+	var $fixtures = array('plugin.search.article', 'plugin.search.tag', 'plugin.search.tagged', 'core.user'); 
 
 /**
  * startTest
@@ -361,6 +361,43 @@ class SearchableTestCase extends CakeTestCase {
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('OR'=>array('Article.title LIKE' => 'First%', 'Article.descr LIKE' => 'First%'));
 		$this->assertEqual($result, $expected);
+		
+		# manually define the before/after type
+		$this->Article->filterArgs = array(
+			array('name' => 'faketitle', 'type' => 'like', 'field' => array('title'), 'before'=>'_', 'after'=>'_')
+		);
+		$data = array('faketitle' => 'First');
+		$result = $this->Article->parseCriteria($data);
+		$expected = array('Article.title LIKE' => '_First_');
+		$this->assertEqual($result, $expected);
+		
+		# cross model searches + named keys (shorthand)
+		$this->Article->bindModel(array('belongsTo'=>array('User')));
+		$this->Article->filterArgs = array(
+			'faketitle' => array('type' => 'like', 'field' => array('title', 'User.name'), 'before'=>false, 'after'=>true)
+		);
+		$this->Article->Behaviors->detach('Searchable');
+		$this->Article->Behaviors->attach('Search.Searchable');
+		$data = array('faketitle' => 'First');
+		$result = $this->Article->parseCriteria($data);
+		$expected = array('OR'=>array('Article.title LIKE' => 'First%', 'User.name LIKE' => 'First%'));
+		$this->assertEqual($result, $expected);
+		
+		# with already existing or conditions + named keys (shorthand)
+		$this->Article->filterArgs = array(
+			'faketitle' => array('type' => 'like', 'field' => array('title', 'User.name'), 'before'=>false, 'after'=>true),
+			'otherfaketitle' => array('type' => 'like', 'field' => array('descr', 'comment'), 'before'=>false, 'after'=>true)
+		);
+		$this->Article->Behaviors->detach('Searchable');
+		$this->Article->Behaviors->attach('Search.Searchable');
+		
+		$data = array('faketitle' => 'First', 'otherfaketitle'=>'Second');
+		$result = $this->Article->parseCriteria($data);
+		$expected = array(
+			'OR'=>array('Article.title LIKE' => 'First%', 'User.name LIKE' => 'First%'),
+			array('OR'=>array('Article.descr LIKE' => 'Second%', 'Article.comment LIKE' => 'Second%'))			
+		);
+		$this->assertEqual($result, $expected);
 	}
 
 /**
@@ -512,12 +549,13 @@ class SearchableTestCase extends CakeTestCase {
 		$result = $this->Article->getQuery('all', array('conditions' => $conditions, 'order' => 'title', 'page' => 2, 'limit' => 2, 'fields' => array('id', 'title')));
 		$expected = 'SELECT `Article`.`id`, `Article`.`title` FROM `'.$this->Article->tablePrefix.'articles` AS `Article`   WHERE `Article`.`id` = 1   ORDER BY `title` ASC  LIMIT 2, 2';
 		$this->assertEqual($result, $expected);
-
 		$this->Article->Tagged->Behaviors->attach('Search.Searchable');
 		$conditions = array('Tagged.tag_id' => 1);
 		$result = $this->Article->Tagged->recursive = -1;
-		$result = $this->Article->Tagged->getQuery('first', compact('conditions'));
-		$expected = 'SELECT `Tagged`.`id`, `Tagged`.`foreign_key`, `Tagged`.`tag_id`, `Tagged`.`model`, `Tagged`.`language`, `Tagged`.`created`, `Tagged`.`modified` FROM `'.$this->Article->tablePrefix.'tagged` AS `Tagged`   WHERE `Tagged`.`tag_id` = \'1\'    LIMIT 1';
+		$order = array('Tagged.id'=>'ASC');
+		$result = $this->Article->Tagged->getQuery('first', compact('conditions', 'order'));
+		$expected = 'SELECT `Tagged`.`id`, `Tagged`.`foreign_key`, `Tagged`.`tag_id`, `Tagged`.`model`, `Tagged`.`language`, `Tagged`.`created`, `Tagged`.`modified` FROM `'.$this->Article->tablePrefix.'tagged` AS `Tagged`   WHERE `Tagged`.`tag_id` = \'1\'   ORDER BY `Tagged`.`id` ASC  LIMIT 1';
+
 		$this->assertEqual($result, $expected);
 	}
 }
