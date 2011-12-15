@@ -20,7 +20,7 @@ EXAMPLE WITH ENHANCEMENTS:
 
 //model
 	public $filterArgs = array(
-		'sent' => array('type' => 'value'),
+		'search'=> array('type' => 'like', 'encode'=>true, 'before'=>false, 'after'=>false, 'field'=>array('ThisModel.name','OtherModel.name')),
 		'partner_id' => array('type' => 'value'),
 		'name'=> array('type' => 'query', 'method' => 'searchNameCondition')
 	);	
@@ -47,5 +47,21 @@ EXAMPLE WITH ENHANCEMENTS:
 	);
 
 //search
-20~~BE*
+20??BE*
 => matches 2011BES and 2012BET etc
+
+
+
+NEW - MAXIMUM DRY:
+
+Only set the model $filterArgs in named array style:
+	public $filterArgs = array(
+		'search'=> array('type' => 'like', 'encode'=>true, 'before'=>false, 'after'=>false, 'field'=>array('ThisModel.name','OtherModel.name')),
+		'partner_id' => array('type' => 'value'),
+		'name'=> array('type' => 'query', 'method' => 'searchNameCondition')
+	);
+
+and set controller 
+	public $presetVars = true;
+
+no more redundant controller stuff needed anymore
