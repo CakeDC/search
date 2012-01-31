@@ -104,78 +104,20 @@ class SearchableBehavior extends ModelBehavior {
 	}
 
 /**
- * Method to generated DML SQL queries using find* style.
+ * Generates a query string using the same API Model::find() uses, calling the beforeFind process for the model
  *
- * Specifying 'fields' for new-notation 'list':
- *  - If no fields are specified, then 'id' is used for key and Model::$displayField is used for value.
- *  - If a single field is specified, 'id' is used for key and specified field is used for value.
- *  - If three fields are specified, they are used (in order) for key, value and group.
- *  - Otherwise, first and second fields are used for key and value.
- *
- * @param array $conditions SQL conditions array, or type of find operation (all / first / count / neighbors / list / threaded)
- * @param mixed $fields Either a single string of a field name, or an array of field names, or options for matching
- * @param string $order SQL ORDER BY conditions (e.g. "price DESC" or "name ASC")
- * @param integer $recursive The number of levels deep to fetch associated records
- * @return string SQL query string.
- * @link http://book.cakephp.org/view/449/find
+ * 
+ * @param string $type Type of find operation (all / first / count / neighbors / list / threaded)
+ * @param array $query Option fields (conditions / fields / joins / limit / offset / order / page / group / callbacks)
+ * @return array Array of records
+ * @link http://book.cakephp.org/view/1018/find
  */
-	public function getQuery(Model $model, $conditions = null, $fields = array(), $order = null, $recursive = null) {
-		if (!is_string($conditions) || (is_string($conditions) && !array_key_exists($conditions, $model->_findMethods))) {
-			$type = 'first';
-			$query = compact('conditions', 'fields', 'order', 'recursive');
-		} else {
-			list($type, $query) = array($conditions, $fields);
-		}
-
-		$db =& ConnectionManager::getDataSource($model->useDbConfig);
+	public function getQuery(Model $model, $type = 'first', $query = array()) {
 		$model->findQueryType = $type;
 		$model->id = $model->getID();
-
-		$query = array_merge(
-			array(
-				'conditions' => null, 'fields' => null, 'joins' => array(), 
-				'limit' => null, 'offset' => null, 'order' => null, 'page' => null, 
-				'group' => null, 'callbacks' => true
-			),
-			(array)$query
-		);
-
-		if ($type != 'all') {
-			if ($model->_findMethods[$type] === true) {
-				$query = $model->{'_find' . ucfirst($type)}('before', $query);
-			}
-		}
-
-		if (!is_numeric($query['page']) || intval($query['page']) < 1) {
-			$query['page'] = 1;
-		}
-		if ($query['page'] > 1 && !empty($query['limit'])) {
-			$query['offset'] = ($query['page'] - 1) * $query['limit'];
-		}
-		if ($query['order'] === null && $model->order !== null) {
-			$query['order'] = $model->order;
-		}
-		$query['order'] = array($query['order']);
-
-
-		if ($query['callbacks'] === true || $query['callbacks'] === 'before') {
-			$return = $model->Behaviors->trigger($model, 'beforeFind', array($query), array(
-				'break' => true, 'breakOn' => false, 'modParams' => true
-			));
-			$query = (is_array($return)) ? $return : $query;
-
-			if ($return === false) {
-				return null;
-			}
-
-			$return = $model->beforeFind($query);
-			$query = (is_array($return)) ? $return : $query;
-
-			if ($return === false) {
-				return null;
-			}
-		}
-		return $this->__queryGet($model, $query, $recursive);
+		$query = $model->buildQuery($type, $query);
+		$this->findQueryType = null;
+		return $this->__queryGet($model, $query);
 	}
 
 /**
@@ -290,7 +232,7 @@ class SearchableBehavior extends ModelBehavior {
 	protected function _addCondSubquery(Model $model, &$conditions, $data, $field) {
 		$fieldName = $field['field'];
 		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && (!empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0')))) {
-			$subquery = $model->{$field['method']}($data);
+			$subquery = $model->{$field['method']}($data, $field);
 			$conditions[] = array("$fieldName in ($subquery)");
 		}
 		return $conditions;
@@ -304,16 +246,17 @@ class SearchableBehavior extends ModelBehavior {
  * @param array $queryData
  * @param integer $recursive
  */
-	private function __queryGet(Model $model, $queryData = array(), $recursive = null) {
-		$db =& ConnectionManager::getDataSource($model->useDbConfig);
-		$db->__scrubQueryData($queryData);
+	private function __queryGet(Model $model, $queryData = array()) {
+		/** @var DboSource $db  */
+		$db = $model->getDataSource();
+		$queryData = $this->_scrubQueryData($queryData);
+		$recursive = null;
+		$byPass = false;
 		$null = null;
 		$array = array();
 		$linkedModels = array();
-		$db->__bypass = false;
-		$db->__booleans = array();
 
-		if ($recursive === null && isset($queryData['recursive'])) {
+		if (isset($queryData['recursive'])) {
 			$recursive = $queryData['recursive'];
 		}
 
@@ -323,33 +266,52 @@ class SearchableBehavior extends ModelBehavior {
 		}
 
 		if (!empty($queryData['fields'])) {
-			$db->__bypass = true;
+			$byPass = true;
 			$queryData['fields'] = $db->fields($model, null, $queryData['fields']);
 		} else {
 			$queryData['fields'] = $db->fields($model);
 		}
 
-		foreach ($model->__associations as $type) {
-			foreach ($model->{$type} as $assoc => $assocData) {
-				if ($model->recursive > -1) {
-					$linkModel =& $model->{$assoc};
+		$_associations = $model->associations();
 
-					$external = isset($assocData['external']);
-					if ($model->alias == $linkModel->alias && $type != 'hasAndBelongsToMany' && $type != 'hasMany') {
-						if (true === $db->generateSelfAssociationQuery($model, $linkModel, $type, $assoc, $assocData, $queryData, $external, $null)) {
-							$linkedModels[] = $type . '/' . $assoc;
-						}
-					} else {
-						if ($model->useDbConfig == $linkModel->useDbConfig) {
-							if (true === $db->generateAssociationQuery($model, $linkModel, $type, $assoc, $assocData, $queryData, $external, $null)) {
-								$linkedModels[] = $type . '/' . $assoc;
-							}
-						}
+		if ($model->recursive == -1) {
+			$_associations = array();
+		} elseif ($model->recursive == 0) {
+			unset($_associations[2], $_associations[3]);
+		}
+
+		foreach ($_associations as $type) {
+			foreach ($model->{$type} as $assoc => $assocData) {
+				$linkModel = $model->{$assoc};
+				$external = isset($assocData['external']);
+
+				$linkModel->getDataSource();
+				if ($model->useDbConfig === $linkModel->useDbConfig) {
+					if ($byPass) {
+						$assocData['fields'] = false;
+					}
+					if (true === $db->generateAssociationQuery($model, $linkModel, $type, $assoc, $assocData, $queryData, $external, $null)) {
+						$linkedModels[$type . '/' . $assoc] = true;
 					}
 				}
 			}
 		}
-		return $db->generateAssociationQuery($model, $null, null, null, null, $queryData, false, $null);
+
+		return trim($db->generateAssociationQuery($model, null, null, null, null, $queryData, false, $null));
+	}
+
+/**
+ * Private helper method to remove query metadata in given data array.
+ *
+ * @param array $data
+ * @return array
+ */
+	protected function _scrubQueryData($data) {
+		static $base = null;
+		if ($base === null) {
+			$base = array_fill_keys(array('conditions', 'fields', 'joins', 'order', 'limit', 'offset', 'group'), array());
+		}
+		return (array)$data + $base;
 	}
 
 /**

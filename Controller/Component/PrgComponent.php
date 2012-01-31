@@ -15,7 +15,9 @@
  * @package		plugins.search
  * @subpackage	plugins.search.controllers.components
  */
-class PrgComponent extends Object {
+App::uses('Component', 'Controller');
+
+class PrgComponent extends Component {
 
 /**
  * Actions used to fetch the post data
@@ -48,12 +50,12 @@ class PrgComponent extends Object {
 	);
 
 /**
- * Intialize Callback
+ * Constructor
  *
  * @param object Controller object
  */
-	public function initialize(&$controller, $settings = array()) {
-		$this->controller = $controller;
+	public function __construct(ComponentCollection $collection, $settings) {
+		$this->controller = $collection->getController();
 		$this->_defaults = Set::merge($this->_defaults, $settings);
 	}
 
@@ -84,7 +86,7 @@ class PrgComponent extends Object {
 			if ($this->encode == true || isset($field['encode']) && $field['encode'] == true) {
 				// Its important to set it also back to the controllers passed args!
 				if (isset($args[$field['field']])) {
-					$this->controller->passedArgs[$field['field']] = $args[$field['field']] = base64_decode(str_replace(array('-', '_'), array('+', '/'), $args[$field['field']]));
+					$this->controller->passedArgs[$field['field']] = $args[$field['field']] = str_replace(array('-', '_'), array('+', '/'), base64_decode($args[$field['field']]));
 				}
 			}
 
@@ -230,7 +232,7 @@ class PrgComponent extends Object {
 			}
 
 			if ($valid) {
-				$passed = $this->controller->params['pass'];
+				$passed = $this->controller->request->params['pass'];
 				$params = $this->controller->data[$modelName];
 				$params = $this->exclude($params, array());
 
@@ -241,17 +243,17 @@ class PrgComponent extends Object {
 				$this->serializeParams($params);
 				$this->connectNamed($params, array());
 				$params['action'] = $action;
-				$params = array_merge($this->controller->params['named'], $params);
+				$params = array_merge($this->controller->request->params['named'], $params);
 
 				foreach ($allowedParams as $key) {
-					if (isset($this->controller->params[$key])) {
-						$params[$key] = $this->controller->params[$key];
+					if (isset($this->controller->request->params[$key])) {
+						$params[$key] = $this->controller->request->params[$key];
 					}
 				}
 
 				$this->controller->redirect($params);
 			} else {
-				$this->controller->Session->setFlash(__d('search', 'Please correct the errors below.', true));
+				$this->controller->Session->setFlash(__d('search', 'Please correct the errors below.'));
 			}
 		}
 

@@ -10,6 +10,7 @@
  */
 
 App::import('Core', 'Model');
+App::import('Model', 'ModelBehavior');
 
 /**
  * Searchable behavior tests
@@ -277,13 +278,13 @@ class SearchableTestCase extends CakeTestCase {
 		$result = $this->Article->parseCriteria($data);
 		$this->assertEqual($result, array());
 
-		if ($this->skipIf($this->db->config['driver'] != 'mysql', 'Test require mysql db. %s')) { 
+		if ($this->skipIf($this->db->config['datasource'] != 'Database/Mysql', 'Test requires mysql db. %s')) {
 			return; 
 		}		
 		
 		$data = array('tags' => 'Cake');
 		$result = $this->Article->parseCriteria($data);
-		$expected = array(array("Article.id in (SELECT `Tagged`.`foreign_key` FROM `tagged` AS `Tagged` LEFT JOIN `tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = 'Cake'   )"));
+		$expected = array(array("Article.id in (SELECT `Tagged`.`foreign_key` FROM `tagged` AS `Tagged` LEFT JOIN `tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = 'Cake')"));
 		$this->assertEqual($result, $expected);
 	}
 
@@ -406,14 +407,10 @@ class SearchableTestCase extends CakeTestCase {
  * @return void
  */
 	public function testGetQuery() {
-		if ($this->skipIf($this->db->config['driver'] != 'mysql', 'Test require mysql db. %s')) { 
+		if ($this->skipIf($this->db->config['datasource'] != 'Database/Mysql', 'Test requires mysql db. %s')) {
 			return; 
 		}		
 		$conditions = array('Article.id' => 1);
-		$result = $this->Article->getQuery($conditions, array('id', 'title'));
-		$expected = 'SELECT `Article`.`id`, `Article`.`title` FROM `articles` AS `Article`   WHERE `Article`.`id` = 1    LIMIT 1';
-		$this->assertEqual($result, $expected);
-
 		$result = $this->Article->getQuery('all', array('conditions' => $conditions, 'order' => 'title', 'page' => 2, 'limit' => 2, 'fields' => array('id', 'title')));
 		$expected = 'SELECT `Article`.`id`, `Article`.`title` FROM `articles` AS `Article`   WHERE `Article`.`id` = 1   ORDER BY `title` ASC  LIMIT 2, 2';
 		$this->assertEqual($result, $expected);
@@ -421,7 +418,7 @@ class SearchableTestCase extends CakeTestCase {
 		$this->Article->Tagged->Behaviors->attach('Search.Searchable');
 		$conditions = array('Tagged.tag_id' => 1);
 		$result = $this->Article->Tagged->recursive = -1;
-		$result = $this->Article->Tagged->getQuery($conditions);
+		$result = $this->Article->Tagged->getQuery('first', compact('conditions'));
 		$expected = "SELECT `Tagged`.`id`, `Tagged`.`foreign_key`, `Tagged`.`tag_id`, `Tagged`.`model`, `Tagged`.`language`, `Tagged`.`created`, `Tagged`.`modified` FROM `tagged` AS `Tagged`   WHERE `Tagged`.`tag_id` = '1'    LIMIT 1";
 		$this->assertEqual($result, $expected);
 	}
