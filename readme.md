@@ -94,6 +94,7 @@ Each filter record should contain array with several keys:
 * type - one of supported search types described below.
 * field - Real field name used for search should be used.
 * method - model method name or behavior used to generate expression, subquery or query.
+* allowEmpty - optional parameter used for expression, subquery and query methods. It allow to generate condition even if filter field value is empty. It could used when condition generate based on several other fields. All fields data passed to method.
 
 ### Supported types of search ###
 
