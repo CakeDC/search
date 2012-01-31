@@ -81,12 +81,12 @@ class PrgComponent extends Component {
 	public function presetForm($model) {
 		$data = array($model => array());
 		$args = $this->controller->passedArgs;
-
 		foreach ($this->controller->presetVars as $field) {
 			if ($this->encode == true || isset($field['encode']) && $field['encode'] == true) {
 				// Its important to set it also back to the controllers passed args!
 				if (isset($args[$field['field']])) {
-					$this->controller->passedArgs[$field['field']] = $args[$field['field']] = str_replace(array('-', '_'), array('+', '/'), base64_decode($args[$field['field']]));
+					$val = $args[$field['field']];
+					$this->controller->passedArgs[$field['field']] = $args[$field['field']] = base64_decode(str_pad(strtr($val, '-_', '+/'), strlen($val) % 4, '=', STR_PAD_RIGHT));
 				}
 			}
 
@@ -136,7 +136,7 @@ class PrgComponent extends Component {
 			}
 
 			if (($this->encode == true || isset($field['encode']) && $field['encode'] == true) && isset($data[$field['field']])) {
-				$data[$field['field']] = base64_encode(str_replace(array('+', '/'), array('-', '_'), $data[$field['field']]));
+				$data[$field['field']] = rtrim(strtr(base64_encode($data[$field['field']]), '+/', '-_'), '=');
 			}
 		}
 		return $data;

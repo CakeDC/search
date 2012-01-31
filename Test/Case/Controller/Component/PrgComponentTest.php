@@ -388,8 +388,17 @@ class PrgComponentTest extends CakeTestCase {
 		$this->Controller->Prg->encode = true;
 		$test = array('title' => 'Something new');
 		$result = $this->Controller->Prg->serializeParams($test);
-		$this->assertEqual($result['title'], base64_encode('Something new'));
-	}
+		$this->assertEqual($result['title'], $this->_urlEncode('Something new'));
+
+		$test = array('title' => 'ef?');
+		$result = $this->Controller->Prg->serializeParams($test);
+		$this->assertEqual($result['title'] , $this->_urlEncode('ef?'));
+ 
+		}
+		
+		protected function _urlEncode($str) {
+			return rtrim(strtr(base64_encode($str), '+/', '-_'), '=');
+		}
 
 /**
  * testSerializeParamsWithEncoding
@@ -407,10 +416,9 @@ class PrgComponentTest extends CakeTestCase {
 		$this->Controller->Prg->encode = true;
 		$testData = $test = array('title' => 'Something new');
 		$result = $this->Controller->Prg->serializeParams($test);
-		$this->assertEqual($result['title'], base64_encode('Something new'));
-		
+		$this->assertEqual($result['title'], $this->_urlEncode('Something new'));
 		$this->Controller->passedArgs = $result;
-		$this->Controller->Prg->presetForm('Post');		
+		$this->Controller->Prg->presetForm('Post');
 		$this->assertEqual($this->Controller->data, array('Post' => $testData));
 	}
 
@@ -434,9 +442,9 @@ class PrgComponentTest extends CakeTestCase {
 				'modelField' => 'title',
 				'model' => 'Post'));
 		$this->Controller->passedArgs = array(
-			'title' => base64_encode('test'),
-			'checkbox' => base64_encode('test|test2|test3'),
-			'lookup' => base64_encode('1'));
+			'title' => $this->_urlEncode('test'),
+			'checkbox' => $this->_urlEncode('test|test2|test3'),
+			'lookup' => $this->_urlEncode('1'));
 
 		$this->Controller->beforeFilter();
 
