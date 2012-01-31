@@ -1,6 +1,6 @@
 # Search Plugin for CakePHP #
 
-Version 1.1
+Version 2.0
 
 The Search plugin allows you to make any kind of data searchable, enabling you to implement a robust searching rapidly.
 
@@ -149,7 +149,7 @@ Additional options parameters:
 ## Requirements ##
 
 * PHP version: PHP 5.2+
-* CakePHP version: Cakephp 1.3 Stable
+* CakePHP version: Cakephp 2.0 Stable
 
 ## Support ##
 
