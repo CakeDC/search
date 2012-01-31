@@ -249,7 +249,7 @@ class SearchableBehavior extends ModelBehavior {
  * @return array of conditions modified by this method.
  */
 	protected function _addCondQuery(Model $model, &$conditions, $data, $field) {
-		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && (!empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0')))) {
+		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0')))) {
 			$conditionsAdd = $model->{$field['method']}($data, $field);
 			$conditions = array_merge($conditions, (array)$conditionsAdd);
 		}
@@ -267,7 +267,7 @@ class SearchableBehavior extends ModelBehavior {
  */
 	protected function _addCondExpression(Model $model, &$conditions, $data, $field) {
 		$fieldName = $field['field'];
-		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && (!empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0')))) {
+		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0')))) {
 			$fieldValues = $model->{$field['method']}($data, $field);
 			if (!empty($conditions[$fieldName]) && is_array($conditions[$fieldName])) {
 				$conditions[$fieldName] = array_unique(array_merge(array($conditions[$fieldName]), array($fieldValues)));
@@ -289,7 +289,7 @@ class SearchableBehavior extends ModelBehavior {
  */
 	protected function _addCondSubquery(Model $model, &$conditions, $data, $field) {
 		$fieldName = $field['field'];
-		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && (!empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0')))) {
+		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0')))) {
 			$subquery = $model->{$field['method']}($data);
 			$conditions[] = array("$fieldName in ($subquery)");
 		}
