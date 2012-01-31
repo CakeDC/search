@@ -250,7 +250,7 @@ class SearchableBehavior extends ModelBehavior {
  */
 	protected function _addCondQuery(Model $model, &$conditions, $data, $field) {
 		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && (!empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0')))) {
-			$conditionsAdd = $model->{$field['method']}($data);
+			$conditionsAdd = $model->{$field['method']}($data, $field);
 			$conditions = array_merge($conditions, (array)$conditionsAdd);
 		}
 		return $conditions;
