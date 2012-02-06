@@ -291,7 +291,7 @@ class SearchableBehavior extends ModelBehavior {
 		$fieldName = $field['field'];
 		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0')))) {
 			$subquery = $model->{$field['method']}($data);
-			$conditions[] = array("$fieldName in ($subquery)");
+			$conditions[] = array("$fieldName in (SELECT * FROM($subquery) x");
 		}
 		return $conditions;
 	}
