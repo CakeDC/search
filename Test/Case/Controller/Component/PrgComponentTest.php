@@ -392,6 +392,25 @@ class PrgComponentTest extends CakeTestCase {
 	}
 
 /**
+ * testSerializeParamsWithEncodingWithSpecialChars
+ *
+ * @return void
+ */
+	public function testSerializeParamsWithEncodingWithNonSafeChars() {
+		$this->Controller->action = 'search';
+		$this->Controller->presetVars = array(
+			array('field' => 'title', 'type' => 'value', 'encode' => true));
+		$this->Controller->data = array();
+		$this->Controller->Post->filterArgs = array(
+			array('name' => 'title', 'type' => 'value'));
+
+		$this->Controller->Prg->encode = true;
+		$test = array('title' => 'João');
+		$result = $this->Controller->Prg->serializeParams($test);
+		$this->assertEqual($result['title'], str_replace(array('+', '/'), array('-', '_'), base64_encode('João')));
+	}
+
+/**
  * testSerializeParamsWithEncoding
  *
  * @return void
@@ -422,6 +441,9 @@ class PrgComponentTest extends CakeTestCase {
 	public function testPresetFormWithEncodedParams() {
 		$this->Controller->presetVars = array(
 			array(
+				'field' => 'name',
+				'type' => 'value'),
+			array(
 				'field' => 'title',
 				'type' => 'value'),
 			array(
@@ -434,6 +456,7 @@ class PrgComponentTest extends CakeTestCase {
 				'modelField' => 'title',
 				'model' => 'Post'));
 		$this->Controller->passedArgs = array(
+			'name' => str_replace(array('+', '/'), array('-', '_'), base64_encode('joão')),
 			'title' => base64_encode('test'),
 			'checkbox' => base64_encode('test|test2|test3'),
 			'lookup' => base64_encode('1'));
@@ -444,6 +467,7 @@ class PrgComponentTest extends CakeTestCase {
 		$this->Controller->Prg->presetForm('Post');
 		$expected = array(
 			'Post' => array(
+				'name' => 'joão',
 				'title' => 'test',
 				'checkbox' => array(
 					0 => 'test',
