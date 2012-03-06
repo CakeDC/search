@@ -251,7 +251,7 @@ class SearchableBehavior extends ModelBehavior {
 	protected function _addCondQuery(Model $model, &$conditions, $data, $field) {
 		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && array_key_exists($field['name'], $data)) {
 			$conditionsAdd = $model->{$field['method']}($data);
-			if ($conditionsAdd!==false) {
+			if ($conditionsAdd !== false) {
 				$conditions = array_merge($conditions, (array)$conditionsAdd);
 			}
 		}
@@ -293,7 +293,7 @@ class SearchableBehavior extends ModelBehavior {
 		$fieldName = $field['field'];
 		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && array_key_exists($field['name'], $data)) {
 			$subquery = $model->{$field['method']}($data);
-			if ($subquery!==false) {
+			if ($subquery !== false) {
 				$conditions[] = array("$fieldName in ($subquery)");
 			}
 		}
