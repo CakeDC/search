@@ -16,6 +16,7 @@
  * @subpackage	plugins.search.controllers.components
  */
 App::uses('Component', 'Controller');
+App::uses('Set', 'Utility');
 
 class PrgComponent extends Component {
 
@@ -52,7 +53,8 @@ class PrgComponent extends Component {
 			'action' => null,
 			'modelMethod' => 'validateSearch',
 			'allowedParams' => array(),
-			'paramType' => 'named'
+			'paramType' => 'named',
+			'filterEmpty' => false
 		),
 		'presetForm' => array(
 			'model' => null,
@@ -253,6 +255,9 @@ class PrgComponent extends Component {
 
 				$searchParams = $this->controller->data[$modelName];
 				$searchParams = $this->exclude($searchParams, array());
+				if ($filterEmpty) {
+					$searchParams = Set::filter($searchParams);
+				}
 
 				$this->serializeParams($searchParams);
 
