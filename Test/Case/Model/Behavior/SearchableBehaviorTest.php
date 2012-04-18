@@ -107,8 +107,12 @@ class Article extends CakeTestModel {
 	public function findByTags($data = array()) {
 		$this->Tagged->Behaviors->attach('Containable', array('autoFields' => false));
 		$this->Tagged->Behaviors->attach('Search.Searchable');
+		$conditions = array();
+		if (!empty($data['tags'])) {
+			$conditions = array('Tag.name'  => $data['tags']);
+		}
 		$query = $this->Tagged->getQuery('all', array(
-			'conditions' => array('Tag.name'  => $data['tags']),
+			'conditions' => $conditions,
 			'fields' => array('foreign_key'),
 			'contain' => array('Tag')
 		));
@@ -271,6 +275,10 @@ class SearchableTestCase extends CakeTestCase {
  * @return void
  */
 	public function testSubQueryCondition() {
+		if ($this->skipIf($this->db->config['datasource'] != 'Database/Mysql', 'Test requires mysql db. %s')) {
+			return; 
+		}		
+
 		$this->Article->filterArgs = array(
 			array('name' => 'tags', 'type' => 'subquery', 'method' => 'findByTags', 'field' => 'Article.id'));
 			
@@ -278,13 +286,28 @@ class SearchableTestCase extends CakeTestCase {
 		$result = $this->Article->parseCriteria($data);
 		$this->assertEqual($result, array());
 
-		if ($this->skipIf($this->db->config['datasource'] != 'Database/Mysql', 'Test requires mysql db. %s')) {
-			return; 
-		}		
-		
 		$data = array('tags' => 'Cake');
 		$result = $this->Article->parseCriteria($data);
 		$expected = array(array("Article.id in (SELECT `Tagged`.`foreign_key` FROM `tagged` AS `Tagged` LEFT JOIN `tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = 'Cake')"));
+		$this->assertEqual($result, $expected);
+	}
+
+/**
+ * testSubQueryEmptyCondition
+ *
+ * @return void
+ */
+	public function testSubQueryEmptyCondition() {
+		if ($this->skipIf($this->db->config['datasource'] != 'Database/Mysql', 'Test requires mysql db. %s')) {
+			return; 
+		}		
+
+		$this->Article->filterArgs = array(
+			array('name' => 'tags', 'type' => 'subquery', 'method' => 'findByTags', 'field' => 'Article.id', 'allowEmpty' => true));
+
+		$data = array();
+		$result = $this->Article->parseCriteria($data);
+		$expected = array(array("Article.id in (SELECT `Tagged`.`foreign_key` FROM `tagged` AS `Tagged` LEFT JOIN `tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE 1 = 1)"));
 		$this->assertEqual($result, $expected);
 	}
 
@@ -419,7 +442,7 @@ class SearchableTestCase extends CakeTestCase {
 		$conditions = array('Tagged.tag_id' => 1);
 		$result = $this->Article->Tagged->recursive = -1;
 		$result = $this->Article->Tagged->getQuery('first', compact('conditions'));
-		$expected = "SELECT `Tagged`.`id`, `Tagged`.`foreign_key`, `Tagged`.`tag_id`, `Tagged`.`model`, `Tagged`.`language`, `Tagged`.`created`, `Tagged`.`modified` FROM `tagged` AS `Tagged`   WHERE `Tagged`.`tag_id` = '1'    LIMIT 1";
+		$expected = "SELECT `Tagged`.`id`, `Tagged`.`foreign_key`, `Tagged`.`tag_id`, `Tagged`.`model`, `Tagged`.`language`, `Tagged`.`created`, `Tagged`.`modified` FROM `tagged` AS `Tagged`   WHERE `Tagged`.`tag_id` = '1'   ORDER BY `Tagged`.`id` ASC  LIMIT 1";
 		$this->assertEqual($result, $expected);
 	}
 }

@@ -81,9 +81,9 @@ class PostsTestController extends Controller {
 /**
  * Overwrite redirect
  *
- * @param string $url 
- * @param string $status 
- * @param string $exit 
+ * @param string $url
+ * @param string $status
+ * @param string $exit
  * @return void
  */
 	public function redirect($url, $status = NULL, $exit = true) {
@@ -134,13 +134,14 @@ class PrgComponentTest extends CakeTestCase {
  *
  * @return void
  */
-	function startTest() {
+	public function startTest() {
 		$this->Controller = new PostsTestController();
 		$this->Controller->constructClasses();
 		$this->Controller->request->params = array(
 			'named' => array(),
 			'pass' => array(),
-			'url' => array()); 
+			'url' => array());
+		$this->Controller->request->query = array();
 	}
 
 /**
@@ -148,7 +149,7 @@ class PrgComponentTest extends CakeTestCase {
  *
  * @return void
  */
-	function endTest() {
+	public function endTest() {
 		unset($this->Controller);
 		ClassRegistry::flush();
 	}
@@ -178,6 +179,12 @@ class PrgComponentTest extends CakeTestCase {
 			'title' => 'test',
 			'action' => 'search',
 			'lang' => 'en'));
+
+		$this->Controller->presetVars = array(
+			array('field' => 'title', 'type' => 'value'));
+		$this->Controller->Prg->commonProcess('Post', array('paramType' => 'querystring'));
+		$expected = array('action' => 'search', '?' => array('title' => 'test'));
+		$this->assertEqual($expected, $this->Controller->redirectUrl);
 	}
 
 /**
@@ -216,6 +223,17 @@ class PrgComponentTest extends CakeTestCase {
 				'lookup' => 1,
 				'lookup_input' => 'First Post'));
 		$this->assertEqual($this->Controller->data, $expected);
+
+		$this->Controller->data = array();
+		$this->Controller->passedArgs = array();
+		$this->Controller->request->query = array(
+			'title' => 'test',
+			'checkbox' => 'test|test2|test3',
+			'lookup' => '1');
+		$this->Controller->beforeFilter();
+
+		$this->Controller->Prg->presetForm(array('model' => 'Post', 'paramType' => 'querystring'));
+		$this->assertEquals($expected, $this->Controller->data);
 	}
 
 /**
@@ -312,7 +330,7 @@ class PrgComponentTest extends CakeTestCase {
 		$this->assertEqual($this->Controller->redirectUrl, array(
 			'title' => 'test',
 			'action' => 'search'));
-			
+
 		$this->Controller->Prg->commonProcess(null, array(
 			'modelMethod' => false));
 		$this->assertEqual($this->Controller->redirectUrl, array(
@@ -369,7 +387,7 @@ class PrgComponentTest extends CakeTestCase {
 		$this->Controller->request->params['named'] = array('title' => 'test');
 		$this->Controller->passedArgs = array_merge($this->Controller->request->params['named'], $this->Controller->request->params['pass']);
 		$this->Controller->Prg->commonProcess('Post');
-		$this->assertEqual($this->Controller->data, array('Post' => array('title' => 'test')));	
+		$this->assertEqual($this->Controller->data, array('Post' => array('title' => 'test')));
 	}
 
 /**
@@ -388,8 +406,17 @@ class PrgComponentTest extends CakeTestCase {
 		$this->Controller->Prg->encode = true;
 		$test = array('title' => 'Something new');
 		$result = $this->Controller->Prg->serializeParams($test);
-		$this->assertEqual($result['title'], base64_encode('Something new'));
-	}
+		$this->assertEqual($result['title'], $this->_urlEncode('Something new'));
+
+		$test = array('title' => 'ef?');
+		$result = $this->Controller->Prg->serializeParams($test);
+		$this->assertEqual($result['title'] , $this->_urlEncode('ef?'));
+
+		}
+
+		protected function _urlEncode($str) {
+			return rtrim(strtr(base64_encode($str), '+/', '-_'), '=');
+		}
 
 /**
  * testSerializeParamsWithEncoding
@@ -407,10 +434,9 @@ class PrgComponentTest extends CakeTestCase {
 		$this->Controller->Prg->encode = true;
 		$testData = $test = array('title' => 'Something new');
 		$result = $this->Controller->Prg->serializeParams($test);
-		$this->assertEqual($result['title'], base64_encode('Something new'));
-		
+		$this->assertEqual($result['title'], $this->_urlEncode('Something new'));
 		$this->Controller->passedArgs = $result;
-		$this->Controller->Prg->presetForm('Post');		
+		$this->Controller->Prg->presetForm('Post');
 		$this->assertEqual($this->Controller->data, array('Post' => $testData));
 	}
 
@@ -434,9 +460,9 @@ class PrgComponentTest extends CakeTestCase {
 				'modelField' => 'title',
 				'model' => 'Post'));
 		$this->Controller->passedArgs = array(
-			'title' => base64_encode('test'),
-			'checkbox' => base64_encode('test|test2|test3'),
-			'lookup' => base64_encode('1'));
+			'title' => $this->_urlEncode('test'),
+			'checkbox' => $this->_urlEncode('test|test2|test3'),
+			'lookup' => $this->_urlEncode('1'));
 
 		$this->Controller->beforeFilter();
 
