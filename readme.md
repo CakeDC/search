@@ -1,5 +1,7 @@
 # Search Plugin for CakePHP #
 
+Version 2.1
+
 The Search plugin allows you to make any kind of data searchable, enabling you to implement a robust searching rapidly.
 
 The Search plugin is an easy way to include search into your application, and provides you with a paginate-able search in any controller.
@@ -92,6 +94,7 @@ Each filter record should contain array with several keys:
 * type - one of supported search types described below.
 * field - Real field name used for search should be used.
 * method - model method name or behavior used to generate expression, subquery or query.
+* allowEmpty - optional parameter used for expression, subquery and query methods. It allow to generate condition even if filter field value is empty. It could used when condition generate based on several other fields. All fields data passed to method.
 
 ### Supported types of search ###
 
@@ -111,9 +114,30 @@ When a web form is submitted to a server through an HTTP POST request, a web use
 
 The Prg component implements the PRG pattern so you can use it separately from search tasks when you need it.
 
-The component maintains passed and named parameters that come as POST parameters and transform it to the named during redirect, and sets Controller::data back if the GET method was used during component call.
+The component maintains passed and named parameters or query string variables that come as POST parameters and transform it to the named during redirect, and sets Controller::data back if the GET method was used during component call.
 
 Most importantly the component acts as the glue between your app and the searchable behavior.
+
+You can attach the component to your controller, here is an example
+using defaults alreay set in the component itself:
+
+	public $components = array('Search.Prg' => array(
+		//Options for preset form method
+		'presetForm' => array(
+			'paramType' => 'named' // or 'querystring'
+			'model' => null // or a default model name
+		),
+		//Options for commonProcess method
+		'commonProcess' => array(
+			'formName' => null,
+			'keepPassed' => true,
+			'action' => null,
+			'modelMethod' => 'validateSearch',
+			'allowlowedParams' => array(),
+			'paramType' => 'named', // or 'querystring'
+			'filterEmpty' => false
+		)
+	));
 
 ### Controller configuration ###
 
@@ -147,24 +171,22 @@ Additional options parameters:
 ## Requirements ##
 
 * PHP version: PHP 5.2+
-* CakePHP version: Cakephp 1.3 Stable
+* CakePHP version: Cakephp 2.1 Stable
 
 ## Support ##
-
-For support and feature request, please visit the [Search Plugin Support Site](http://cakedc.lighthouseapp.com/projects/59618-search-plugin/).
 
 For more information about our Professional CakePHP Services please visit the [Cake Development Corporation website](http://cakedc.com).
 
 ## License ##
 
-Copyright 2009-2010, [Cake Development Corporation](http://cakedc.com)
+Copyright 2009-2012, [Cake Development Corporation](http://cakedc.com)
 
 Licensed under [The MIT License](http://www.opensource.org/licenses/mit-license.php)<br/>
 Redistributions of files must retain the above copyright notice.
 
 ## Copyright ###
 
-Copyright 2009-2010<br/>
+Copyright 2009-2012<br/>
 [Cake Development Corporation](http://cakedc.com)<br/>
 1785 E. Sahara Avenue, Suite 490-423<br/>
 Las Vegas, Nevada 89104<br/>

@@ -8,9 +8,7 @@
 # @copyright Copyright 2010, Cake Development Corporation (http://cakedc.com)
 # @license MIT License (http://www.opensource.org/licenses/mit-license.php)
 #
-#, fuzzy
-msgid ""
-msgstr ""
+#
 "Project-Id-Version: PROJECT VERSION\n"
 "POT-Creation-Date: 2010-09-15 15:33+0200\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
