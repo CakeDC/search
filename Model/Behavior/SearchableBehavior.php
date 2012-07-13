@@ -106,7 +106,7 @@ class SearchableBehavior extends ModelBehavior {
 /**
  * Generates a query string using the same API Model::find() uses, calling the beforeFind process for the model
  *
- * 
+ *
  * @param string $type Type of find operation (all / first / count / neighbors / list / threaded)
  * @param array $query Option fields (conditions / fields / joins / limit / offset / order / page / group / callbacks)
  * @return array Array of records
@@ -193,7 +193,10 @@ class SearchableBehavior extends ModelBehavior {
 	protected function _addCondQuery(Model $model, &$conditions, $data, $field) {
 		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0')))) {
 			$conditionsAdd = $model->{$field['method']}($data, $field);
-			$conditions = array_merge($conditions, (array)$conditionsAdd);
+			// if our conditions function returns something empty, nothing to merge in
+			if (!empty($conditionsAdd)) {
+				$conditions = array_merge($conditions, (array)$conditionsAdd);
+			}
 		}
 		return $conditions;
 	}
@@ -231,10 +234,12 @@ class SearchableBehavior extends ModelBehavior {
  */
 	protected function _addCondSubquery(Model $model, &$conditions, $data, $field) {
 		$fieldName = $field['field'];
-
 		if ((method_exists($model, $field['method']) || $this->__checkBehaviorMethods($model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0')))) {
 			$subquery = $model->{$field['method']}($data, $field);
-			$conditions[] = array("$fieldName in ($subquery)");
+			// if our subquery function returns something empty, nothing to merge in
+			if (!empty($subquery)) {
+				$conditions[] = array("$fieldName in ($subquery)");
+			}
 		}
 		return $conditions;
 	}
