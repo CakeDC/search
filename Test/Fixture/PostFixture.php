@@ -17,12 +17,6 @@
  */
 class PostFixture extends CakeTestFixture {
 
-/**
- * Name property
- *
- * @var string 'AnotherPost'
- */
-	public $name = 'Post';
 
 /**
  * fields property

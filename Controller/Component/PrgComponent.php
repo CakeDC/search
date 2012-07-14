@@ -70,13 +70,46 @@ class PrgComponent extends Component {
 	public function __construct(ComponentCollection $collection, $settings) {
 		$this->controller = $collection->getController();
 		$this->_defaults = Set::merge($this->_defaults, $settings);
+		# fix for not throwing warning
+		if (!isset($this->controller->presetVars)) {
+			$this->controller->presetVars = array();
+		}
+		
+		$model = $this->controller->modelClass;
+		if (!empty($settings['model'])) {
+			$model = $settings['model'];
+		}
+		
+		if ($this->controller->presetVars === true) {
+			// auto-set the presetVars based on search defitions in model
+			$this->controller->presetVars = array();
+			$filterArgs = $this->controller->$model->filterArgs;
+			foreach ($filterArgs as $key => $arg) {
+				if ($var = $this->_parseFromModel($arg, $key)) { 
+					$this->controller->presetVars[] = $var;
+				}
+			}
+		}
+		foreach ($this->controller->presetVars as $key => $field) {
+			if ($field === true) {
+				if (isset($this->controller->$model->filterArgs[$key])) {
+					$field = $this->_parseFromModel($this->controller->$model->filterArgs[$key], $key);
+				} else {
+					$field = array('type' => 'value');
+				}
+			}
+			if (!isset($field['field'])) {
+				$field['field'] = $key;
+			}
+			$this->controller->presetVars[$key] = $field;
+		}
 	}
 
 /**
  * Poplulates controller->data with allowed values from the named/passed get params
  *
  * Fields in $controller::$presetVars that have a type of 'lookup' the foreignKey value will be inserted
- *
+ * 
  * 1) 'lookup'
  *    Is used for autocomplete selectors
  *    For autocomplete we have hidden field with value and autocomplete text box
@@ -104,11 +137,12 @@ class PrgComponent extends Component {
 			$args = $this->controller->request->query;
 		}
 		foreach ($this->controller->presetVars as $field) {
-			if ($this->encode == true || isset($field['encode']) && $field['encode'] == true) {
+			if ($this->encode || !empty($field['encode'])) {
 				// Its important to set it also back to the controllers passed args!
 				if (isset($args[$field['field']])) {
-					$val = $args[$field['field']];
-					$this->controller->passedArgs[$field['field']] = $args[$field['field']] = base64_decode(str_pad(strtr($val, '-_', '+/'), strlen($val) % 4, '=', STR_PAD_RIGHT));
+					$fieldContent = $args[$field['field']];
+					$fieldContent = str_replace(array('-', '_'), array('/', '='), $fieldContent);
+					$this->controller->passedArgs[$field['field']] = $args[$field['field']] = base64_decode($fieldContent);
 				}
 			}
 
@@ -122,7 +156,7 @@ class PrgComponent extends Component {
 					$data[$model][$field['formField']] = $result[$searchModel][$field['modelField']];
 				}
 			}
-
+	
 			if ($field['type'] == 'checkbox') {
 				if (isset($args[$field['field']])) {
 					$values = split('\|', $args[$field['field']]);
@@ -130,7 +164,7 @@ class PrgComponent extends Component {
 				}
 			}
 
-			if ($field['type'] == 'value') {
+			if (in_array($field['type'], array('value', 'like'))) {
 				if (isset($args[$field['field']])) {
 					$data[$model][$field['field']] = $args[$field['field']];
 				}
@@ -157,8 +191,15 @@ class PrgComponent extends Component {
 				$data[$field['field']] = $values;
 			}
 
-			if (($this->encode == true || isset($field['encode']) && $field['encode'] == true) && isset($data[$field['field']])) {
-				$data[$field['field']] = rtrim(strtr(base64_encode($data[$field['field']]), '+/', '-_'), '=');
+			if ($this->encode || !empty($field['encode'])) {
+				$fieldContent = $data[$field['field']];
+				$tmp = base64_encode($fieldContent);
+				//replace chars base64 uses that would mess up the url
+				$tmp = str_replace(array('/', '='), array('-', '_'), $tmp);
+				$data[$field['field']] = $tmp;
+			}
+			if (!empty($field['empty']) && isset($data[$field['field']]) && $data[$field['field']] == '') {
+				unset($data[$field['field']]);
 			}
 		}
 		return $data;
@@ -226,7 +267,14 @@ class PrgComponent extends Component {
  * @return void
  */
 	public function commonProcess($modelName = null, $options = array()) {
-		extract(Set::merge($this->_defaults['commonProcess'], $options));
+		$defaults = array(
+			'formName' => null,
+			'keepPassed' => true,
+			'action' => null,
+			'modelMethod' => 'validateSearch',
+			'allowedParams' => array());
+		$defaults = Set::merge($defaults, $this->_defaults['commonProcess']);
+		extract(Set::merge($defaults, $options));
 
 		if (empty($modelName)) {
 			$modelName = $this->controller->modelClass;
@@ -239,7 +287,7 @@ class PrgComponent extends Component {
 		if (empty($action)) {
 			$action = $this->controller->action;
 		}
-
+		
 		if (!empty($this->controller->data)) {
 			$this->controller->{$modelName}->data = $this->controller->data;
 			$valid = true;
@@ -288,4 +336,28 @@ class PrgComponent extends Component {
 			$this->presetForm(array('model' => $formName, 'paramType' => $paramType));
 		}
 	}
+	
+	/**
+	 * @return array 
+	 */
+	protected function _parseFromModel($arg, $key = null) {
+		if (isset($arg['preset']) && !$arg['preset']) {
+			return false;
+		}
+		if (!isset($arg['type'])) {
+			$arg['type'] = 'value';
+		}
+		if (isset($arg['name']) || is_numeric($key)) {
+			$field = $arg['name'];
+		} else {
+			$field = $key; 
+		}
+		$res = array('field' => $field, 'type' => $arg['type']);
+		if (!empty($arg['encode'])) {
+			$res['encode'] = $arg['encode'];
+		}
+		$res = array_merge($arg, $res);
+		return $res;
+	}
+	
 }

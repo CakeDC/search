@@ -21,14 +21,15 @@ Model code:
 		public $hasAndBelongsToMany = array('Tag' => array('with' => 'Tagged'));
 
 		public $filterArgs = array(
-			array('name' => 'title', 'type' => 'like'),
-			array('name' => 'status', 'type' => 'value'),
-			array('name' => 'blog_id', 'type' => 'value'),
-			array('name' => 'search', 'type' => 'like', 'field' => 'Article.description'),
-			array('name' => 'range', 'type' => 'expression', 'method' => 'makeRangeCondition', 'field' => 'Article.views BETWEEN ? AND ?'),
-			array('name' => 'username', 'type' => 'like', 'field' => 'User.username'),
-			array('name' => 'tags', 'type' => 'subquery', 'method' => 'findByTags', 'field' => 'Article.id'),
-			array('name' => 'filter', 'type' => 'query', 'method' => 'orConditions'),
+			'title' => array('type' => 'like'),
+			'status' => array('type' => 'value'),
+			'blog_id' => array('type' => 'value'),
+			'search' => array('type' => 'like', 'field' => 'Article.description'),
+			'range' => array('type' => 'expression', 'method' => 'makeRangeCondition', 'field' => 'Article.views BETWEEN ? AND ?'),
+			'username' => array('type' => 'like', 'field' => array('User.username', 'UserInfo.first_name')),
+			'tags' => array('type' => 'subquery', 'method' => 'findByTags', 'field' => 'Article.id'),
+			'filter' => array('type' => 'query', 'method' => 'orConditions'),
+			'enhanced_search' => array('type' => 'like', 'encode' => true, 'before' => false, 'after' => false, 'field' => array('ThisModel.name','OtherModel.name')),
 		);
 
 		public function findByTags($data = array()) {
@@ -58,10 +59,25 @@ Associated snippet for the controller class:
 	class ArticlesController extends AppController {
 		public $components = array('Search.Prg');
 
+		public $presetVars = true; // using the model configuration
+		
+		public function find() {
+			$this->Prg->commonProcess();
+			$this->paginate['conditions'] = $this->Article->parseCriteria($this->passedArgs);
+			$this->set('articles', $this->paginate());
+		}
+	}
+
+or verbose (and overriding the model configuration):
+
+	class ArticlesController extends AppController {
+		public $components = array('Search.Prg');
+
 		public $presetVars = array(
-			array('field' => 'title', 'type' => 'value'),
-			array('field' => 'status', 'type' => 'checkbox'),
-			array('field' => 'blog_id', 'type' => 'lookup', 'formField' => 'blog_input', 'modelField' => 'title', 'model' => 'Blog'));
+			'title' => array('type' => 'value'),
+			'status' => array('type' => 'checkbox'),
+			'blog_id' => array('type' => 'lookup', 'formField' => 'blog_input', 'modelField' => 'title', 'model' => 'Blog')
+		);
 
 		public function find() {
 			$this->Prg->commonProcess();
@@ -79,10 +95,23 @@ The `find.ctp` view is the same as `index.ctp` with the addition of the search f
 	echo $this->Form->input('blog_id', array('div' => false, 'options' => $blogs));
 	echo $this->Form->input('status', array('div' => false, 'multiple' => 'checkbox', 'options' => array('open', 'closed')));
 	echo $this->Form->input('username', array('div' => false));
-	echo $this->Form->submit(__('Search', true), array('div' => false));
+	echo $this->Form->submit(__('Search'), array('div' => false));
 	echo $this->Form->end();
 
 In this example on model level shon example of search by OR condition. For this purpose defined method orConditions and added filter arg `array('name' => 'filter', 'type' => 'query', 'method' => 'orConditions')`.
+
+## Advanced usage ##
+
+		public $filterArgs = array(
+			// match results with `%searchstring`:
+			'search_exact_beginning' => array('type' => 'like', 'encode' => true, 'before' => true, 'after' => false),
+			// match results with `searchstring%`:
+			'search_exact_end' => array('type' => 'like', 'encode' => true, 'before' => false, 'after' => true),
+			// match results with `__searchstring%`:
+			'search_special_like' => array('type' => 'like', 'encode' => true, 'before' => '__', 'after' => '%'),
+			// use custom wildcards in the frontend (instead of * and ?):
+			'search_custom_like' => array('type' => 'like', 'encode' => true, 'before' => false, 'after' => false, 'wildcardAny' => '%', 'wildcardOne' => '_'),
+		);
 
 ## Behavior and Model configuration ##
 
@@ -141,7 +170,7 @@ using defaults alreay set in the component itself:
 
 ### Controller configuration ###
 
-All search fields parameters need to configure in the Controller::presetVars array. 
+All search fields parameters need to configure in the Controller::presetVars array (if you didn't yet in the model). 
 
 Each preset variable is a array record that contains next keys:
   
@@ -154,7 +183,11 @@ Each preset variable is a array record that contains next keys:
 * formField  - field in the form that contain text, and will populated using model.modelField based on field value.
 * modelField - field in the model that contain text, and will used to fill formField in view.
 * encode     - boolean, by default false. If you want to use search strings in URL's with special characters like % or / you need to use encoding
-  
+* empty     - boolean, by default false. If you want to omit this field in the PRG url if no value has been given (shorter urls).
+
+Note: Those can also be configured in the model itself (to keep it DRY). You can then set `$presetVar = true` then in the controller to use the model ones (see the example above). You can still use define the keys here where you want to overwrite certain settings.
+It is recommended to always use `encode => true` in combination with search strings (custom text input) to avoid url-breaking.
+
 ### Prg::commonProcess method usage ###
 
 The `commonProcess` method defined in the Prg component allows you to inject search in any index controller with just 1-2 lines of additional code.
