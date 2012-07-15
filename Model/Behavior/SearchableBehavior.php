@@ -32,7 +32,7 @@ class SearchableBehavior extends ModelBehavior {
  * - connectorAnd: the character between search terms to specify an "and" relationship (binds stronger than or, similar to * and + in math)
  * - connectorOr: the character between search terms to specify an "or" relationship
  *
- * @var string
+ * @var array
  */
 	protected $_defaults = array(
 		'wildcardAny' => '*', //on windows/unix/mac/google/... thats the default one
@@ -66,7 +66,7 @@ class SearchableBehavior extends ModelBehavior {
  * we are just going to test if the params are legit
  *
  * @param array $data Criteria of key->value pairs from post/named parameters
- * @return array Array of conditions that express the conditions needed for the search.
+ * @return array Array of conditions that express the conditions needed for the search
  */
 	public function parseCriteria(Model $Model, $data) {
 		$conditions = array();
@@ -172,6 +172,7 @@ class SearchableBehavior extends ModelBehavior {
 	/**
 	 * replace substitions with original wildcards
 	 * but first, escape the original wildcards in the text to use them as normal search text
+	 * 
 	 * @param Model $Model
 	 * @param string $queryLikeString
 	 * @return string $queryLikeString
@@ -202,6 +203,7 @@ class SearchableBehavior extends ModelBehavior {
 
 	/**
 	 * return the current chars for querying LIKE statements on this model
+	 * 
 	 * @param Model $Model Reference to the model
 	 * @return array, [one=>..., any=>...]
 	 */

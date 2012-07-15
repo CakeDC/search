@@ -179,6 +179,7 @@ class PrgComponent extends Component {
  * Restores form params for checkboxs and other url encoded params
  *
  * @param array
+ * @return array
  */
 	public function serializeParams(&$data) {
 		foreach ($this->controller->presetVars as $field) {
@@ -338,6 +339,10 @@ class PrgComponent extends Component {
 	}
 	
 	/**
+	 * Parse the configs from the Model (to keep things dry)
+	 * 
+	 * @param array $arg
+	 * @param mixed $key
 	 * @return array 
 	 */
 	protected function _parseFromModel($arg, $key = null) {
