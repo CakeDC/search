@@ -381,7 +381,7 @@ class PrgComponentTest extends CakeTestCase {
 	public function testCommonProcessGetWithStringKeys() {
 		$this->Controller->action = 'search';
 		$this->Controller->presetVars = array(
-			'title'=> array('type' => 'value'));
+			'title' => array('type' => 'value'));
 		$this->Controller->Post->filterArgs = array(
 			'title' => array('type' => 'value'));
 			
@@ -397,7 +397,7 @@ class PrgComponentTest extends CakeTestCase {
 	public function testCommonProcessGetWithStringKeysShort() {
 		$this->Controller->action = 'search';
 		$this->Controller->presetVars = array(
-			'title'=> true);
+			'title' => true);
 		$this->Controller->Post->filterArgs = array(
 			'title' => array('type' => 'value'));
 			

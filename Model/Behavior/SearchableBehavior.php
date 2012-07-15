@@ -37,7 +37,7 @@ class SearchableBehavior extends ModelBehavior {
 	protected $_defaults = array(
 		'wildcardAny' => '*', //on windows/unix/mac/google/... thats the default one
 		'wildcardOne' => '?', //on windows/unix/mac thats the default one
-		'like' => array('before'=>true, 'after'=>true),
+		'like' => array('before' => true, 'after' => true),
 		'connectorAnd' => null,
 		'connectorOr' => null,
 	);
@@ -156,8 +156,9 @@ class SearchableBehavior extends ModelBehavior {
 
 	/**
 	 * for custom queries inside the model
-	 * example "makePhoneCondition": $cond = array('OR' => array_merge($this->condLike('cell_number', $filter), $this->condLike('landline_number', $filter, array('before'=>false))));
-	 * 2011-07-06 ms
+	 * example "makePhoneCondition": $cond = array('OR' => array_merge($this->condLike('cell_number', $filter), $this->condLike('landline_number', $filter, array('before' => false))));
+	 * 
+	 * @return array of conditions
 	 */
 	public function condLike(Model $Model, $name, $data, $field = array()) {
 		$conditions = array();
@@ -216,7 +217,7 @@ class SearchableBehavior extends ModelBehavior {
  * @param array $conditions existing Conditions collected for the model
  * @param array $data Array of data used in search query
  * @param array $field Field definition information
- * @return array of conditions.
+ * @return array of conditions
  */
 	protected function _addCondLike(Model $Model, &$conditions, $data, $field) {
 		$fieldName = $field['name'];
@@ -225,7 +226,7 @@ class SearchableBehavior extends ModelBehavior {
 		}
 		$fieldNames = (array)$fieldName;
 		if (!is_array($this->settings[$Model->alias]['like'])) {
-			$this->settings[$Model->alias]['like'] = array('before'=>$this->settings[$Model->alias]['like'], 'after'=>$this->settings[$Model->alias]['like']);
+			$this->settings[$Model->alias]['like'] = array('before' => $this->settings[$Model->alias]['like'], 'after' => $this->settings[$Model->alias]['like']);
 		}
 		$field = array_merge($this->settings[$Model->alias]['like'], $field);
 		if (empty($data[$field['name']])) {
@@ -299,10 +300,10 @@ class SearchableBehavior extends ModelBehavior {
 				$and[] = array($fieldName . " LIKE" => $field['before'] . $andValue . $field['after']);
 			}
 			
-			$or[] = array('AND'=>$and);
+			$or[] = array('AND' => $and);
 		}
 		
-		return array('OR'=>$or);
+		return array('OR' => $or);
 	}
 
 /**
@@ -312,7 +313,7 @@ class SearchableBehavior extends ModelBehavior {
  * @param array $conditions existing Conditions collected for the model
  * @param array $data Array of data used in search query
  * @param array $field Field definition information
- * @return array of conditions.
+ * @return array of conditions
  */
 	protected function _addCondValue(Model $Model, &$conditions, $data, $field) {
 		$fieldName = $field['name'];
@@ -335,7 +336,7 @@ class SearchableBehavior extends ModelBehavior {
  * @param array $conditions Existing conditions.
  * @param array $data Data for a field.
  * @param array $field Info for field.
- * @return array of conditions modified by this method.
+ * @return array of conditions modified by this method
  */
 	protected function _addCondQuery(Model $Model, &$conditions, $data, $field) {
 		if ((method_exists($Model, $field['method']) || $this->_checkBehaviorMethods($Model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0')))) {
@@ -355,7 +356,7 @@ class SearchableBehavior extends ModelBehavior {
  * @param array $conditions Existing conditions.
  * @param array $data Data for a field.
  * @param array $field Info for field.
- * @return array of conditions modified by this method.
+ * @return array of conditions modified by this method
  */
 	protected function _addCondExpression(Model $Model, &$conditions, $data, $field) {
 		$fieldName = $field['field'];
@@ -377,7 +378,7 @@ class SearchableBehavior extends ModelBehavior {
  * @param array $conditions Existing conditions.
  * @param array $data Data for a field.
  * @param array $field Info for field.
- * @return array of conditions modified by this method.
+ * @return array of conditions modified by this method
  */
 	protected function _addCondSubquery(Model $Model, &$conditions, $data, $field) {
 		$fieldName = $field['field'];
