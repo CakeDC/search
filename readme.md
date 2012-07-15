@@ -112,8 +112,44 @@ In this example on model level shon example of search by OR condition. For this 
 			// use custom wildcards in the frontend (instead of * and ?):
 			'search_custom_like' => array('type' => 'like', 'encode' => true, 'before' => false, 'after' => false, 'wildcardAny' => '%', 'wildcardOne' => '_'),
 			// use and/or connectors ('First + Second, Third'):
-			'search_with_connectors' => array('type' => 'like', 'field' => 'Article.title', 'connectorAnd' = >'+', 'connectorOr' => ',')
+			'search_with_connectors' => array('type' => 'like', 'field' => 'Article.title', 'connectorAnd' = > '+', 'connectorOr' => ',')
 		);
+		
+		
+## Full example for model/controller configuration with overriding
+
+	// model
+	public $filterArgs = array(
+		'some_related_table_id' => array('type' => 'value'),
+		'search'=> array('type' => 'like', 'encode' => true, 'before' => false, 'after' => false, 'field' => array('ThisModel.name', 'OtherModel.name')),
+		'name'=> array('type' => 'query', 'method' => 'searchNameCondition')
+	);	
+	
+	public function searchNameCondition($data = array()) {
+		$filter = $data['name'];
+		$cond = array(
+			'OR' => array(
+				$this->alias . '.name LIKE' => '' . $this->formatLike($filter) . '',
+				$this->alias . '.invoice_number LIKE' => '' . $this->formatLike($filter) . '',
+		));
+		return $cond;
+	}
+
+
+	// controller (dry setup, only override/extend what is necessary)
+	public $presetVars = array(
+		'some_related_table_id' => true,
+		'search' => true,
+		'name'=> array( // overriding/extending the model defaults
+			'type' => 'value',
+			'encode' => true
+		),
+	);
+
+
+	// search example with wildcards in the view for field `search`
+	20??BE* => matches 2011BES and 2012BETR etc
+
 
 ## Behavior and Model configuration ##
 
@@ -121,7 +157,7 @@ All search fields need to be configured in the Model::filterArgs array.
 
 Each filter record should contain array with several keys:
 
-* name - the parameter stored in Model::data. In the example above the 'search' name used to search in the Article.description field.
+* name - the parameter stored in Model::data. In the example above the 'search' name used to search in the Article.description field (can be ommited if they key is the name).
 * type - one of supported search types described below.
 * field - Real field name used for search should be used.
 * method - model method name or behavior used to generate expression, subquery or query.
@@ -178,9 +214,9 @@ Each preset variable is a array record that contains next keys:
   
 * field      - field that defined in the view search form.
 * type       - one of search types: 
- * value - should used for value that does not require any processing, 
- * checkbox - used for checkbox fields in view (Prg component pack and unpack checkbox values when pass it through the get named action).
- * lookup - this type used when you have autocomplete lookup field implemented in your view. This lookup field is a text field, and also you have hidden field id value. In this case component will fill both text and id values.  
+* value - should used for value that does not require any processing, 
+* checkbox - used for checkbox fields in view (Prg component pack and unpack checkbox values when pass it through the get named action).
+* lookup - this type used when you have autocomplete lookup field implemented in your view. This lookup field is a text field, and also you have hidden field id value. In this case component will fill both text and id values.  
 * model      - param that specifies what model used in Controller::data at a key for this field.
 * formField  - field in the form that contain text, and will populated using model.modelField based on field value.
 * modelField - field in the model that contain text, and will used to fill formField in view.
