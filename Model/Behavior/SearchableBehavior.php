@@ -136,7 +136,7 @@ class SearchableBehavior extends ModelBehavior {
 		$Model->id = $Model->getID();
 		$query = $Model->buildQuery($type, $query);
 		$this->findQueryType = null;
-		return $this->__queryGet($Model, $query);
+		return $this->_queryGet($Model, $query);
 	}
 
 /**
@@ -338,7 +338,7 @@ class SearchableBehavior extends ModelBehavior {
  * @return array of conditions modified by this method.
  */
 	protected function _addCondQuery(Model $Model, &$conditions, $data, $field) {
-		if ((method_exists($Model, $field['method']) || $this->__checkBehaviorMethods($Model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0')))) {
+		if ((method_exists($Model, $field['method']) || $this->_checkBehaviorMethods($Model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0')))) {
 			$conditionsAdd = $Model->{$field['method']}($data, $field);
 			// if our conditions function returns something empty, nothing to merge in
 			if (!empty($conditionsAdd)) {
@@ -359,7 +359,7 @@ class SearchableBehavior extends ModelBehavior {
  */
 	protected function _addCondExpression(Model $Model, &$conditions, $data, $field) {
 		$fieldName = $field['field'];
-		if ((method_exists($Model, $field['method']) || $this->__checkBehaviorMethods($Model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0')))) {
+		if ((method_exists($Model, $field['method']) || $this->_checkBehaviorMethods($Model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0')))) {
 			$fieldValues = $Model->{$field['method']}($data, $field);
 			if (!empty($conditions[$fieldName]) && is_array($conditions[$fieldName])) {
 				$conditions[$fieldName] = array_unique(array_merge(array($conditions[$fieldName]), array($fieldValues)));
@@ -381,7 +381,7 @@ class SearchableBehavior extends ModelBehavior {
  */
 	protected function _addCondSubquery(Model $Model, &$conditions, $data, $field) {
 		$fieldName = $field['field'];
-		if ((method_exists($Model, $field['method']) || $this->__checkBehaviorMethods($Model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0')))) {
+		if ((method_exists($Model, $field['method']) || $this->_checkBehaviorMethods($Model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0')))) {
 			$subquery = $Model->{$field['method']}($data, $field);
 			// if our subquery function returns something empty, nothing to merge in
 			if (!empty($subquery)) {
@@ -399,7 +399,7 @@ class SearchableBehavior extends ModelBehavior {
  * @param array $queryData
  * @param integer $recursive
  */
-	private function __queryGet(Model $Model, $queryData = array()) {
+	protected function _queryGet(Model $Model, $queryData = array()) {
 		/** @var DboSource $db  */
 		$db = $Model->getDataSource();
 		$queryData = $this->_scrubQueryData($queryData);
@@ -474,7 +474,7 @@ class SearchableBehavior extends ModelBehavior {
  * @param string $method
  * @return boolean, true if method exists in attached and enabled behaviors
  */
-	private function __checkBehaviorMethods(Model $Model, $method) {
+	protected function _checkBehaviorMethods(Model $Model, $method) {
 		$behaviors = $Model->Behaviors->enabled();
 		$count = count($behaviors);
 		$found = false;
