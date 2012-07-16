@@ -17,12 +17,6 @@
  */ 
 class TagFixture extends CakeTestFixture {
 
-/**
- * Name
- *
- * @var string $name
- */
-	public $name = 'Tag';
 
 /**
  * Table
