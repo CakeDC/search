@@ -1,22 +1,19 @@
 <?php
+/**
+ * Group test - Search
+ */
 class AllSearchPluginTest extends PHPUnit_Framework_TestSuite {
 
-/**
- * Suite define the tests for this suite
- *
- * @return void
- */
-	public static function suite() {
-		$suite = new PHPUnit_Framework_TestSuite('All Search Plugin Tests');
-
-		$basePath = CakePlugin::path('Search') . DS . 'Test' . DS . 'Case' . DS;
-		// components
-		$suite->addTestFile($basePath . 'Controller' . DS . 'Component' . DS . 'PrgComponentTest.php');
-
-		// behaviors
-		$suite->addTestFile($basePath . 'Model' . DS . 'Behavior' . DS . 'SearchableBehaviorTest.php');
-
-		return $suite;
-	}
-
+    /**
+     * suite method, defines tests for this suite.
+     *
+     * @return void
+     */
+    public static function suite() {
+        $Suite = new CakeTestSuite('All Plugin tests');
+        $path = dirname(__FILE__);
+        $Suite->addTestDirectory($path . DS . 'Controller' . DS . 'Component');
+        $Suite->addTestDirectory($path . DS . 'Model' . DS . 'Behavior');
+        return $Suite;
+    }
 }

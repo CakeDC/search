@@ -154,12 +154,12 @@ class SearchableBehavior extends ModelBehavior {
 		$Model->unbindModel($unbind, $reset);
 	}
 
-	/**
-	 * for custom queries inside the model
-	 * example "makePhoneCondition": $cond = array('OR' => array_merge($this->condLike('cell_number', $filter), $this->condLike('landline_number', $filter, array('before' => false))));
-	 * 
-	 * @return array of conditions
-	 */
+/**
+ * For custom queries inside the model
+ * example "makePhoneCondition": $cond = array('OR' => array_merge($this->condLike('cell_number', $filter), $this->condLike('landline_number', $filter, array('before' => false))));
+ *
+ * @return array of conditions
+ */
 	public function condLike(Model $Model, $name, $data, $field = array()) {
 		$conditions = array();
 		$field['name'] = $name;
@@ -169,14 +169,14 @@ class SearchableBehavior extends ModelBehavior {
 		return $this->_addCondLike($Model, $conditions, $data, $field);
 	}
 
-	/**
-	 * replace substitions with original wildcards
-	 * but first, escape the original wildcards in the text to use them as normal search text
-	 * 
-	 * @param Model $Model
-	 * @param string $queryLikeString
-	 * @return string $queryLikeString
-	 */
+/**
+ * Replace substitions with original wildcards
+ * but first, escape the original wildcards in the text to use them as normal search text
+ *
+ * @param Model $Model
+ * @param string $queryLikeString
+ * @return string $queryLikeString
+ */
 	public function formatLike(Model $Model, $data, $options = array()) {
 		$options = am($this->settings[$Model->alias], $options);
 		$from = $to = $substFrom = $substTo = array();
@@ -201,12 +201,12 @@ class SearchableBehavior extends ModelBehavior {
 		return $data;
 	}
 
-	/**
-	 * return the current chars for querying LIKE statements on this model
-	 * 
-	 * @param Model $Model Reference to the model
-	 * @return array, [one=>..., any=>...]
-	 */
+/**
+ * Return the current chars for querying LIKE statements on this model
+ *
+ * @param Model $Model Reference to the model
+ * @return array, [one=>..., any=>...]
+ */
 	public function getWildcards(Model $Model, $options = array()) {
 		$options = am($this->settings[$Model->alias], $options);
 		return array('any' => $options['wildcardAny'], 'one' => $options['wildcardOne']);

@@ -338,13 +338,13 @@ class PrgComponent extends Component {
 		}
 	}
 	
-	/**
-	 * Parse the configs from the Model (to keep things dry)
-	 * 
-	 * @param array $arg
-	 * @param mixed $key
-	 * @return array 
-	 */
+/**
+ * Parse the configs from the Model (to keep things dry)
+ *
+ * @param array $arg
+ * @param mixed $key
+ * @return array
+ */
 	protected function _parseFromModel($arg, $key = null) {
 		if (isset($arg['preset']) && !$arg['preset']) {
 			return false;

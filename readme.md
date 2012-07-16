@@ -112,7 +112,7 @@ In this example on model level shon example of search by OR condition. For this 
 			// use custom wildcards in the frontend (instead of * and ?):
 			'search_custom_like' => array('type' => 'like', 'encode' => true, 'before' => false, 'after' => false, 'wildcardAny' => '%', 'wildcardOne' => '_'),
 			// use and/or connectors ('First + Second, Third'):
-			'search_with_connectors' => array('type' => 'like', 'field' => 'Article.title', 'connectorAnd' = > '+', 'connectorOr' => ',')
+			'search_with_connectors' => array('type' => 'like', 'field' => 'Article.title', 'connectorAnd' => '+', 'connectorOr' => ',')
 		);
 		
 		
