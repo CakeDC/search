@@ -8,6 +8,7 @@
  * @copyright Copyright 2009-2010, Cake Development Corporation (http://cakedc.com)
  * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
+App::uses('ModelBehavior', 'Model');
 
 /**
  * Searchable behavior
@@ -273,7 +274,7 @@ class SearchableBehavior extends ModelBehavior {
 				}
 				$value = str_replace($substFrom, $substTo, $value);
 			}
-			
+
 			if (!empty($field['connectorAnd']) || !empty($field['connectorOr'])) {
 				$cond[] = $this->_connectedLike($value, $field, $fieldName);
 			} else {
@@ -291,7 +292,7 @@ class SearchableBehavior extends ModelBehavior {
 		}
 		return $conditions;
 	}
-	
+
 	protected function _connectedLike($value, $field, $fieldName) {
 		$or = array();
 		$orValues  = String::tokenize($value, $field['connectorOr']);
@@ -301,10 +302,10 @@ class SearchableBehavior extends ModelBehavior {
 			foreach ($andValues as $andValue) {
 				$and[] = array($fieldName . " LIKE" => $field['before'] . $andValue . $field['after']);
 			}
-			
+
 			$or[] = array('AND' => $and);
 		}
-		
+
 		return array('OR' => $or);
 	}
 
@@ -492,5 +493,5 @@ class SearchableBehavior extends ModelBehavior {
 		}
 		return $found;
 	}
-	
+
 }

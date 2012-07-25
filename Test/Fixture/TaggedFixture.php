@@ -14,7 +14,7 @@
  *
  * @package search
  * @subpackage search.tests.fixtures
- */ 
+ */
 class TaggedFixture extends CakeTestFixture {
 
 
