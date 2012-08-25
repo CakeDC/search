@@ -85,8 +85,8 @@ class PrgComponent extends Component {
 			$this->controller->presetVars = array();
 			$filterArgs = $this->controller->$model->filterArgs;
 			foreach ($filterArgs as $key => $arg) {
-				if ($var = $this->_parseFromModel($arg, $key)) {
-					$this->controller->presetVars[] = $var;
+				if ($args = $this->_parseFromModel($arg, $key)) {
+					$this->controller->presetVars[] = $args;
 				}
 			}
 		}
@@ -164,7 +164,7 @@ class PrgComponent extends Component {
 				}
 			}
 
-			if (in_array($field['type'], array('value', 'like'))) {
+			if ($field['type'] == 'value') {
 				if (isset($args[$field['field']])) {
 					$data[$model][$field['field']] = $args[$field['field']];
 				}
@@ -347,11 +347,15 @@ class PrgComponent extends Component {
  */
 	protected function _parseFromModel($arg, $key = null) {
 		if (isset($arg['preset']) && !$arg['preset']) {
-			return false;
+			return array();
 		}
-		if (!isset($arg['type'])) {
+		if (isset($arg['presetType'])) {
+			$arg['type'] = $arg['presetType'];
+			unset($arg['presetType']);
+		} elseif (!isset($arg['type']) || in_array($arg['type'], array('expression', 'query', 'subquery', 'like'))) {
 			$arg['type'] = 'value';
 		}
+		
 		if (isset($arg['name']) || is_numeric($key)) {
 			$field = $arg['name'];
 		} else {

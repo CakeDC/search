@@ -58,6 +58,9 @@ class SearchableBehavior extends ModelBehavior {
 			if (!isset($val['name'])) {
 				$Model->filterArgs[$key]['name'] = $key;
 			}
+			if (!isset($val['field'])) {
+				$Model->filterArgs[$key]['field'] = $Model->filterArgs[$key]['name'];
+			}
 		}
 	}
 
@@ -72,9 +75,9 @@ class SearchableBehavior extends ModelBehavior {
 	public function parseCriteria(Model $Model, $data) {
 		$conditions = array();
 		foreach ($Model->filterArgs as $field) {
-			if (in_array($field['type'], array('string', 'like'))) {
+			if (in_array($field['type'], array('like'))) {
 				$this->_addCondLike($Model, $conditions, $data, $field);
-			} elseif (in_array($field['type'], array('int', 'value'))) {
+			} elseif (in_array($field['type'], array('string', 'text', 'int', 'float', 'value'))) {
 				$this->_addCondValue($Model, $conditions, $data, $field);
 			} elseif ($field['type'] == 'expression') {
 				$this->_addCondExpression($Model, $conditions, $data, $field);
@@ -223,11 +226,7 @@ class SearchableBehavior extends ModelBehavior {
  * @return array of conditions
  */
 	protected function _addCondLike(Model $Model, &$conditions, $data, $field) {
-		$fieldName = $field['name'];
-		if (isset($field['field'])) {
-			$fieldName = $field['field'];
-		}
-		$fieldNames = (array)$fieldName;
+		$fieldNames = (array)$field['field'];
 		if (!is_array($this->settings[$Model->alias]['like'])) {
 			$this->settings[$Model->alias]['like'] = array('before' => $this->settings[$Model->alias]['like'], 'after' => $this->settings[$Model->alias]['like']);
 		}
@@ -319,35 +318,26 @@ class SearchableBehavior extends ModelBehavior {
  * @return array of conditions
  */
 	protected function _addCondValue(Model $Model, &$conditions, $data, $field) {
-		$fieldName = $field['name'];
-		if (isset($field['field'])) {
-			$fieldName = $field['field'];
-		}
-		if (strpos($fieldName, '.') === false) {
-			$fieldName = $Model->alias . '.' . $fieldName;
-		}
-		if (!empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0'))) {
-			$conditions[$fieldName] = $data[$field['name']];
-		}
-		return $conditions;
-	}
-
-/**
- * Add Conditions based query to search conditions.
- *
- * @param Object $Model  Instance of AppModel
- * @param array $conditions Existing conditions.
- * @param array $data Data for a field.
- * @param array $field Info for field.
- * @return array of conditions modified by this method
- */
-	protected function _addCondQuery(Model $Model, &$conditions, $data, $field) {
-		if ((method_exists($Model, $field['method']) || $this->_checkBehaviorMethods($Model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0')))) {
-			$conditionsAdd = $Model->{$field['method']}($data, $field);
-			// if our conditions function returns something empty, nothing to merge in
-			if (!empty($conditionsAdd)) {
-				$conditions = array_merge($conditions, (array)$conditionsAdd);
+		$fieldNames = (array)$field['field'];
+		$fieldValue = isset($data[$field['name']]) ? $data[$field['name']] : null;
+		
+		$cond = array();
+		foreach ($fieldNames as $fieldName) {
+			if (strpos($fieldName, '.') === false) {
+				$fieldName = $Model->alias . '.' . $fieldName;
 			}
+			if (!empty($fieldValue) || (String)$fieldValue !== '') {
+				$cond[$fieldName] = $fieldValue;
+			}
+		}
+		if (count($cond) > 1) {
+			if (isset($conditions['OR'])) {
+				$conditions[]['OR'] = $cond;
+			} else {
+				$conditions['OR'] = $cond;
+			}
+		} else {
+			$conditions = am($conditions, $cond);
 		}
 		return $conditions;
 	}
@@ -363,12 +353,33 @@ class SearchableBehavior extends ModelBehavior {
  */
 	protected function _addCondExpression(Model $Model, &$conditions, $data, $field) {
 		$fieldName = $field['field'];
-		if ((method_exists($Model, $field['method']) || $this->_checkBehaviorMethods($Model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0')))) {
+
+		if ((method_exists($Model, $field['method']) || $this->_checkBehaviorMethods($Model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && (String)$data[$field['name']] !== ''))) {
 			$fieldValues = $Model->{$field['method']}($data, $field);
 			if (!empty($conditions[$fieldName]) && is_array($conditions[$fieldName])) {
 				$conditions[$fieldName] = array_unique(array_merge(array($conditions[$fieldName]), array($fieldValues)));
 			} else {
 				$conditions[$fieldName] = $fieldValues;
+			}
+		}
+		return $conditions;
+	}
+
+/**
+ * Add Conditions based query to search conditions.
+ *
+ * @param Object $Model  Instance of AppModel
+ * @param array $conditions Existing conditions.
+ * @param array $data Data for a field.
+ * @param array $field Info for field.
+ * @return array of conditions modified by this method
+ */
+	protected function _addCondQuery(Model $Model, &$conditions, $data, $field) {
+		if ((method_exists($Model, $field['method']) || $this->_checkBehaviorMethods($Model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && (String)$data[$field['name']] !== ''))) {
+			$conditionsAdd = $Model->{$field['method']}($data, $field);
+			// if our conditions function returns something empty, nothing to merge in
+			if (!empty($conditionsAdd)) {
+				$conditions = array_merge($conditions, (array)$conditionsAdd);
 			}
 		}
 		return $conditions;
@@ -385,7 +396,7 @@ class SearchableBehavior extends ModelBehavior {
  */
 	protected function _addCondSubquery(Model $Model, &$conditions, $data, $field) {
 		$fieldName = $field['field'];
-		if ((method_exists($Model, $field['method']) || $this->_checkBehaviorMethods($Model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && ($data[$field['name']] === 0 || $data[$field['name']] === '0')))) {
+		if ((method_exists($Model, $field['method']) || $this->_checkBehaviorMethods($Model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && (String)$data[$field['name']] !== ''))) {
 			$subquery = $Model->{$field['method']}($data, $field);
 			// if our subquery function returns something empty, nothing to merge in
 			if (!empty($subquery)) {
