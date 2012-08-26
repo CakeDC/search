@@ -226,7 +226,6 @@ class SearchableBehavior extends ModelBehavior {
  * @return array of conditions
  */
 	protected function _addCondLike(Model $Model, &$conditions, $data, $field) {
-		$fieldNames = (array)$field['field'];
 		if (!is_array($this->settings[$Model->alias]['like'])) {
 			$this->settings[$Model->alias]['like'] = array('before' => $this->settings[$Model->alias]['like'], 'after' => $this->settings[$Model->alias]['like']);
 		}
@@ -234,6 +233,7 @@ class SearchableBehavior extends ModelBehavior {
 		if (empty($data[$field['name']])) {
 			return $conditions;
 		}
+		$fieldNames = (array)$field['field'];
 
 		$cond = array();
 		foreach ($fieldNames as $fieldName) {
@@ -320,7 +320,7 @@ class SearchableBehavior extends ModelBehavior {
 	protected function _addCondValue(Model $Model, &$conditions, $data, $field) {
 		$fieldNames = (array)$field['field'];
 		$fieldValue = isset($data[$field['name']]) ? $data[$field['name']] : null;
-		
+
 		$cond = array();
 		foreach ($fieldNames as $fieldName) {
 			if (strpos($fieldName, '.') === false) {

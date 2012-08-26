@@ -276,7 +276,7 @@ class SearchableTest extends CakeTestCase {
 		$data = array('views' => '');
 		$result = $this->Article->parseCriteria($data);
 		$this->assertEquals(array(), $result);
-		
+
 		// multiple fields + cross model searches
 		$this->Article->Behaviors->detach('Searchable');
 		$this->Article->filterArgs = array(
@@ -313,7 +313,7 @@ class SearchableTest extends CakeTestCase {
 		$this->Article->filterArgs = array(
 			array('name' => 'faketitle', 'type' => 'like', 'field' => 'Article.title'));
 		$this->Article->Behaviors->attach('Search.Searchable');
-			
+
 		$data = array('faketitle' => 'First');
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('Article.title LIKE' => '%First%');
