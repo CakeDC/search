@@ -170,6 +170,9 @@ class SearchableBehavior extends ModelBehavior {
 		if (!is_array($data)) {
 			$data = array($name => $data);
 		}
+		if (!isset($field['field'])) {
+			$field['field'] = $field['name'];
+		}
 		return $this->_addCondLike($Model, $conditions, $data, $field);
 	}
 
