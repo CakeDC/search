@@ -208,6 +208,8 @@ using defaults alreay set in the component itself:
 
 ### Controller configuration ###
 
+#### Preset vars ####
+
 All search fields parameters need to configure in the Controller::presetVars array (if you didn't yet in the model). 
 
 Each preset variable is a array record that contains next keys:
@@ -225,6 +227,15 @@ Each preset variable is a array record that contains next keys:
 
 Note: Those can also be configured in the model itself (to keep it DRY). You can then set `$presetVar = true` then in the controller to use the model ones (see the example above). You can still use define the keys here where you want to overwrite certain settings.
 It is recommended to always use `encode => true` in combination with search strings (custom text input) to avoid url-breaking.
+
+#### Reset vars ####
+
+These are the named params that will be reset during the research process (typically the page).
+
+Each preset variable is a array record that contains next keys:
+
+* field - Named param to reset/unset.
+* value - (optional) The value at which to reset the param. If not fill, commonProcess will unfill param rather than reset it.
 
 ### Prg::commonProcess method usage ###
 
