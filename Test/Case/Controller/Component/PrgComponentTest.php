@@ -73,7 +73,7 @@ class PostsTestController extends Controller {
  * @param string $exit
  * @return void
  */
-	public function redirect($url, $status = NULL, $exit = true) {
+	public function redirect($url, $status = null, $exit = true) {
 		$this->redirectUrl = $url;
 	}
 
@@ -433,11 +433,11 @@ class PrgComponentTest extends CakeTestCase {
 		$this->assertEquals($this->_urlEncode('ef?'), $result['title']);
 	}
 
-	/**
-	 * replace the base64encoded values that could harm the url (/ and =) with harmless characters
-	 *
-	 * @return string
-	 */
+/**
+ * replace the base64encoded values that could harm the url (/ and =) with harmless characters
+ *
+ * @return string
+ */
 	protected function _urlEncode($str) {
 		return str_replace(array('/', '='), array('-', '_'), base64_encode($str)); ////rtrim(strtr(base64_encode($str), '+/', '-_'), '=');
 	}
