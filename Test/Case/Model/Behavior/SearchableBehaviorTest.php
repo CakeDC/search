@@ -379,7 +379,7 @@ class SearchableTest extends CakeTestCase {
 		$this->assertEquals($expected, $result);
 
 		// cross model searches + named keys (shorthand)
-		$this->Article->bindModel(array('belongsTo' =>array('User')));
+		$this->Article->bindModel(array('belongsTo' => array('User')));
 		$this->Article->filterArgs = array(
 			'faketitle' => array('type' => 'like', 'field' => array('title', 'User.name'), 'before' => false, 'after' => true)
 		);
@@ -387,7 +387,7 @@ class SearchableTest extends CakeTestCase {
 		$this->Article->Behaviors->attach('Search.Searchable');
 		$data = array('faketitle' => 'First');
 		$result = $this->Article->parseCriteria($data);
-		$expected = array('OR' =>array('Article.title LIKE' => 'First%', 'User.name LIKE' => 'First%'));
+		$expected = array('OR' => array('Article.title LIKE' => 'First%', 'User.name LIKE' => 'First%'));
 		$this->assertEquals($expected, $result);
 
 		// with already existing or conditions + named keys (shorthand)
@@ -401,18 +401,18 @@ class SearchableTest extends CakeTestCase {
 		$data = array('faketitle' => 'First', 'otherfaketitle' => 'Second');
 		$result = $this->Article->parseCriteria($data);
 		$expected = array(
-			'OR' =>array('Article.title LIKE' => 'First%', 'User.name LIKE' => 'First%'),
-			array('OR' =>array('Article.descr LIKE' => 'Second%', 'Article.comment LIKE' => 'Second%'))
+			'OR' => array('Article.title LIKE' => 'First%', 'User.name LIKE' => 'First%'),
+			array('OR' => array('Article.descr LIKE' => 'Second%', 'Article.comment LIKE' => 'Second%'))
 		);
 		$this->assertEquals($expected, $result);
 
 		// wildcards and and/or connectors
 		$this->Article->filterArgs = array(
-			array('name' => 'faketitle', 'type' => 'like', 'field' => 'Article.title', 'connectorAnd' => '+', 'connectorOr' => ',', 'before' => true, 'after' =>true)
+			array('name' => 'faketitle', 'type' => 'like', 'field' => 'Article.title', 'connectorAnd' => '+', 'connectorOr' => ',', 'before' => true, 'after' => true)
 		);
 		$data = array('faketitle' => 'First%+Second%, Third%');
 		$result = $this->Article->parseCriteria($data);
-		$expected = array(0 => array('OR' =>array(
+		$expected = array(0 => array('OR' => array(
 			array('AND' => array(
 				array('Article.title LIKE' => '%First\%%'),
 				array('Article.title LIKE' => '%Second\%%'),
@@ -422,7 +422,6 @@ class SearchableTest extends CakeTestCase {
 			)),
 		)));
 		$this->assertEquals($expected, $result);
-
 	}
 
 /**
@@ -446,7 +445,7 @@ class SearchableTest extends CakeTestCase {
 
 		$data = array('tags' => 'Cake');
 		$result = $this->Article->parseCriteria($data);
-		$expected = array(array('Article.id in (SELECT `Tagged`.`foreign_key` FROM `'.$database.'`.`'.$this->Article->tablePrefix.'tagged` AS `Tagged` LEFT JOIN `'.$database.'`.`'.$this->Article->tablePrefix.'tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = \'Cake\')'));
+		$expected = array(array('Article.id in (SELECT `Tagged`.`foreign_key` FROM `' . $database . '`.`' . $this->Article->tablePrefix . 'tagged` AS `Tagged` LEFT JOIN `' . $database . '`.`' . $this->Article->tablePrefix . 'tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = \'Cake\')'));
 		$this->assertEquals($expected, $result);
 	}
 
@@ -468,7 +467,7 @@ class SearchableTest extends CakeTestCase {
 		$data = array('tags' => 'Cake');
 		$result = $this->Article->parseCriteria($data);
 
-		$expected = array(array('Article.id in (SELECT `Tagged`.`foreign_key` FROM `'.$database.'`.`'.$this->Article->tablePrefix.'tagged` AS `Tagged` LEFT JOIN `'.$database.'`.`'.$this->Article->tablePrefix.'tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = \'Cake\')'));
+		$expected = array(array('Article.id in (SELECT `Tagged`.`foreign_key` FROM `' . $database . '`.`' . $this->Article->tablePrefix . 'tagged` AS `Tagged` LEFT JOIN `' . $database . '`.`' . $this->Article->tablePrefix . 'tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = \'Cake\')'));
 
 		$this->assertEquals($expected, $result);
 	}
