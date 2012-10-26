@@ -106,7 +106,7 @@ class PrgComponent extends Component {
 	}
 
 /**
- * Poplulates controller->data with allowed values from the named/passed get params
+ * Populates controller->data with allowed values from the named/passed get params
  *
  * Fields in $controller::$presetVars that have a type of 'lookup' the foreignKey value will be inserted
  *
@@ -164,7 +164,7 @@ class PrgComponent extends Component {
 				}
 			}
 
-			if (in_array($field['type'], array('value', 'like'))) {
+			if (in_array($field['type'], array('value', 'like', 'query'))) {
 				if (isset($args[$field['field']])) {
 					$data[$model][$field['field']] = $args[$field['field']];
 				}
