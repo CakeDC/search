@@ -4,11 +4,11 @@
  */
 class AllSearchPluginTest extends PHPUnit_Framework_TestSuite {
 
-	/**
-	 * suite method, defines tests for this suite.
-	 *
-	 * @return void
-	 */
+/**
+ * suite method, defines tests for this suite.
+ *
+ * @return void
+ */
 	public static function suite() {
 		$Suite = new CakeTestSuite('All Plugin tests');
 		$path = dirname(__FILE__);
@@ -16,4 +16,5 @@ class AllSearchPluginTest extends PHPUnit_Framework_TestSuite {
 		$Suite->addTestDirectory($path . DS . 'Model' . DS . 'Behavior');
 		return $Suite;
 	}
+
 }

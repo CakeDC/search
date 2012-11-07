@@ -17,7 +17,6 @@
  */
 class TaggedFixture extends CakeTestFixture {
 
-
 /**
  * Table
  *
@@ -31,13 +30,13 @@ class TaggedFixture extends CakeTestFixture {
  * @var array $fields
  */
 	public $fields = array(
-		'id' => array('type' => 'string', 'null' => false, 'default' => NULL, 'length' => 36, 'key' => 'primary'),
-		'foreign_key' => array('type' => 'string', 'null' => false, 'default' => NULL, 'length' => 36),
-		'tag_id' => array('type' => 'string', 'null' => false, 'default' => NULL, 'length' => 36),
-		'model' => array('type' => 'string', 'null' => false, 'default' => NULL, 'key' => 'index'),
-		'language' => array('type' => 'string', 'null' => true, 'default' => NULL, 'length' => 6),
-		'created' => array('type' => 'datetime', 'null' => true, 'default' => NULL),
-		'modified' => array('type' => 'datetime', 'null' => true, 'default' => NULL),
+		'id' => array('type' => 'string', 'null' => false, 'default' => null, 'length' => 36, 'key' => 'primary'),
+		'foreign_key' => array('type' => 'string', 'null' => false, 'default' => null, 'length' => 36),
+		'tag_id' => array('type' => 'string', 'null' => false, 'default' => null, 'length' => 36),
+		'model' => array('type' => 'string', 'null' => false, 'default' => null, 'key' => 'index'),
+		'language' => array('type' => 'string', 'null' => true, 'default' => null, 'length' => 6),
+		'created' => array('type' => 'datetime', 'null' => true, 'default' => null),
+		'modified' => array('type' => 'datetime', 'null' => true, 'default' => null),
 		'indexes' => array(
 			'PRIMARY' => array('column' => 'id', 'unique' => 1),
 			'UNIQUE_TAGGING' => array('column' => array('model', 'foreign_key', 'tag_id', 'language'), 'unique' => 1),
@@ -80,4 +79,5 @@ class TaggedFixture extends CakeTestFixture {
 			'modified' => '2008-12-02 12:32:31',
 		),
 	);
+
 }

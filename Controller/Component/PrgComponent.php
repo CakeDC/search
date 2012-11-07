@@ -85,8 +85,8 @@ class PrgComponent extends Component {
 			$this->controller->presetVars = array();
 			$filterArgs = $this->controller->$model->filterArgs;
 			foreach ($filterArgs as $key => $arg) {
-				if ($var = $this->_parseFromModel($arg, $key)) {
-					$this->controller->presetVars[] = $var;
+				if ($args = $this->_parseFromModel($arg, $key)) {
+					$this->controller->presetVars[] = $args;
 				}
 			}
 		}
@@ -106,7 +106,7 @@ class PrgComponent extends Component {
 	}
 
 /**
- * Poplulates controller->data with allowed values from the named/passed get params
+ * Populates controller->data with allowed values from the named/passed get params
  *
  * Fields in $controller::$presetVars that have a type of 'lookup' the foreignKey value will be inserted
  *
@@ -164,7 +164,7 @@ class PrgComponent extends Component {
 				}
 			}
 
-			if (in_array($field['type'], array('value', 'like'))) {
+			if ($field['type'] === 'value') {
 				if (isset($args[$field['field']])) {
 					$data[$model][$field['field']] = $args[$field['field']];
 				}
@@ -181,7 +181,7 @@ class PrgComponent extends Component {
  * @param array
  * @return array
  */
-	public function serializeParams(&$data) {
+	public function serializeParams(array &$data) {
 		foreach ($this->controller->presetVars as $field) {
 			if ($field['type'] == 'checkbox') {
 				if (array_key_exists($field['field'], $data)) {
@@ -213,7 +213,7 @@ class PrgComponent extends Component {
  * @param array $exclude
  * @return void
  */
-	public function connectNamed($data = null, $exclude = array()) {
+	public function connectNamed($data = null, array $exclude = array()) {
 		if (!isset($data)) {
 			$data = $this->controller->passedArgs;
 		}
@@ -238,7 +238,7 @@ class PrgComponent extends Component {
  * @param array Array of keys to exclude from other $array
  * @return array
  */
-	public function exclude($array, $exclude) {
+	public function exclude(array $array, array $exclude) {
 		$data = array();
 		foreach ($array as $key => $value) {
 			if (!is_numeric($key) && !in_array($key, $exclude)) {
@@ -267,7 +267,7 @@ class PrgComponent extends Component {
  *  - string paramType - 'named' if you want to used named params or 'querystring' is you want to use query string
  * @return void
  */
-	public function commonProcess($modelName = null, $options = array()) {
+	public function commonProcess($modelName = null, array $options = array()) {
 		$defaults = array(
 			'formName' => null,
 			'keepPassed' => true,
@@ -345,13 +345,17 @@ class PrgComponent extends Component {
  * @param mixed $key
  * @return array
  */
-	protected function _parseFromModel($arg, $key = null) {
+	protected function _parseFromModel(array $arg, $key = null) {
 		if (isset($arg['preset']) && !$arg['preset']) {
-			return false;
+			return array();
 		}
-		if (!isset($arg['type'])) {
+		if (isset($arg['presetType'])) {
+			$arg['type'] = $arg['presetType'];
+			unset($arg['presetType']);
+		} elseif (!isset($arg['type']) || in_array($arg['type'], array('expression', 'query', 'subquery', 'like'))) {
 			$arg['type'] = 'value';
 		}
+
 		if (isset($arg['name']) || is_numeric($key)) {
 			$field = $arg['name'];
 		} else {
