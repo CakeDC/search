@@ -185,7 +185,7 @@ class SearchableBehavior extends ModelBehavior {
  * @return string $queryLikeString
  */
 	public function formatLike(Model $Model, $data, $options = array()) {
-		$options = am($this->settings[$Model->alias], $options);
+		$options = array_merge($this->settings[$Model->alias], $options);
 		$from = $to = $substFrom = $substTo = array();
 		if ($options['wildcardAny'] != '%') {
 			$from[] = '%';
@@ -215,7 +215,7 @@ class SearchableBehavior extends ModelBehavior {
  * @return array, [one=>..., any=>...]
  */
 	public function getWildcards(Model $Model, $options = array()) {
-		$options = am($this->settings[$Model->alias], $options);
+		$options = array_merge($this->settings[$Model->alias], $options);
 		return array('any' => $options['wildcardAny'], 'one' => $options['wildcardOne']);
 	}
 
@@ -290,7 +290,7 @@ class SearchableBehavior extends ModelBehavior {
 				$conditions['OR'] = $cond;
 			}
 		} else {
-			$conditions = am($conditions, $cond);
+			$conditions = array_merge($conditions, $cond);
 		}
 		return $conditions;
 	}
@@ -340,7 +340,7 @@ class SearchableBehavior extends ModelBehavior {
 				$conditions['OR'] = $cond;
 			}
 		} else {
-			$conditions = am($conditions, $cond);
+			$conditions = array_merge($conditions, $cond);
 		}
 		return $conditions;
 	}
@@ -382,7 +382,7 @@ class SearchableBehavior extends ModelBehavior {
 			$conditionsAdd = $Model->{$field['method']}($data, $field);
 			// if our conditions function returns something empty, nothing to merge in
 			if (!empty($conditionsAdd)) {
-				$conditions = array_merge($conditions, (array)$conditionsAdd);
+				$conditions = Set::merge($conditions, (array)$conditionsAdd);
 			}
 		}
 		return $conditions;
