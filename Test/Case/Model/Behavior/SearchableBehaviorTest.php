@@ -165,6 +165,16 @@ class Article extends CakeTestModel {
 		return $cond;
 	}
 
+	public function or2Conditions($data = array()) {
+		$filter = $data['filter2'];
+		$cond = array(
+			'OR' => array(
+				$this->alias . '.field1 LIKE' => '%' . $filter . '%',
+				$this->alias . '.field2 LIKE' => '%' . $filter . '%',
+			));
+		return $cond;
+	}
+
 }
 
 /**
@@ -491,6 +501,25 @@ class SearchableTest extends CakeTestCase {
 		$expected = array('OR' => array(
 		'Article.title LIKE' => '%ticl%',
 		'Article.body LIKE' => '%ticl%'));
+		$this->assertEquals($expected, $result);
+	}
+
+	public function testQueryOr2Example() {
+		$this->Article->filterArgs = array(
+			array('name' => 'filter', 'type' => 'query', 'method' => 'orConditions'),
+			array('name' => 'filter2', 'type' => 'query', 'method' => 'or2Conditions'));
+
+		$data = array();
+		$result = $this->Article->parseCriteria($data);
+		$this->assertEquals(array(), $result);
+
+		$data = array('filter' => 'ticl', 'filter2' => 'test');
+		$result = $this->Article->parseCriteria($data);
+		$expected = array('OR' => array(
+			'Article.title LIKE' => '%ticl%',
+			'Article.body LIKE' => '%ticl%',
+			'Article.field1 LIKE' => '%test%',
+			'Article.field2 LIKE' => '%test%'));
 		$this->assertEquals($expected, $result);
 	}
 
