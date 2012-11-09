@@ -538,6 +538,11 @@ class SearchableTest extends CakeTestCase {
 		$this->assertEquals($expected, $result);
 	}
 
+/**
+ * testQueryOr2Example
+ *
+ * @return void
+ */
 	public function testQueryOr2Example() {
 		$this->Article->filterArgs = array(
 			array('name' => 'filter', 'type' => 'query', 'method' => 'orConditions'),
