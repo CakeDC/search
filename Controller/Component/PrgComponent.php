@@ -147,7 +147,7 @@ class PrgComponent extends Component {
 			}
 
 			if ($field['type'] == 'lookup') {
-				if (isset($args[$field['field']])) {
+				if (!empty($args[$field['field']])) {
 					$searchModel = $field['model'];
 					$this->controller->loadModel($searchModel);
 					$this->controller->{$searchModel}->recursive = -1;
