@@ -337,6 +337,49 @@ class PrgComponentTest extends CakeTestCase {
 			'action' => 'search'));
 	}
 
+	public function testCommonProcessWithoutResetVarsDoesNotChangeBehavior() {
+		$this->Controller->request->params['named'] = array('page' => 4);
+		$this->Controller->presetVars = array();
+		$this->Controller->resetVars = array();
+		$this->Controller->action = 'search';
+		$this->Controller->request->data = array(
+			'Post' => array('title' => 'test'));
+		$this->Controller->Prg->commonProcess('Post', array(
+			'form' => 'Post',
+			'modelMethod' => false));
+		$this->assertEquals($this->Controller->redirectUrl, array(
+			'title' => 'test', 'action' => 'search', 'page' => 4));
+	}
+
+	public function testCommonProcessWithResetVarsWithValueResetFieldToValue() {
+		$this->Controller->request->params['named'] = array('page' => 4);
+		$this->Controller->presetVars = array();
+		$this->Controller->resetVars = array(
+			array('field' => 'page', 'value' => 1));
+		$this->Controller->action = 'search';
+		$this->Controller->request->data = array(
+			'Post' => array('title' => 'test'));
+		$this->Controller->Prg->commonProcess('Post', array(
+			'form' => 'Post',
+			'modelMethod' => false));
+		$this->assertEquals($this->Controller->redirectUrl, array(
+			'title' => 'test', 'action' => 'search', 'page' => 1));
+	}
+
+	public function testCommonProcessWithResetVarsWithNoValueUnsetField() {
+		$this->Controller->request->params['named'] = array('page' => 4);
+		$this->Controller->presetVars = array();
+		$this->Controller->resetVars = array(array('field' => 'page'));
+		$this->Controller->action = 'search';
+		$this->Controller->request->data = array(
+			'Post' => array('title' => 'test'));
+		$this->Controller->Prg->commonProcess('Post', array(
+			'form' => 'Post',
+			'modelMethod' => false));
+		$this->assertEquals($this->Controller->redirectUrl, array(
+			'title' => 'test', 'action' => 'search'));
+	}
+
 /**
  * testCommonProcessExtraParams
  *

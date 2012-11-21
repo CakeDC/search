@@ -74,6 +74,9 @@ class PrgComponent extends Component {
 		if (!isset($this->controller->presetVars)) {
 			$this->controller->presetVars = array();
 		}
+		if (!isset($this->controller->resetVars)) {
+			$this->controller->resetVars = array();
+		}
 
 		$model = $this->controller->modelClass;
 		if (!empty($settings['model'])) {
@@ -297,6 +300,7 @@ class PrgComponent extends Component {
 			}
 
 			if ($valid) {
+				$this->_resetVars();
 				$params = $this->controller->request->params['named'];
 				if ($keepPassed) {
 					$params = array_merge($this->controller->request->params['pass'], $params);
@@ -335,6 +339,18 @@ class PrgComponent extends Component {
 			) {
 			$this->connectNamed($this->controller->passedArgs, array());
 			$this->presetForm(array('model' => $formName, 'paramType' => $paramType));
+		}
+	}
+
+	public function _resetVars() {
+		foreach ($this->controller->resetVars as $resetVar) {
+			if (isset($resetVar['value'])) {
+				if (!empty($this->controller->request->params['named'][$resetVar['field']])) {
+					$this->controller->request->params['named'][$resetVar['field']] = $resetVar['value'];
+				}
+			} else {
+				unset($this->controller->request->params['named'][$resetVar['field']]);
+			}
 		}
 	}
 
