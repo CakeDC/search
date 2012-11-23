@@ -341,7 +341,6 @@ class SearchableTest extends CakeTestCase {
 		$this->assertEquals($expected, $result);
 
 		// working with like settings
-		//pr($this->Article->Behaviors->Searchable->settings);
 		$this->Article->Behaviors->Searchable->settings['Article']['like']['before'] = false;
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('Article.title LIKE' => '\%First\_%');

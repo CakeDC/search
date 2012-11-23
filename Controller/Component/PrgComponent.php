@@ -70,7 +70,7 @@ class PrgComponent extends Component {
 	public function __construct(ComponentCollection $collection, $settings) {
 		$this->controller = $collection->getController();
 		$this->_defaults = Set::merge($this->_defaults, $settings);
-		# fix for not throwing warning
+		// fix for not throwing warning
 		if (!isset($this->controller->presetVars)) {
 			$this->controller->presetVars = array();
 		}
@@ -146,7 +146,7 @@ class PrgComponent extends Component {
 				}
 			}
 
-			if ($field['type'] == 'lookup') {
+			if ($field['type'] === 'lookup') {
 				if (isset($args[$field['field']])) {
 					$searchModel = $field['model'];
 					$this->controller->loadModel($searchModel);
@@ -157,7 +157,7 @@ class PrgComponent extends Component {
 				}
 			}
 
-			if ($field['type'] == 'checkbox') {
+			if ($field['type'] === 'checkbox') {
 				if (isset($args[$field['field']])) {
 					$values = split('\|', $args[$field['field']]);
 					$data[$model][$field['field']] = $values;
@@ -183,7 +183,7 @@ class PrgComponent extends Component {
  */
 	public function serializeParams(array &$data) {
 		foreach ($this->controller->presetVars as $field) {
-			if ($field['type'] == 'checkbox') {
+			if ($field['type'] === 'checkbox') {
 				if (array_key_exists($field['field'], $data)) {
 					$values = join('|', (array)$data[$field['field']]);
 				} else {
@@ -195,7 +195,7 @@ class PrgComponent extends Component {
 			if ($this->encode || !empty($field['encode'])) {
 				$fieldContent = $data[$field['field']];
 				$tmp = base64_encode($fieldContent);
-				//replace chars base64 uses that would mess up the url
+				// replace chars base64 uses that would mess up the url
 				$tmp = str_replace(array('/', '='), array('-', '_'), $tmp);
 				$data[$field['field']] = $tmp;
 			}
@@ -330,8 +330,8 @@ class PrgComponent extends Component {
 			} else {
 				$this->controller->Session->setFlash(__d('search', 'Please correct the errors below.'));
 			}
-		} elseif (($paramType == 'named' && !empty($this->controller->passedArgs)) ||
-				($paramType == 'querystring' && !empty($this->controller->request->query))
+		} elseif (($paramType === 'named' && !empty($this->controller->passedArgs)) ||
+				($paramType === 'querystring' && !empty($this->controller->request->query))
 			) {
 			$this->connectNamed($this->controller->passedArgs, array());
 			$this->presetForm(array('model' => $formName, 'paramType' => $paramType));
