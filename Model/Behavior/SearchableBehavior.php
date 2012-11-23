@@ -79,11 +79,11 @@ class SearchableBehavior extends ModelBehavior {
 				$this->_addCondLike($Model, $conditions, $data, $field);
 			} elseif (in_array($field['type'], array('string', 'text', 'int', 'float', 'value'))) {
 				$this->_addCondValue($Model, $conditions, $data, $field);
-			} elseif ($field['type'] == 'expression') {
+			} elseif ($field['type'] === 'expression') {
 				$this->_addCondExpression($Model, $conditions, $data, $field);
-			} elseif ($field['type'] == 'query') {
+			} elseif ($field['type'] === 'query') {
 				$this->_addCondQuery($Model, $conditions, $data, $field);
-			} elseif ($field['type'] == 'subquery') {
+			} elseif ($field['type'] === 'subquery') {
 				$this->_addCondSubquery($Model, $conditions, $data, $field);
 			}
 		}
@@ -187,22 +187,22 @@ class SearchableBehavior extends ModelBehavior {
 	public function formatLike(Model $Model, $data, $options = array()) {
 		$options = array_merge($this->settings[$Model->alias], $options);
 		$from = $to = $substFrom = $substTo = array();
-		if ($options['wildcardAny'] != '%') {
+		if ($options['wildcardAny'] !== '%') {
 			$from[] = '%';
 			$to[] = '\%';
 			$substFrom[] = $options['wildcardAny'];
 			$substTo[] = '%';
 		}
-		if ($options['wildcardOne'] != '_') {
+		if ($options['wildcardOne'] !== '_') {
 			$from[] = '_';
 			$to[] = '\_';
 			$substFrom[] = $options['wildcardOne'];
 			$substTo[] = '_';
 		}
 		if (!empty($from)) {
-			/* escape first */
+			// escape first
 			$data = str_replace($from, $to, $data);
-			/* replace wildcards */
+			// replace wildcards
 			$data = str_replace($substFrom, $substTo, $data);
 		}
 		return $data;
@@ -253,11 +253,11 @@ class SearchableBehavior extends ModelBehavior {
 			//if both before and after are false, LIKE allows custom placeholders, % and _ are always treated as normal chars
 			$options = $this->settings[$Model->alias];
 			$from = $to = $substFrom = $substTo = array();
-			if ($options['wildcardAny'] != '%' || ($field['before'] !== false || $field['after'] !== false)) {
+			if ($options['wildcardAny'] !== '%' || ($field['before'] !== false || $field['after'] !== false)) {
 				$from[] = '%';
 				$to[] = '\%';
 			}
-			if ($options['wildcardOne'] != '_' || ($field['before'] !== false || $field['after'] !== false)) {
+			if ($options['wildcardOne'] !== '_' || ($field['before'] !== false || $field['after'] !== false)) {
 				$from[] = '_';
 				$to[] = '\_';
 			}
@@ -266,11 +266,11 @@ class SearchableBehavior extends ModelBehavior {
 				$value = str_replace($from, $to, $value);
 			}
 			if ($field['before'] === false && $field['after'] === false) {
-				if ($options['wildcardAny'] != '%') {
+				if ($options['wildcardAny'] !== '%') {
 					$substFrom[] = $options['wildcardAny'];
 					$substTo[] = '%';
 				}
-				if ($options['wildcardOne'] != '_') {
+				if ($options['wildcardOne'] !== '_') {
 					$substFrom[] = $options['wildcardOne'];
 					$substTo[] = '_';
 				}
