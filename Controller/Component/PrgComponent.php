@@ -301,20 +301,21 @@ class PrgComponent extends Component {
 				}
 
 				$searchParams = $this->controller->data[$modelName];
-				if ($filterEmpty) {
-					$params = Set::filter($params);
-					$searchParams = Set::filter($searchParams);
-				}
-
 				$this->serializeParams($searchParams);
 
-				if ($paramType == 'named') {
+				if ($paramType === 'named') {
 					$params = array_merge($params, $searchParams);
 					$params = $this->exclude($params, $excludedParams);
+					if ($filterEmpty) {
+						$params = Set::filter($params);
+					}
 					$this->connectNamed($params, array());
 				} else {
 					$params = $this->controller->request->query;
 					$params = $this->exclude($params, $excludedParams);
+					if ($filterEmpty) {
+						$params = Set::filter($params);
+					}
 					$params['?'] = array_merge($params, $searchParams);
 					$this->connectNamed($params, array());
 				}
