@@ -264,16 +264,14 @@ class PrgComponent extends Component {
  *  - string action - The action to redirect to. Defaults to the current action
  *  - mixed modelMethod - If not false a string that is the model method that will be used to process the data
  *  - array allowedParams - An array of additional top level route params that should be included in the params processed
+ *  - array excludedParams - An array of named/query params that should be excluded from the redirect url
  *  - string paramType - 'named' if you want to used named params or 'querystring' is you want to use query string
  * @return void
  */
 	public function commonProcess($modelName = null, array $options = array()) {
 		$defaults = array(
-			'formName' => null,
-			'keepPassed' => true,
-			'action' => null,
-			'modelMethod' => 'validateSearch',
-			'allowedParams' => array());
+			'excludedParams' => array('page'),
+		);
 		$defaults = Set::merge($defaults, $this->_defaults['commonProcess']);
 		extract(Set::merge($defaults, $options));
 
@@ -303,8 +301,8 @@ class PrgComponent extends Component {
 				}
 
 				$searchParams = $this->controller->data[$modelName];
-				$searchParams = $this->exclude($searchParams, array());
 				if ($filterEmpty) {
+					$params = Set::filter($params);
 					$searchParams = Set::filter($searchParams);
 				}
 
@@ -312,10 +310,13 @@ class PrgComponent extends Component {
 
 				if ($paramType == 'named') {
 					$params = array_merge($params, $searchParams);
+					$params = $this->exclude($params, $excludedParams);
 					$this->connectNamed($params, array());
 				} else {
+					$params = $this->controller->request->query;
+					$params = $this->exclude($params, $excludedParams);
+					$params['?'] = array_merge($params, $searchParams);
 					$this->connectNamed($params, array());
-					$params['?'] = array_merge($this->controller->request->query, $searchParams);
 				}
 
 				$params['action'] = $action;
