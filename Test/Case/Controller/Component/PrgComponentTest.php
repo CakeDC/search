@@ -358,10 +358,78 @@ class PrgComponentTest extends CakeTestCase {
 			'form' => 'Post',
 			'modelMethod' => false,
 			'allowedParams' => array('lang')));
-		$this->assertEquals($this->Controller->redirectUrl, array(
+		$expected = array(
 			'title' => 'test',
 			'action' => 'search',
-			'lang' => 'en'));
+			'lang' => 'en');
+		$this->assertEquals($expected, $this->Controller->redirectUrl);
+	}
+
+/**
+ * testCommonProcessFilterEmpty
+ *
+ * @return void
+ */
+	public function testCommonProcessResetNamed() {
+		$this->Controller->request->params = array_merge($this->Controller->request->params, array(
+			'named' => array('page' => 2, 'sort' => 'name', 'direction' => 'asc'),
+			'lang' => 'en',
+			));
+
+		$this->Controller->presetVars = array();
+		$this->Controller->action = 'search';
+		$this->Controller->request->data = array(
+			'Post' => array(
+				'title' => 'test',
+				'foo' => '',
+				'bar' => ''));
+
+		$this->Controller->Prg->commonProcess('Post', array(
+			'form' => 'Post',
+			'modelMethod' => false,
+			'allowedParams' => array('lang')));
+		debug($this->Controller->redirectUrl); ob_flush();
+		$expected = array(
+			'sort' => 'name',
+			'direction' => 'asc',
+			'title' => 'test',
+			'foo' => '',
+			'bar' => '',
+			'action' => 'search',
+			'lang' => 'en');
+		$this->assertEquals($expected, $this->Controller->redirectUrl);
+	}
+
+/**
+ * testCommonProcessFilterEmpty
+ *
+ * @return void
+ */
+	public function testCommonProcessFilterEmpty() {
+		$this->Controller->request->params = array_merge($this->Controller->request->params, array(
+			'named' => array(),
+			'lang' => 'en',
+			));
+
+		$this->Controller->presetVars = array();
+		$this->Controller->action = 'search';
+		$this->Controller->request->data = array(
+			'Post' => array(
+				'title' => 'test',
+				'foo' => '',
+				'bar' => ''));
+
+		$this->Controller->Prg->commonProcess('Post', array(
+			'form' => 'Post',
+			'modelMethod' => false,
+			'filterEmpty' => true,
+			'allowedParams' => array('lang')));
+		debug($this->Controller->redirectUrl); ob_flush();
+		$expected = array(
+			'title' => 'test',
+			'action' => 'search',
+			'lang' => 'en');
+		$this->assertEquals($expected, $this->Controller->redirectUrl);
 	}
 
 /**
