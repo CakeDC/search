@@ -185,28 +185,29 @@ class Article extends CakeTestModel {
  */
 class SearchableTest extends CakeTestCase {
 
-/**
- * Fixtures used in the SessionTest
- *
- * @var array
- */
+	public $Article;
+
 	public $fixtures = array('plugin.search.article', 'plugin.search.tag', 'plugin.search.tagged', 'core.user');
 
 /**
- * startTest
+ * setUp
  *
  * @return void
  */
-	public function startTest() {
+	public function setUp() {
+		parent::setUp();
+
 		$this->Article = ClassRegistry::init('Article');
 	}
 
 /**
- * endTest
+ * tearDown
  *
  * @return void
  */
-	public function endTest() {
+	public function tearDown() {
+		parent::tearDown();
+
 		unset($this->Article);
 	}
 
