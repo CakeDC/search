@@ -388,7 +388,6 @@ class PrgComponentTest extends CakeTestCase {
 			'form' => 'Post',
 			'modelMethod' => false,
 			'allowedParams' => array('lang')));
-		debug($this->Controller->redirectUrl); ob_flush();
 		$expected = array(
 			'sort' => 'name',
 			'direction' => 'asc',
@@ -424,7 +423,6 @@ class PrgComponentTest extends CakeTestCase {
 			'modelMethod' => false,
 			'filterEmpty' => true,
 			'allowedParams' => array('lang')));
-		debug($this->Controller->redirectUrl); ob_flush();
 		$expected = array(
 			'title' => 'test',
 			'action' => 'search',
