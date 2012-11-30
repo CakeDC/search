@@ -431,6 +431,105 @@ class PrgComponentTest extends CakeTestCase {
 	}
 
 /**
+ * testCommonProcessQuerystring
+ *
+ * @return void
+ */
+	public function testCommonProcessQuerystring() {
+		$this->Controller->request->params = array_merge($this->Controller->request->params, array(
+			'named' => array(),
+			'lang' => 'en',
+			));
+
+		$this->Controller->presetVars = array();
+		$this->Controller->action = 'search';
+		$this->Controller->request->data = array(
+			'Post' => array(
+				'title' => 'test',
+				'foo' => '',
+				'bar' => ''));
+
+		$this->Controller->Prg->commonProcess('Post', array(
+			'form' => 'Post',
+			'modelMethod' => false,
+			'paramType' =>'querystring',
+			'allowedParams' => array('lang')));
+		$expected = array(
+			'?' => array('title' => 'test', 'foo' => '', 'bar' => ''),
+			'action' => 'search',
+			'lang' => 'en');
+		$this->assertEquals($expected, $this->Controller->redirectUrl);
+	}
+
+/**
+ * testCommonProcessQuerystringPagination
+ *
+ * @return void
+ */
+	public function testCommonProcessQuerystringPagination() {
+		$this->Controller->request->query = array(
+			'sort' => 'created',
+			'direction' => 'asc',
+			'page' => 3,
+		);
+		$this->Controller->request->params = array_merge($this->Controller->request->params, array(
+			'named' => array(),
+			'lang' => 'en',
+			));
+
+		$this->Controller->presetVars = array();
+		$this->Controller->action = 'search';
+		$this->Controller->request->data = array(
+			'Post' => array(
+				'title' => 'test',
+				'foo' => '',
+				'bar' => ''));
+
+		$this->Controller->Prg->commonProcess('Post', array(
+			'form' => 'Post',
+			'modelMethod' => false,
+			'paramType' =>'querystring',
+			'allowedParams' => array('lang')));
+		$expected = array(
+			'?' => array('title' => 'test', 'foo' => '', 'bar' => '', 'sort' => 'created', 'direction' => 'asc'),
+			'action' => 'search',
+			'lang' => 'en');
+		$this->assertEquals($expected, $this->Controller->redirectUrl);
+	}
+
+/**
+ * testCommonProcessQuerystringFilterEmpty
+ *
+ * @return void
+ */
+	public function testCommonProcessQuerystringFilterEmpty() {
+		$this->Controller->request->params = array_merge($this->Controller->request->params, array(
+			'named' => array(),
+			'lang' => 'en',
+			));
+
+		$this->Controller->presetVars = array();
+		$this->Controller->action = 'search';
+		$this->Controller->request->data = array(
+			'Post' => array(
+				'title' => 'test',
+				'foo' => '',
+				'bar' => ''));
+
+		$this->Controller->Prg->commonProcess('Post', array(
+			'form' => 'Post',
+			'modelMethod' => false,
+			'filterEmpty' => true,
+			'paramType' =>'querystring',
+			'allowedParams' => array('lang')));
+		$expected = array(
+			'?' => array('title' => 'test'),
+			'action' => 'search',
+			'lang' => 'en');
+		$this->assertEquals($expected, $this->Controller->redirectUrl);
+	}
+
+/**
  * testCommonProcessGet
  *
  * @return void

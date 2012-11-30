@@ -311,13 +311,13 @@ class PrgComponent extends Component {
 					}
 					$this->connectNamed($params, array());
 				} else {
-					$params = $this->controller->request->query;
-					$params = $this->exclude($params, $excludedParams);
+					$searchParams = array_merge($this->controller->request->query, $searchParams);
+					$searchParams = $this->exclude($searchParams, $excludedParams);
 					if ($filterEmpty) {
-						$params = Set::filter($params);
+						$searchParams = Set::filter($searchParams);
 					}
-					$params['?'] = array_merge($params, $searchParams);
-					$this->connectNamed($params, array());
+					$params['?'] = $searchParams;
+ 					$this->connectNamed($params, array());
 				}
 
 				$params['action'] = $action;
