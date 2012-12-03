@@ -42,6 +42,13 @@ class PrgComponent extends Component {
 	public $encode = false;
 
 /**
+ * If the current request is an actual search (at least one search value present)
+ *
+ * @var boolean
+ */
+	public $isSearch = false;
+
+/**
  * Default options
  *
  * @var array
@@ -137,42 +144,41 @@ class PrgComponent extends Component {
 			$args = $this->controller->request->query;
 		}
 		foreach ($this->controller->presetVars as $field) {
+			if (!isset($args[$field['field']])) {
+				continue;
+			}
+
 			if ($this->encode || !empty($field['encode'])) {
 				// Its important to set it also back to the controllers passed args!
-				if (isset($args[$field['field']])) {
-					$fieldContent = $args[$field['field']];
-					$fieldContent = str_replace(array('-', '_'), array('/', '='), $fieldContent);
-					$this->controller->passedArgs[$field['field']] = $args[$field['field']] = base64_decode($fieldContent);
-				}
+				$fieldContent = $args[$field['field']];
+				$fieldContent = str_replace(array('-', '_'), array('/', '='), $fieldContent);
+				$this->controller->passedArgs[$field['field']] = $args[$field['field']] = base64_decode($fieldContent);
 			}
 
 			if ($field['type'] === 'lookup') {
-				if (isset($args[$field['field']])) {
-					$searchModel = $field['model'];
-					$this->controller->loadModel($searchModel);
-					$this->controller->{$searchModel}->recursive = -1;
-					$result = $this->controller->{$searchModel}->findById($args[$field['field']]);
-					$data[$model][$field['field']] = $args[$field['field']];
-					$data[$model][$field['formField']] = $result[$searchModel][$field['modelField']];
-				}
+				$searchModel = $field['model'];
+				$this->controller->loadModel($searchModel);
+				$this->controller->{$searchModel}->recursive = -1;
+				$result = $this->controller->{$searchModel}->findById($args[$field['field']]);
+				$data[$model][$field['field']] = $args[$field['field']];
+				$data[$model][$field['formField']] = $result[$searchModel][$field['modelField']];
+
+			} elseif ($field['type'] === 'checkbox') {
+				$values = split('\|', $args[$field['field']]);
+				$data[$model][$field['field']] = $values;
+
+			} elseif ($field['type'] === 'value') {
+				$data[$model][$field['field']] = $args[$field['field']];
 			}
 
-			if ($field['type'] === 'checkbox') {
-				if (isset($args[$field['field']])) {
-					$values = split('\|', $args[$field['field']]);
-					$data[$model][$field['field']] = $values;
-				}
-			}
-
-			if ($field['type'] === 'value') {
-				if (isset($args[$field['field']])) {
-					$data[$model][$field['field']] = $args[$field['field']];
-				}
+			if (isset($data[$model][$field['field']]) && $data[$model][$field['field']] !== '') {
+				$this->isSearch = true;
 			}
 		}
 
 		$this->controller->data = $data;
 		$this->controller->parsedData = $data;
+		$this->controller->set('isSearch', $this->isSearch);
 	}
 
 /**
@@ -317,7 +323,7 @@ class PrgComponent extends Component {
 						$searchParams = Set::filter($searchParams);
 					}
 					$params['?'] = $searchParams;
- 					$this->connectNamed($params, array());
+					$this->connectNamed($params, array());
 				}
 
 				$params['action'] = $action;
