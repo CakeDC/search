@@ -180,7 +180,7 @@ class PrgComponentTest extends CakeTestCase {
 	}
 
 /**
- * test
+ * testPresetForm
  *
  * @return void
  */
@@ -226,6 +226,46 @@ class PrgComponentTest extends CakeTestCase {
 
 		$this->Controller->Prg->presetForm(array('model' => 'Post', 'paramType' => 'querystring'));
 		$this->assertEquals($expected, $this->Controller->data);
+		$this->assertTrue($this->Controller->Prg->isSearch);
+	}
+
+/**
+ * testPresetFormEmpty
+ *
+ * @return void
+ */
+	public function testPresetFormEmpty() {
+		$this->Controller->presetVars = array(
+			array(
+				'field' => 'title',
+				'type' => 'value'),
+			array(
+				'field' => 'checkbox',
+				'type' => 'checkbox'),
+			array(
+				'field' => 'lookup',
+				'type' => 'lookup',
+				'formField' => 'lookup_input',
+				'modelField' => 'title',
+				'model' => 'Post'));
+		$this->Controller->passedArgs = array(
+			'page' => '2');
+		$this->Controller->beforeFilter();
+
+		$this->Controller->Prg->presetForm('Post');
+		$expected = array(
+			'Post' => array());
+		$this->assertEquals($this->Controller->request->data, $expected);
+
+		$this->Controller->data = array();
+		$this->Controller->passedArgs = array();
+		$this->Controller->request->query = array(
+			'page' => '2');
+		$this->Controller->beforeFilter();
+
+		$this->Controller->Prg->presetForm(array('model' => 'Post', 'paramType' => 'querystring'));
+		$this->assertEquals($expected, $this->Controller->data);
+		$this->assertFalse($this->Controller->Prg->isSearch);
 	}
 
 /**
@@ -249,6 +289,7 @@ class PrgComponentTest extends CakeTestCase {
 			'Post' => array(
 				'views' => '0'));
 		$this->assertEquals($this->Controller->request->data, $expected);
+		$this->assertTrue($this->Controller->Prg->isSearch);
 	}
 
 /**
@@ -545,6 +586,7 @@ class PrgComponentTest extends CakeTestCase {
 		$this->Controller->passedArgs = array_merge($this->Controller->request->params['named'], $this->Controller->request->params['pass']);
 		$this->Controller->Prg->commonProcess('Post');
 		$this->assertEquals($this->Controller->request->data, array('Post' => array('title' => 'test')));
+		$this->assertTrue($this->Controller->Prg->isSearch);
 	}
 
 	public function testCommonProcessGetWithStringKeys() {
@@ -608,7 +650,7 @@ class PrgComponentTest extends CakeTestCase {
  * @return string
  */
 	protected function _urlEncode($str) {
-		return str_replace(array('/', '='), array('-', '_'), base64_encode($str)); ////rtrim(strtr(base64_encode($str), '+/', '-_'), '=');
+		return str_replace(array('/', '='), array('-', '_'), base64_encode($str));
 	}
 
 /**
@@ -672,6 +714,7 @@ class PrgComponentTest extends CakeTestCase {
 				'lookup' => 1,
 				'lookup_input' => 'First Post'));
 		$this->assertEquals($this->Controller->request->data, $expected);
+		$this->assertTrue($this->Controller->Prg->isSearch);
 	}
 
 }
