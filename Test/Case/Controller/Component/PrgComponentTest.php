@@ -342,7 +342,13 @@ class PrgComponentTest extends CakeTestCase {
 
 		$array = array('foo' => 'test', 'bar' => 'test', 'test' => 'test');
 		$exclude = array('bar', 'test');
-		$this->assertEquals($this->Controller->Prg->exclude($array, $exclude), array('foo' => 'test'));
+		$result = $this->Controller->Prg->exclude($array, $exclude);
+		$this->assertEquals(array('foo' => 'test'), $result);
+
+		$array = array('foo' => 'test', 'bar' => 'test', 'test' => 'test', 0 => 'passed', 1 => 'passed_again');
+		$exclude = array('bar', 'test');
+		$result = $this->Controller->Prg->exclude($array, $exclude);
+		$this->assertEquals(array('foo' => 'test', 0 => 'passed', 1 => 'passed_again'), $result);
 	}
 
 /**
@@ -360,22 +366,25 @@ class PrgComponentTest extends CakeTestCase {
 		$this->Controller->Prg->commonProcess('Post', array(
 			'form' => 'Post',
 			'modelMethod' => false));
-		$this->assertEquals($this->Controller->redirectUrl, array(
+		$expected = array(
 			'title' => 'test',
-			'action' => 'search'));
+			'action' => 'search');
+		$this->assertEquals($expected, $this->Controller->redirectUrl);
 
 		$this->Controller->Prg->commonProcess(null, array(
 			'modelMethod' => false));
-		$this->assertEquals($this->Controller->redirectUrl, array(
+		$expected = array(
 			'title' => 'test',
-			'action' => 'search'));
+			'action' => 'search');
+		$this->assertEquals($expected, $this->Controller->redirectUrl);
 
 		$this->Controller->Post->filterArgs = array(
 			array('name' => 'title', 'type' => 'value'));
 		$this->Controller->Prg->commonProcess('Post');
-		$this->assertEquals($this->Controller->redirectUrl, array(
+		$expected = array(
 			'title' => 'test',
-			'action' => 'search'));
+			'action' => 'search');
+		$this->assertEquals($expected, $this->Controller->redirectUrl);
 	}
 
 /**
