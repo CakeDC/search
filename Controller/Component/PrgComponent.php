@@ -113,7 +113,7 @@ class PrgComponent extends Component {
 	}
 
 /**
- * Populates controller->data with allowed values from the named/passed get params
+ * Populates controller->request->data with allowed values from the named/passed get params
  *
  * Fields in $controller::$presetVars that have a type of 'lookup' the foreignKey value will be inserted
  *
@@ -176,7 +176,7 @@ class PrgComponent extends Component {
 			}
 		}
 
-		$this->controller->data = $data;
+		$this->controller->request->data = $data;
 		$this->controller->parsedData = $data;
 		$this->controller->set('isSearch', $this->isSearch);
 	}
@@ -247,7 +247,7 @@ class PrgComponent extends Component {
 	public function exclude(array $array, array $exclude) {
 		$data = array();
 		foreach ($array as $key => $value) {
-			if (!is_numeric($key) && !in_array($key, $exclude)) {
+			if (is_numeric($key) || !in_array($key, $exclude)) {
 				$data[$key] = $value;
 			}
 		}
@@ -293,8 +293,8 @@ class PrgComponent extends Component {
 			$action = $this->controller->action;
 		}
 
-		if (!empty($this->controller->data)) {
-			$this->controller->{$modelName}->data = $this->controller->data;
+		if (!empty($this->controller->request->data)) {
+			$this->controller->{$modelName}->set($this->controller->request->data);
 			$valid = true;
 			if ($modelMethod !== false) {
 				$valid = $this->controller->{$modelName}->{$modelMethod}();
@@ -306,7 +306,7 @@ class PrgComponent extends Component {
 					$params = array_merge($this->controller->request->params['pass'], $params);
 				}
 
-				$searchParams = $this->controller->data[$modelName];
+				$searchParams = $this->controller->request->data[$modelName];
 				$this->serializeParams($searchParams);
 
 				if ($paramType === 'named') {
