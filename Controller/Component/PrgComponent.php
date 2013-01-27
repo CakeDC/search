@@ -164,7 +164,7 @@ class PrgComponent extends Component {
 				$data[$model][$field['formField']] = $result[$searchModel][$field['modelField']];
 
 			} elseif ($field['type'] === 'checkbox') {
-				$values = split('\|', $args[$field['field']]);
+				$values = explode('|', $args[$field['field']]);
 				$data[$model][$field['field']] = $values;
 
 			} elseif ($field['type'] === 'value') {
