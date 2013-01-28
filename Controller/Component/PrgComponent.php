@@ -164,7 +164,7 @@ class PrgComponent extends Component {
 				$data[$model][$field['formField']] = $result[$searchModel][$field['modelField']];
 
 			} elseif ($field['type'] === 'checkbox') {
-				$values = split('\|', $args[$field['field']]);
+				$values = explode('|', $args[$field['field']]);
 				$data[$model][$field['field']] = $values;
 
 			} elseif ($field['type'] === 'value') {
@@ -316,6 +316,8 @@ class PrgComponent extends Component {
 						$params = Set::filter($params);
 					}
 					$this->connectNamed($params, array());
+					$params = $this->encodeParams($params);
+
 				} else {
 					$searchParams = array_merge($this->controller->request->query, $searchParams);
 					$searchParams = $this->exclude($searchParams, $excludedParams);
@@ -344,6 +346,19 @@ class PrgComponent extends Component {
 			$this->connectNamed($this->controller->passedArgs, array());
 			$this->presetForm(array('model' => $formName, 'paramType' => $paramType));
 		}
+	}
+
+/**
+ * secure and urlencode the params to not destroy the url
+ *
+ * @param array $params
+ * @return array
+ */
+	public function encodeParams($params) {
+		foreach ($params as $key => $val) {
+			$params[$key] = urlencode($val);
+		}
+		return $params;
 	}
 
 /**
