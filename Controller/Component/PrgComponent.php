@@ -143,6 +143,7 @@ class PrgComponent extends Component {
 		} else {
 			$args = $this->controller->request->query;
 		}
+
 		foreach ($this->controller->presetVars as $field) {
 			if (!isset($args[$field['field']])) {
 				continue;
@@ -339,7 +340,7 @@ class PrgComponent extends Component {
 				$this->controller->Session->setFlash(__d('search', 'Please correct the errors below.'));
 			}
 		} elseif (($paramType === 'named' && !empty($this->controller->passedArgs)) ||
-				($paramType === 'querystring' && !empty($this->controller->request->query))
+				($paramType == 'queryString' && !empty($this->controller->request->query))
 			) {
 			$this->connectNamed($this->controller->passedArgs, array());
 			$this->presetForm(array('model' => $formName, 'paramType' => $paramType));
