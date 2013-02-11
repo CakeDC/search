@@ -1,11 +1,11 @@
 <?php
 /**
- * Copyright 2009-2010, Cake Development Corporation (http://cakedc.com)
+ * Copyright 2009 - 2013, Cake Development Corporation (http://cakedc.com)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright Copyright 2009-2010, Cake Development Corporation (http://cakedc.com)
+ * @copyright Copyright 2009 - 2013, Cake Development Corporation (http://cakedc.com)
  * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
@@ -24,7 +24,7 @@ class FilterBehavior extends ModelBehavior {
  * mostFilterConditions
  *
  * @param Model $Model
- * @param string $data
+ * @param array $data
  * @return array
  */
 	public function mostFilterConditions(Model $Model, $data = array()) {
@@ -70,7 +70,7 @@ class Tagged extends CakeTestModel {
 	public $useTable = 'tagged';
 
 /**
- * Belongs To Assocaitions
+ * Belongs To Associations
  *
  * @var array
  */
@@ -103,7 +103,7 @@ class Article extends CakeTestModel {
 /**
  * Find by tags
  *
- * @param string $data
+ * @param array $data
  * @return array
  */
 	public function findByTags($data = array()) {
@@ -124,6 +124,8 @@ class Article extends CakeTestModel {
 /**
  * Makes an array of range numbers that matches the ones on the interface.
  *
+ * @param $data
+ * @param null $field
  * @return array
  */
 	public function makeRangeCondition($data, $field = null) {

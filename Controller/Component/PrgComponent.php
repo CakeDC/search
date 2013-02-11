@@ -1,11 +1,11 @@
 <?php
 /**
- * Copyright 2009-2010, Cake Development Corporation (http://cakedc.com)
+ * Copyright 2009 - 2013, Cake Development Corporation (http://cakedc.com)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright Copyright 2009-2010, Cake Development Corporation (http://cakedc.com)
+ * @copyright Copyright 2009 - 2013, Cake Development Corporation (http://cakedc.com)
  * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
@@ -72,7 +72,8 @@ class PrgComponent extends Component {
 /**
  * Constructor
  *
- * @param object Controller object
+ * @param ComponentCollection $collection
+ * @param array $settings
  */
 	public function __construct(ComponentCollection $collection, $settings) {
 		$this->controller = $collection->getController();
@@ -183,7 +184,7 @@ class PrgComponent extends Component {
 	}
 
 /**
- * Restores form params for checkboxs and other url encoded params
+ * Restores form params for checkboxes and other url encoded params
  *
  * @param array
  * @return array
