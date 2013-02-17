@@ -1,7 +1,7 @@
 {
 	"name": "cakedc/search",
 	"type": "cakephp-plugin",
-	"description": "The Search plugin allows you to make any kind of data searchable, enabling you to implement a robust searching rapidly."
+	"description": "The Search plugin allows you to make any kind of data searchable, enabling you to implement a robust searching rapidly.",
 	"homepage": "http://github.com/CakeDC/search",
 	"license": "MIT",
 	"authors": [
