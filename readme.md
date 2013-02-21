@@ -61,6 +61,8 @@ Associated snippet for the controller class:
 
 		public $presetVars = true; // using the model configuration
 		
+		public $paginate = array();
+		
 		public function find() {
 			$this->Prg->commonProcess();
 			$this->paginate['conditions'] = $this->Article->parseCriteria($this->passedArgs);
@@ -72,6 +74,8 @@ or verbose (and overriding the model configuration):
 
 	class ArticlesController extends AppController {
 		public $components = array('Search.Prg');
+		
+		public $paginate = array();
 
 		public $presetVars = array(
 			'title' => array('type' => 'value'),
