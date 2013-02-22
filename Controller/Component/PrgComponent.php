@@ -283,6 +283,8 @@ class PrgComponent extends Component {
 		$defaults = Set::merge($defaults, $this->_defaults['commonProcess']);
 		extract(Set::merge($defaults, $options));
 
+		$paramType = strtolower($paramType);
+
 		if (empty($modelName)) {
 			$modelName = $this->controller->modelClass;
 		}
@@ -341,7 +343,7 @@ class PrgComponent extends Component {
 				$this->controller->Session->setFlash(__d('search', 'Please correct the errors below.'));
 			}
 		} elseif (($paramType === 'named' && !empty($this->controller->passedArgs)) ||
-				($paramType == 'queryString' && !empty($this->controller->request->query))
+				($paramType === 'querystring' && !empty($this->controller->request->query))
 			) {
 			$this->connectNamed($this->controller->passedArgs, array());
 			$this->presetForm(array('model' => $formName, 'paramType' => $paramType));
