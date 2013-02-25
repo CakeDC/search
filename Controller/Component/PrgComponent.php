@@ -361,13 +361,13 @@ class PrgComponent extends Component {
 		if (isset($arg['preset']) && !$arg['preset']) {
 			return array();
 		}
-		if (isset($arg['presetType'])) {
+		if (array_key_exists('presetType', $arg) && !empty($arg['presetType'])) {
 			$arg['type'] = $arg['presetType'];
 			unset($arg['presetType']);
-		} elseif (!isset($arg['type']) || in_array($arg['type'], array('expression', 'query', 'subquery', 'like'))) {
+		}
+		if (!array_key_exists('type', $arg) || !in_array($arg['type'], array('value', 'checkbox', 'lookup'))) {
 			$arg['type'] = 'value';
 		}
-
 		if (isset($arg['name']) || is_numeric($key)) {
 			$field = $arg['name'];
 		} else {
