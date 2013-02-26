@@ -481,6 +481,41 @@ class PrgComponentTest extends CakeTestCase {
 	}
 
 /**
+ * testCommonProcessSpecialChars
+ *
+ * @return void
+ */
+	public function testCommonProcessSpecialChars() {
+		$this->Controller->request->params = array_merge($this->Controller->request->params, array(
+			'named' => array(),
+			'lang' => 'en',
+			));
+
+		$this->Controller->presetVars = array();
+		$this->Controller->action = 'search';
+		$this->Controller->request->data = array(
+			'Post' => array(
+				'title' => 'test/slashes?!',
+				'foo' => '',
+				'bar' => ''));
+
+		$this->Controller->Prg->commonProcess('Post', array(
+			'form' => 'Post',
+			'modelMethod' => false,
+			'filterEmpty' => true,
+			'allowedParams' => array('lang')));
+		$expected = array(
+			'title' => 'test%2Fslashes%3F%21',
+			'action' => 'search',
+			'lang' => 'en');
+		$this->assertEquals($expected, $this->Controller->redirectUrl);
+
+		$url = Router::url($this->Controller->redirectUrl);
+		$expected = '/search/title:test%252Fslashes%253F%2521/lang:en';
+		$this->assertEquals($expected, $url);
+	}
+
+/**
  * testCommonProcessQuerystring
  *
  * @return void
@@ -509,6 +544,42 @@ class PrgComponentTest extends CakeTestCase {
 			'action' => 'search',
 			'lang' => 'en');
 		$this->assertEquals($expected, $this->Controller->redirectUrl);
+	}
+
+/**
+ * testCommonProcessQuerystringSpecialChars
+ *
+ * @return void
+ */
+	public function testCommonProcessQuerystringSpecialChars() {
+		$this->Controller->request->params = array_merge($this->Controller->request->params, array(
+			'named' => array(),
+			'lang' => 'en',
+			));
+
+		$this->Controller->presetVars = array();
+		$this->Controller->action = 'search';
+		$this->Controller->request->data = array(
+			'Post' => array(
+				'title' => 'test/slashes?!',
+				'foo' => '',
+				'bar' => ''));
+
+		$this->Controller->Prg->commonProcess('Post', array(
+			'form' => 'Post',
+			'modelMethod' => false,
+			'filterEmpty' => true,
+			'paramType' =>'querystring',
+			'allowedParams' => array('lang')));
+		$expected = array(
+			'?' => array('title' => 'test/slashes?!'),
+			'action' => 'search',
+			'lang' => 'en');
+		$this->assertEquals($expected, $this->Controller->redirectUrl);
+
+		$url = Router::url($this->Controller->redirectUrl);
+		$expected = '/search/lang:en?title=test%2Fslashes%3F%21';
+		$this->assertEquals($expected, $url);
 	}
 
 /**

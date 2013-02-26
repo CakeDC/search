@@ -320,6 +320,8 @@ class PrgComponent extends Component {
 						$params = Set::filter($params);
 					}
 					$this->connectNamed($params, array());
+					$params = $this->encodeParams($params);
+
 				} else {
 					$searchParams = array_merge($this->controller->request->query, $searchParams);
 					$searchParams = $this->exclude($searchParams, $excludedParams);
@@ -348,6 +350,19 @@ class PrgComponent extends Component {
 			$this->connectNamed($this->controller->passedArgs, array());
 			$this->presetForm(array('model' => $formName, 'paramType' => $paramType));
 		}
+	}
+
+/**
+ * secure and urlencode the params to not destroy the url
+ *
+ * @param array $params
+ * @return array
+ */
+	public function encodeParams($params) {
+		foreach ($params as $key => $val) {
+			$params[$key] = urlencode($val);
+		}
+		return $params;
 	}
 
 /**
