@@ -50,6 +50,7 @@ class SearchableBehavior extends ModelBehavior {
  * @param array $config
  */
 	public function setup(Model $Model, $config = array()) {
+		$this->_defaults = array_merge($this->_defaults, (array)Configure::read('Search.Searchable'));
 		$this->settings[$Model->alias] = array_merge($this->_defaults, $config);
 		if (empty($Model->filterArgs)) {
 			return;
@@ -322,7 +323,7 @@ class SearchableBehavior extends ModelBehavior {
 /**
  * Add Conditions based on exact comparison
  *
- * @param \Model $Model Reference to the model
+ * @param Model $Model Reference to the model
  * @param array $conditions existing Conditions collected for the model
  * @param array $data Array of data used in search query
  * @param array $field Field definition information
@@ -337,8 +338,15 @@ class SearchableBehavior extends ModelBehavior {
 			if (strpos($fieldName, '.') === false) {
 				$fieldName = $Model->alias . '.' . $fieldName;
 			}
-			if (!empty($fieldValue) || (String)$fieldValue !== '') {
+			if ((String)$fieldValue !== '') {
 				$cond[$fieldName] = $fieldValue;
+			} elseif (isset($data[$field['name']]) && !empty($field['allowEmpty'])) {
+				$schema = $Model->schema($field['name']);
+				if ($schema) {
+					$cond[$fieldName] = $schema['default'];
+				} else {
+					$cond[$fieldName] = $fieldValue;
+				}
 			}
 		}
 		if (count($cond) > 1) {

@@ -1,12 +1,16 @@
 # Search Plugin for CakePHP #
 
-Version 2.1 for cake 2.x
+Version 2.2 for cake 2.x
 
 The Search plugin allows you to make any kind of data searchable, enabling you to implement a robust searching rapidly.
 
 The Search plugin is an easy way to include search into your application, and provides you with a paginate-able search in any controller.
 
 It supports simple methods to search inside models using strict and non-strict comparing, but also allows you to implement any complex type of searching.
+
+## UPDATE for 2.2 - 2013-01-16 Mark Scherer
+
+* `emptyValue` is now available for fields to make it work with "default NULL" fields and `allowEmpty` set to true. See example below.
 
 ## Sample of usage ##
 
@@ -115,6 +119,27 @@ In this example on model level shon example of search by OR condition. For this 
 			'search_with_connectors' => array('type' => 'like', 'field' => 'Article.title', 'connectorAnd' => '+', 'connectorOr' => ',')
 		);
 
+### `emptyValue` default values to allow search for "not any of the below"
+
+Let's say we have categories and a dropdown list to select any of those or "empty = ignore this filter". But what if we also want to have an option to find all non-categorized items?
+With "default 0 NOT NULL" fields this works as we can use 0 here explicitly:
+
+		$categories = $this->Model->Category->find('list');
+		array_unshift($categories, '- not categorized -'); // before passing it on to the view (the key will be 0, not '' as the ignore-filter key will be)
+
+But for char36 foreign keys or "default NULL" fields this does not work. The posted empty string will result in the omitting of the rule.
+That's where `emptyValue` comes into play.
+
+		public $presetVars = array(
+			'category_id' => array(
+				'allowEmpty' => true,
+				'emptyValue' => '0',
+			);
+		);
+
+This way we assign '' for 0, and "ignore" for '' on POST, and the opposite for presetForm().
+
+Note: This only works if you use `allowEmpty` here. If you fail to do that it will always trigger the lookup here.
 
 ## Full example for model/controller configuration with overriding
 
@@ -149,7 +174,6 @@ In this example on model level shon example of search by OR condition. For this 
 
 	// search example with wildcards in the view for field `search`
 	20??BE* => matches 2011BES and 2012BETR etc
-
 
 ## Behavior and Model configuration ##
 

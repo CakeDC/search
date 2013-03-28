@@ -77,6 +77,12 @@ class PrgComponent extends Component {
  */
 	public function __construct(ComponentCollection $collection, $settings) {
 		$this->controller = $collection->getController();
+
+		$configCommonProcess = (array)Configure::read('Search.Prg.commonProcess');
+		$this->_defaults['commonProcess'] = array_merge($this->_defaults['commonProcess'], $configCommonProcess);
+		$configPresetForm = (array)Configure::read('Search.Prg.presetForm');
+		$this->_defaults['presetForm'] = array_merge($this->_defaults['presetForm'], $configPresetForm);
+
 		$this->_defaults = Set::merge($this->_defaults, $settings);
 		// fix for not throwing warning
 		if (!isset($this->controller->presetVars)) {
@@ -171,6 +177,10 @@ class PrgComponent extends Component {
 
 			} elseif ($field['type'] === 'value') {
 				$data[$model][$field['field']] = $args[$field['field']];
+			}
+
+			if ($data[$model][$field['field']] === '' && isset($field['emptyValue'])) {
+				$data[$model][$field['field']] = $field['emptyValue'];
 			}
 
 			if (isset($data[$model][$field['field']]) && $data[$model][$field['field']] !== '') {
@@ -319,6 +329,17 @@ class PrgComponent extends Component {
 					if ($filterEmpty) {
 						$params = Set::filter($params);
 					}
+					foreach ($this->controller->presetVars as $presetVar) {
+						$field = $presetVar['name'];
+						if (!isset($params[$field])) {
+							continue;
+						}
+						if (!isset($presetVar['emptyValue']) || $presetVar['emptyValue'] !== $params[$field]) {
+							continue;
+						}
+						$params[$field] = '';
+					}
+
 					$this->connectNamed($params, array());
 				} else {
 					$searchParams = array_merge($this->controller->request->query, $searchParams);
@@ -326,8 +347,8 @@ class PrgComponent extends Component {
 					if ($filterEmpty) {
 						$searchParams = Set::filter($searchParams);
 					}
-					$params['?'] = $searchParams;
 					$this->connectNamed($params, array());
+					$params['?'] = $searchParams;
 				}
 
 				$params['action'] = $action;
