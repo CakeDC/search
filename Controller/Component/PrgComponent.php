@@ -77,8 +77,13 @@ class PrgComponent extends Component {
  */
 	public function __construct(ComponentCollection $collection, $settings) {
 		$this->controller = $collection->getController();
-		$this->_defaults = Set::merge($this->_defaults, $settings);
-		// fix for not throwing warning
+
+		$this->_defaults = Set::merge($this->_defaults, array(
+			'commonProcess' => (array)Configure::read('Search.Prg.commonProcess'),
+			'presetForm' => (array)Configure::read('Search.Prg.presetForm'),
+		), $settings);
+
+		// fix for not throwing warnings
 		if (!isset($this->controller->presetVars)) {
 			$this->controller->presetVars = array();
 		}
@@ -89,7 +94,7 @@ class PrgComponent extends Component {
 		}
 
 		if ($this->controller->presetVars === true) {
-			// auto-set the presetVars based on search defitions in model
+			// auto-set the presetVars based on search definitions in model
 			$this->controller->presetVars = array();
 			$filterArgs = $this->controller->$model->filterArgs;
 			foreach ($filterArgs as $key => $arg) {
@@ -171,6 +176,10 @@ class PrgComponent extends Component {
 
 			} elseif ($field['type'] === 'value') {
 				$data[$model][$field['field']] = $args[$field['field']];
+			}
+
+			if ($data[$model][$field['field']] === '' && isset($field['emptyValue'])) {
+				$data[$model][$field['field']] = $field['emptyValue'];
 			}
 
 			if (isset($data[$model][$field['field']]) && $data[$model][$field['field']] !== '') {
@@ -319,6 +328,17 @@ class PrgComponent extends Component {
 					if ($filterEmpty) {
 						$params = Set::filter($params);
 					}
+					foreach ($this->controller->presetVars as $presetVar) {
+						$field = $presetVar['name'];
+						if (!isset($params[$field])) {
+							continue;
+						}
+						if (!isset($presetVar['emptyValue']) || $presetVar['emptyValue'] !== $params[$field]) {
+							continue;
+						}
+						$params[$field] = '';
+					}
+
 					$this->connectNamed($params, array());
 				} else {
 					$searchParams = array_merge($this->controller->request->query, $searchParams);
@@ -326,8 +346,8 @@ class PrgComponent extends Component {
 					if ($filterEmpty) {
 						$searchParams = Set::filter($searchParams);
 					}
-					$params['?'] = $searchParams;
 					$this->connectNamed($params, array());
+					$params['?'] = $searchParams;
 				}
 
 				$params['action'] = $action;
