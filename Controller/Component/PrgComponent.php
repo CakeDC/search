@@ -78,13 +78,12 @@ class PrgComponent extends Component {
 	public function __construct(ComponentCollection $collection, $settings) {
 		$this->controller = $collection->getController();
 
-		$configCommonProcess = (array)Configure::read('Search.Prg.commonProcess');
-		$this->_defaults['commonProcess'] = array_merge($this->_defaults['commonProcess'], $configCommonProcess);
-		$configPresetForm = (array)Configure::read('Search.Prg.presetForm');
-		$this->_defaults['presetForm'] = array_merge($this->_defaults['presetForm'], $configPresetForm);
+		$this->_defaults = Set::merge($this->_defaults, array(
+			'commonProcess' => (array)Configure::read('Search.Prg.commonProcess'),
+			'presetForm' => (array)Configure::read('Search.Prg.presetForm'),
+		), $settings);
 
-		$this->_defaults = Set::merge($this->_defaults, $settings);
-		// fix for not throwing warning
+		// fix for not throwing warnings
 		if (!isset($this->controller->presetVars)) {
 			$this->controller->presetVars = array();
 		}
@@ -95,7 +94,7 @@ class PrgComponent extends Component {
 		}
 
 		if ($this->controller->presetVars === true) {
-			// auto-set the presetVars based on search defitions in model
+			// auto-set the presetVars based on search definitions in model
 			$this->controller->presetVars = array();
 			$filterArgs = $this->controller->$model->filterArgs;
 			foreach ($filterArgs as $key => $arg) {
