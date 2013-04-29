@@ -122,7 +122,7 @@ class PrgComponentTest extends CakeTestCase {
  *
  * @return void
  */
-	public function startTest() {
+	public function startTest($method) {
 		$this->Controller = new PostsTestController();
 		$this->Controller->constructClasses();
 		$this->Controller->request->params = array(
@@ -137,7 +137,7 @@ class PrgComponentTest extends CakeTestCase {
  *
  * @return void
  */
-	public function endTest() {
+	public function endTest($method) {
 		unset($this->Controller);
 		ClassRegistry::flush();
 	}

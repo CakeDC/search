@@ -187,7 +187,7 @@ class SearchableTest extends CakeTestCase {
  *
  * @return void
  */
-	public function startTest() {
+	public function startTest($method) {
 		$this->Article = ClassRegistry::init('Article');
 	}
 
@@ -196,7 +196,7 @@ class SearchableTest extends CakeTestCase {
  *
  * @return void
  */
-	public function endTest() {
+	public function endTest($method) {
 		unset($this->Article);
 	}
 
