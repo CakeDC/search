@@ -12,6 +12,7 @@
 App::uses('Controller', 'Controller');
 App::uses('Component', 'Search.Prg');
 App::uses('Router', 'Routing');
+App::uses('CakeRequest', 'Network');
 
 /**
  * Post-Redirect-Get: Transfers POST Requests to GET Requests tests
@@ -125,6 +126,7 @@ class PrgComponentTest extends CakeTestCase {
 	public function startTest($method) {
 		$this->Controller = new PostsTestController();
 		$this->Controller->constructClasses();
+		$this->Controller->request = new CakeRequest();
 		$this->Controller->request->params = array(
 			'named' => array(),
 			'pass' => array(),
