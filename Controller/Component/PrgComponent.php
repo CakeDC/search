@@ -1,11 +1,11 @@
 <?php
 /**
- * Copyright 2009-2010, Cake Development Corporation (http://cakedc.com)
+ * Copyright 2009 - 2013, Cake Development Corporation (http://cakedc.com)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright Copyright 2009-2010, Cake Development Corporation (http://cakedc.com)
+ * @copyright Copyright 2009 - 2013, Cake Development Corporation (http://cakedc.com)
  * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
@@ -42,6 +42,13 @@ class PrgComponent extends Component {
 	public $encode = false;
 
 /**
+ * If the current request is an actual search (at least one search value present)
+ *
+ * @var boolean
+ */
+	public $isSearch = false;
+
+/**
  * Default options
  *
  * @var array
@@ -65,12 +72,18 @@ class PrgComponent extends Component {
 /**
  * Constructor
  *
- * @param object Controller object
+ * @param ComponentCollection $collection
+ * @param array $settings
  */
 	public function __construct(ComponentCollection $collection, $settings) {
 		$this->controller = $collection->getController();
-		$this->_defaults = Set::merge($this->_defaults, $settings);
-		# fix for not throwing warning
+
+		$this->_defaults = Set::merge($this->_defaults, array(
+			'commonProcess' => (array)Configure::read('Search.Prg.commonProcess'),
+			'presetForm' => (array)Configure::read('Search.Prg.presetForm'),
+		), $settings);
+
+		// fix for not throwing warnings
 		if (!isset($this->controller->presetVars)) {
 			$this->controller->presetVars = array();
 		}
@@ -81,12 +94,12 @@ class PrgComponent extends Component {
 		}
 
 		if ($this->controller->presetVars === true) {
-			// auto-set the presetVars based on search defitions in model
+			// auto-set the presetVars based on search definitions in model
 			$this->controller->presetVars = array();
 			$filterArgs = $this->controller->$model->filterArgs;
 			foreach ($filterArgs as $key => $arg) {
-				if ($var = $this->_parseFromModel($arg, $key)) {
-					$this->controller->presetVars[] = $var;
+				if ($args = $this->_parseFromModel($arg, $key)) {
+					$this->controller->presetVars[] = $args;
 				}
 			}
 		}
@@ -106,7 +119,7 @@ class PrgComponent extends Component {
 	}
 
 /**
- * Populates controller->data with allowed values from the named/passed get params
+ * Populates controller->request->data with allowed values from the named/passed get params
  *
  * Fields in $controller::$presetVars that have a type of 'lookup' the foreignKey value will be inserted
  *
@@ -136,54 +149,58 @@ class PrgComponent extends Component {
 		} else {
 			$args = $this->controller->request->query;
 		}
+
 		foreach ($this->controller->presetVars as $field) {
+			if (!isset($args[$field['field']])) {
+				continue;
+			}
+
 			if ($this->encode || !empty($field['encode'])) {
 				// Its important to set it also back to the controllers passed args!
-				if (isset($args[$field['field']])) {
-					$fieldContent = $args[$field['field']];
-					$fieldContent = str_replace(array('-', '_'), array('/', '='), $fieldContent);
-					$this->controller->passedArgs[$field['field']] = $args[$field['field']] = base64_decode($fieldContent);
-				}
+				$fieldContent = $args[$field['field']];
+				$fieldContent = str_replace(array('-', '_'), array('/', '='), $fieldContent);
+				$this->controller->passedArgs[$field['field']] = $args[$field['field']] = base64_decode($fieldContent);
 			}
 
-			if ($field['type'] == 'lookup') {
-				if (isset($args[$field['field']])) {
-					$searchModel = $field['model'];
-					$this->controller->loadModel($searchModel);
-					$this->controller->{$searchModel}->recursive = -1;
-					$result = $this->controller->{$searchModel}->findById($args[$field['field']]);
-					$data[$model][$field['field']] = $args[$field['field']];
-					$data[$model][$field['formField']] = $result[$searchModel][$field['modelField']];
-				}
+			if ($field['type'] === 'lookup') {
+				$searchModel = $field['model'];
+				$this->controller->loadModel($searchModel);
+				$this->controller->{$searchModel}->recursive = -1;
+				$result = $this->controller->{$searchModel}->findById($args[$field['field']]);
+				$data[$model][$field['field']] = $args[$field['field']];
+				$data[$model][$field['formField']] = $result[$searchModel][$field['modelField']];
+
+			} elseif ($field['type'] === 'checkbox') {
+				$values = explode('|', $args[$field['field']]);
+				$data[$model][$field['field']] = $values;
+
+			} elseif ($field['type'] === 'value') {
+				$data[$model][$field['field']] = $args[$field['field']];
 			}
 
-			if ($field['type'] == 'checkbox') {
-				if (isset($args[$field['field']])) {
-					$values = split('\|', $args[$field['field']]);
-					$data[$model][$field['field']] = $values;
-				}
+			if ($data[$model][$field['field']] === '' && isset($field['emptyValue'])) {
+				$data[$model][$field['field']] = $field['emptyValue'];
 			}
 
-			if (in_array($field['type'], array('value', 'like', 'query'))) {
-				if (isset($args[$field['field']])) {
-					$data[$model][$field['field']] = $args[$field['field']];
-				}
+			if (isset($data[$model][$field['field']]) && $data[$model][$field['field']] !== '') {
+				$this->isSearch = true;
 			}
 		}
 
-		$this->controller->data = $data;
+		$this->controller->request->data = $data;
 		$this->controller->parsedData = $data;
+		$this->controller->set('isSearch', $this->isSearch);
 	}
 
 /**
- * Restores form params for checkboxs and other url encoded params
+ * Restores form params for checkboxes and other url encoded params
  *
  * @param array
  * @return array
  */
-	public function serializeParams(&$data) {
+	public function serializeParams(array &$data) {
 		foreach ($this->controller->presetVars as $field) {
-			if ($field['type'] == 'checkbox') {
+			if ($field['type'] === 'checkbox') {
 				if (array_key_exists($field['field'], $data)) {
 					$values = join('|', (array)$data[$field['field']]);
 				} else {
@@ -195,7 +212,7 @@ class PrgComponent extends Component {
 			if ($this->encode || !empty($field['encode'])) {
 				$fieldContent = $data[$field['field']];
 				$tmp = base64_encode($fieldContent);
-				//replace chars base64 uses that would mess up the url
+				// replace chars base64 uses that would mess up the url
 				$tmp = str_replace(array('/', '='), array('-', '_'), $tmp);
 				$data[$field['field']] = $tmp;
 			}
@@ -213,7 +230,7 @@ class PrgComponent extends Component {
  * @param array $exclude
  * @return void
  */
-	public function connectNamed($data = null, $exclude = array()) {
+	public function connectNamed($data = null, array $exclude = array()) {
 		if (!isset($data)) {
 			$data = $this->controller->passedArgs;
 		}
@@ -238,10 +255,10 @@ class PrgComponent extends Component {
  * @param array Array of keys to exclude from other $array
  * @return array
  */
-	public function exclude($array, $exclude) {
+	public function exclude(array $array, array $exclude) {
 		$data = array();
 		foreach ($array as $key => $value) {
-			if (!is_numeric($key) && !in_array($key, $exclude)) {
+			if (is_numeric($key) || !in_array($key, $exclude)) {
 				$data[$key] = $value;
 			}
 		}
@@ -264,18 +281,18 @@ class PrgComponent extends Component {
  *  - string action - The action to redirect to. Defaults to the current action
  *  - mixed modelMethod - If not false a string that is the model method that will be used to process the data
  *  - array allowedParams - An array of additional top level route params that should be included in the params processed
+ *  - array excludedParams - An array of named/query params that should be excluded from the redirect url
  *  - string paramType - 'named' if you want to used named params or 'querystring' is you want to use query string
  * @return void
  */
-	public function commonProcess($modelName = null, $options = array()) {
+	public function commonProcess($modelName = null, array $options = array()) {
 		$defaults = array(
-			'formName' => null,
-			'keepPassed' => true,
-			'action' => null,
-			'modelMethod' => 'validateSearch',
-			'allowedParams' => array());
+			'excludedParams' => array('page'),
+		);
 		$defaults = Set::merge($defaults, $this->_defaults['commonProcess']);
 		extract(Set::merge($defaults, $options));
+
+		$paramType = strtolower($paramType);
 
 		if (empty($modelName)) {
 			$modelName = $this->controller->modelClass;
@@ -289,8 +306,8 @@ class PrgComponent extends Component {
 			$action = $this->controller->action;
 		}
 
-		if (!empty($this->controller->data)) {
-			$this->controller->{$modelName}->data = $this->controller->data;
+		if (!empty($this->controller->request->data)) {
+			$this->controller->{$modelName}->set($this->controller->request->data);
 			$valid = true;
 			if ($modelMethod !== false) {
 				$valid = $this->controller->{$modelName}->{$modelMethod}();
@@ -302,20 +319,35 @@ class PrgComponent extends Component {
 					$params = array_merge($this->controller->request->params['pass'], $params);
 				}
 
-				$searchParams = $this->controller->data[$modelName];
-				$searchParams = $this->exclude($searchParams, array());
-				if ($filterEmpty) {
-					$searchParams = Set::filter($searchParams);
-				}
-
+				$searchParams = $this->controller->request->data[$modelName];
 				$this->serializeParams($searchParams);
 
-				if ($paramType == 'named') {
+				if ($paramType === 'named') {
 					$params = array_merge($params, $searchParams);
+					$params = $this->exclude($params, $excludedParams);
+					if ($filterEmpty) {
+						$params = Set::filter($params);
+					}
+					foreach ($this->controller->presetVars as $presetVar) {
+						$field = $presetVar['name'];
+						if (!isset($params[$field])) {
+							continue;
+						}
+						if (!isset($presetVar['emptyValue']) || $presetVar['emptyValue'] !== $params[$field]) {
+							continue;
+						}
+						$params[$field] = '';
+					}
+
 					$this->connectNamed($params, array());
 				} else {
+					$searchParams = array_merge($this->controller->request->query, $searchParams);
+					$searchParams = $this->exclude($searchParams, $excludedParams);
+					if ($filterEmpty) {
+						$searchParams = Set::filter($searchParams);
+					}
 					$this->connectNamed($params, array());
-					$params['?'] = array_merge($this->controller->request->query, $searchParams);
+					$params['?'] = $searchParams;
 				}
 
 				$params['action'] = $action;
@@ -330,8 +362,8 @@ class PrgComponent extends Component {
 			} else {
 				$this->controller->Session->setFlash(__d('search', 'Please correct the errors below.'));
 			}
-		} elseif (($paramType == 'named' && !empty($this->controller->passedArgs)) ||
-				($paramType == 'querystring' && !empty($this->controller->request->query))
+		} elseif (($paramType === 'named' && !empty($this->controller->passedArgs)) ||
+				($paramType === 'querystring' && !empty($this->controller->request->query))
 			) {
 			$this->connectNamed($this->controller->passedArgs, array());
 			$this->presetForm(array('model' => $formName, 'paramType' => $paramType));
@@ -345,13 +377,17 @@ class PrgComponent extends Component {
  * @param mixed $key
  * @return array
  */
-	protected function _parseFromModel($arg, $key = null) {
+	protected function _parseFromModel(array $arg, $key = null) {
 		if (isset($arg['preset']) && !$arg['preset']) {
-			return false;
+			return array();
 		}
-		if (!isset($arg['type'])) {
+		if (isset($arg['presetType'])) {
+			$arg['type'] = $arg['presetType'];
+			unset($arg['presetType']);
+		} elseif (!isset($arg['type']) || in_array($arg['type'], array('expression', 'query', 'subquery', 'like'))) {
 			$arg['type'] = 'value';
 		}
+
 		if (isset($arg['name']) || is_numeric($key)) {
 			$field = $arg['name'];
 		} else {
