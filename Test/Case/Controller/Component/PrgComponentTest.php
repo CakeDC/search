@@ -125,6 +125,8 @@ class PrgComponentTest extends CakeTestCase {
 	public function setUp() {
 		parent::setUp();
 
+		Configure::delete('Search');
+
 		$this->Controller = new PostsTestController(new CakeRequest(), new CakeResponse());
 		$this->Controller->constructClasses();
 		$this->Controller->request->params = array(
@@ -844,6 +846,39 @@ class PrgComponentTest extends CakeTestCase {
  * @return void
  */
 	public function testPresetFormWithEmptyValue() {
+		$this->Controller->presetVars = array(
+			array(
+				'field' => 'category_id',
+				'type' => 'value',
+				'allowEmpty' => true,
+				'emptyValue' => '0',
+			),
+			array(
+				'field' => 'checkbox',
+				'type' => 'checkbox',
+				'allowEmpty' => true,
+			),
+		);
+		$this->Controller->passedArgs = array(
+			'category_id' => '',
+		);
+		$this->Controller->beforeFilter();
+
+		$this->Controller->Prg->encode = true;
+		$this->Controller->Prg->presetForm(array('model' => 'Post'));
+		$expected = array(
+			'Post' => array(
+				'category_id' => '0'));
+		$this->assertEquals($this->Controller->request->data, $expected);
+		$this->assertFalse($this->Controller->Prg->isSearch);
+	}
+
+/**
+ * testPresetFormWithEmptyValueAndIsSearch
+ *
+ * @return void
+ */
+	public function testPresetFormWithEmptyValueAndIsSearch() {
 		$this->Controller->presetVars = array(
 			array(
 				'field' => 'category_id',

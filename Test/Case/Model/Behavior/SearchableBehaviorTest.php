@@ -609,6 +609,25 @@ class SearchableTest extends CakeTestCase {
 	}
 
 /**
+ * testDefaultValue
+ *
+ * @return void
+ */
+	public function testDefaultValue() {
+		$this->Article->Behaviors->detach('Searchable');
+		$this->Article->filterArgs = array(
+			'range' => array('type' => 'expression', 'defaultValue' => '100', 'method' => 'makeRangeCondition', 'field' => 'Article.views BETWEEN ? AND ?'));
+		$this->Article->Behaviors->attach('Search.Searchable');
+
+		$data = array();
+		$result = $this->Article->parseCriteria($data);
+		$expected = array(
+			'Article.views BETWEEN ? AND ?' => array(11, 100));
+		$this->assertEquals($expected, $result);
+
+	}
+
+/**
  * testUnbindAll
  *
  * @return void

@@ -62,6 +62,9 @@ class SearchableBehavior extends ModelBehavior {
 			if (!isset($val['field'])) {
 				$Model->filterArgs[$key]['field'] = $Model->filterArgs[$key]['name'];
 			}
+			if (!isset($val['type'])) {
+				$Model->filterArgs[$key]['type'] = 'value';
+			}
 		}
 	}
 
@@ -77,6 +80,11 @@ class SearchableBehavior extends ModelBehavior {
 	public function parseCriteria(Model $Model, $data) {
 		$conditions = array();
 		foreach ($Model->filterArgs as $field) {
+			// If this field was not passed and a default value exists, use that instead.
+			if (!array_key_exists($field['name'], $data) && array_key_exists('defaultValue', $field)) {
+				$data[$field['name']] = $field['defaultValue'];
+			}
+
 			if (in_array($field['type'], array('like'))) {
 				$this->_addCondLike($Model, $conditions, $data, $field);
 			} elseif (in_array($field['type'], array('string', 'text', 'int', 'float', 'value'))) {
@@ -235,7 +243,7 @@ class SearchableBehavior extends ModelBehavior {
  * @param array $conditions existing Conditions collected for the model
  * @param array $data Array of data used in search query
  * @param array $field Field definition information
- * @return array of conditions
+ * @return array Conditions
  */
 	protected function _addCondLike(Model $Model, &$conditions, $data, $field) {
 		if (!is_array($this->settings[$Model->alias]['like'])) {
@@ -304,6 +312,15 @@ class SearchableBehavior extends ModelBehavior {
 		return $conditions;
 	}
 
+/**
+ * Form AND/OR query array using String::tokenize to separate
+ * search terms by or/and connectors.
+ *
+ * @param mixed $value
+ * @param array $field
+ * @param string $fieldName
+ * @return array Conditions
+ */
 	protected function _connectedLike($value, $field, $fieldName) {
 		$or = array();
 		$orValues  = String::tokenize($value, $field['connectorOr']);

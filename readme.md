@@ -8,9 +8,10 @@ The Search plugin is an easy way to include search into your application, and pr
 
 It supports simple methods to search inside models using strict and non-strict comparing, but also allows you to implement any complex type of searching.
 
-## UPDATE for 2.2 - 2013-01-16 Mark Scherer
+## UPDATE for 2.2
 
 * `emptyValue` is now available for fields to make it work with "default NULL" fields and `allowEmpty` set to true. See example below.
+* `defaultValue` is now available in case no value has been passed and we need to trigger the filters.
 
 ## Sample of usage ##
 
@@ -130,6 +131,7 @@ With "default 0 NOT NULL" fields this works as we can use 0 here explicitly:
 But for char36 foreign keys or "default NULL" fields this does not work. The posted empty string will result in the omitting of the rule.
 That's where `emptyValue` comes into play.
 
+		// controller
 		public $presetVars = array(
 			'category_id' => array(
 				'allowEmpty' => true,
@@ -140,6 +142,15 @@ That's where `emptyValue` comes into play.
 This way we assign '' for 0, and "ignore" for '' on POST, and the opposite for presetForm().
 
 Note: This only works if you use `allowEmpty` here. If you fail to do that it will always trigger the lookup here.
+
+### `defaultValue` default values to allow search in default case
+
+	// model
+	public $filterArgs = array(
+		'some_related_table_id' => array('type' => 'value', 'defaultValue' => 'none'),
+	);
+
+This will always trigger the filter for it (looking for string `none` in the table field).
 
 ## Full example for model/controller configuration with overriding
 
