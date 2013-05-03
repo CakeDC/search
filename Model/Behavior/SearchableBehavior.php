@@ -87,7 +87,7 @@ class SearchableBehavior extends ModelBehavior {
 
 			if (in_array($field['type'], array('like'))) {
 				$this->_addCondLike($Model, $conditions, $data, $field);
-			} elseif (in_array($field['type'], array('string', 'text', 'int', 'float', 'value'))) {
+			} elseif (in_array($field['type'], array('value'))) {
 				$this->_addCondValue($Model, $conditions, $data, $field);
 			} elseif ($field['type'] === 'expression') {
 				$this->_addCondExpression($Model, $conditions, $data, $field);
