@@ -182,7 +182,7 @@ class PrgComponent extends Component {
 				$this->isSearch = true;
 			}
 
-			if ($data[$model][$field['field']] === '' && isset($field['emptyValue'])) {
+			if (isset($data[$model][$field['field']]) && $data[$model][$field['field']] === '' && isset($field['emptyValue'])) {
 				$data[$model][$field['field']] = $field['emptyValue'];
 			}
 		}
