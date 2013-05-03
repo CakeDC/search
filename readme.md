@@ -12,7 +12,7 @@ It supports simple methods to search inside models using strict and non-strict c
 
 * `emptyValue` is now available for fields to make it work with "default NULL" fields and `allowEmpty` set to true. See example below.
 * `defaultValue` is now available in case no value has been passed and we need to trigger the filters.
-
+* Confusing and redundant types have been removed. Either use type 'value' (exact match), 'like' (partial match) or expression/subquery/query.
 ## Sample of usage ##
 
 An example of how to implement complex searching in your application.
