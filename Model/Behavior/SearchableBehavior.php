@@ -338,7 +338,6 @@ class SearchableBehavior extends ModelBehavior {
 			if (strpos($fieldName, '.') === false) {
 				$fieldName = $Model->alias . '.' . $fieldName;
 			}
-            var_dump($fieldValue);
 			if ((String)$fieldValue !== '') {
 				$cond[$fieldName] = $fieldValue;
 			} elseif (isset($data[$field['name']]) && isset($field['allowEmpty']) && $field['allowEmpty'] === true) {
