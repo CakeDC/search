@@ -144,7 +144,7 @@ class PrgComponent extends Component {
 		extract(Set::merge($this->_defaults['presetForm'], $options));
 
 		$data = array($model => array());
-		if ($paramType == 'named') {
+		if ($paramType === 'named') {
 			$args = $this->controller->passedArgs;
 		} else {
 			$args = $this->controller->request->query;
@@ -155,7 +155,7 @@ class PrgComponent extends Component {
 				continue;
 			}
 
-			if ($this->encode || !empty($field['encode'])) {
+			if ($paramType === 'named' && ($this->encode || !empty($field['encode']))) {
 				// Its important to set it also back to the controllers passed args!
 				$fieldContent = $args[$field['field']];
 				$fieldContent = str_replace(array('-', '_'), array('/', '='), $fieldContent);
@@ -178,12 +178,12 @@ class PrgComponent extends Component {
 				$data[$model][$field['field']] = $args[$field['field']];
 			}
 
-			if ($data[$model][$field['field']] === '' && isset($field['emptyValue'])) {
-				$data[$model][$field['field']] = $field['emptyValue'];
-			}
-
 			if (isset($data[$model][$field['field']]) && $data[$model][$field['field']] !== '') {
 				$this->isSearch = true;
+			}
+
+			if (isset($data[$model][$field['field']]) && $data[$model][$field['field']] === '' && isset($field['emptyValue'])) {
+				$data[$model][$field['field']] = $field['emptyValue'];
 			}
 		}
 
@@ -209,14 +209,14 @@ class PrgComponent extends Component {
 				$data[$field['field']] = $values;
 			}
 
-			if ($this->encode || !empty($field['encode'])) {
+			if ($this->_defaults['commonProcess']['paramType'] === 'named' && ($this->encode || !empty($field['encode']))) {
 				$fieldContent = $data[$field['field']];
 				$tmp = base64_encode($fieldContent);
 				// replace chars base64 uses that would mess up the url
 				$tmp = str_replace(array('/', '='), array('-', '_'), $tmp);
 				$data[$field['field']] = $tmp;
 			}
-			if (!empty($field['empty']) && isset($data[$field['field']]) && $data[$field['field']] == '') {
+			if (!empty($field['empty']) && isset($data[$field['field']]) && $data[$field['field']] === '') {
 				unset($data[$field['field']]);
 			}
 		}
