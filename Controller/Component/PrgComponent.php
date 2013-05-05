@@ -328,8 +328,11 @@ class PrgComponent extends Component {
 					if ($filterEmpty) {
 						$params = Set::filter($params);
 					}
-					foreach ($this->controller->presetVars as $presetVar) {
-						$field = $presetVar['name'];
+					foreach ($this->controller->presetVars as $key => $presetVar) {
+						$field = $key;
+						if (!empty($presetVar['name'])) {
+							$field = $presetVar['name'];
+						}
 						if (!isset($params[$field])) {
 							continue;
 						}
