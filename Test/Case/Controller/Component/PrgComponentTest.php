@@ -388,6 +388,28 @@ class PrgComponentTest extends CakeTestCase {
 	}
 
 /**
+ * testCommonProcessWithPresetVarsNotEmpty
+ * Fixing warning when checking undefined $presetVar['name']
+ *
+ * @return void
+ */
+	public function testCommonProcessWithPresetVarsNotEmpty() {
+		$this->Controller->request->params['named'] = array();
+		$this->Controller->presetVars = array('title' => array('type' => 'value'));
+		
+		$this->Controller->action = 'search';
+		$this->Controller->request->data = array(
+			'Post' => array(
+				'title' => 'test'));
+
+		$this->Controller->Prg->commonProcess('Post');
+		$expected = array(
+			'title' => 'test',
+			'action' => 'search');
+		$this->assertEquals($expected, $this->Controller->redirectUrl);
+	}
+
+/**
  * testCommonProcessExtraParams
  *
  * @return void
