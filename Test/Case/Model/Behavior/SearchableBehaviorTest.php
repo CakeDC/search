@@ -221,19 +221,19 @@ class SearchableTest extends CakeTestCase {
 	public function testGetWildcards() {
 		$result = $this->Article->getWildcards();
 		$expected = array('any' => '*', 'one' => '?');
-		$this->assertSame($result, $expected);
+		$this->assertSame($expected, $result);
 
 		$this->Article->Behaviors->Searchable->settings['Article']['wildcardAny'] = false;
 		$this->Article->Behaviors->Searchable->settings['Article']['wildcardOne'] = false;
 		$result = $this->Article->getWildcards();
 		$expected = array('any' => false, 'one' => false);
-		$this->assertSame($result, $expected);
+		$this->assertSame($expected, $result);
 
 		$this->Article->Behaviors->Searchable->settings['Article']['wildcardAny'] = '%';
 		$this->Article->Behaviors->Searchable->settings['Article']['wildcardOne'] = '_';
 		$result = $this->Article->getWildcards();
 		$expected = array('any' => '%', 'one' => '_');
-		$this->assertSame($result, $expected);
+		$this->assertSame($expected, $result);
 	}
 
 /**
@@ -606,6 +606,25 @@ class SearchableTest extends CakeTestCase {
 		$data = array('range' => '10');
 		$result = $this->Article->parseCriteria($data);
 		$this->assertEquals(array(), $result);
+	}
+
+/**
+ * testDefaultValue
+ *
+ * @return void
+ */
+	public function testDefaultValue() {
+		$this->Article->Behaviors->detach('Searchable');
+		$this->Article->filterArgs = array(
+			'range' => array('type' => 'expression', 'defaultValue' => '100', 'method' => 'makeRangeCondition', 'field' => 'Article.views BETWEEN ? AND ?'));
+		$this->Article->Behaviors->attach('Search.Searchable');
+
+		$data = array();
+		$result = $this->Article->parseCriteria($data);
+		$expected = array(
+			'Article.views BETWEEN ? AND ?' => array(11, 100));
+		$this->assertEquals($expected, $result);
+
 	}
 
 /**

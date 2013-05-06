@@ -49,6 +49,13 @@ class PrgComponent extends Component {
 	public $isSearch = false;
 
 /**
+ * Parsed params of current request
+ *
+ * @var array
+ */
+	protected $_parsedParams = array();
+
+/**
  * Default options
  *
  * @var array
@@ -144,7 +151,7 @@ class PrgComponent extends Component {
 		extract(Set::merge($this->_defaults['presetForm'], $options));
 
 		$data = array($model => array());
-		if ($paramType == 'named') {
+		if ($paramType === 'named') {
 			$args = $this->controller->passedArgs;
 		} else {
 			$args = $this->controller->request->query;
@@ -155,7 +162,7 @@ class PrgComponent extends Component {
 				continue;
 			}
 
-			if ($this->encode || !empty($field['encode'])) {
+			if ($paramType === 'named' && ($this->encode || !empty($field['encode']))) {
 				// Its important to set it also back to the controllers passed args!
 				$fieldContent = $args[$field['field']];
 				$fieldContent = str_replace(array('-', '_'), array('/', '='), $fieldContent);
@@ -178,18 +185,32 @@ class PrgComponent extends Component {
 				$data[$model][$field['field']] = $args[$field['field']];
 			}
 
-			if ($data[$model][$field['field']] === '' && isset($field['emptyValue'])) {
-				$data[$model][$field['field']] = $field['emptyValue'];
-			}
-
 			if (isset($data[$model][$field['field']]) && $data[$model][$field['field']] !== '') {
 				$this->isSearch = true;
+			}
+
+			if (isset($data[$model][$field['field']]) && $data[$model][$field['field']] === '' && isset($field['emptyValue'])) {
+				$data[$model][$field['field']] = $field['emptyValue'];
 			}
 		}
 
 		$this->controller->request->data = $data;
-		$this->controller->parsedData = $data;
+		$this->_parsedParams = $data[$model];
+		// deprecated, don't use controller's parsedData or passedArgs anymore.
+		$this->controller->parsedData = $this->_parsedParams;
+		foreach ($this->controller->parsedData as $key => $value) {
+			$this->controller->passedArgs[$key] = $value;
+		}
 		$this->controller->set('isSearch', $this->isSearch);
+	}
+
+	/**
+	 * Return the parsed params of the current search request
+	 *
+	 * @return array Params
+	 */
+	public function parsedParams() {
+		return $this->_parsedParams;
 	}
 
 /**
@@ -209,14 +230,14 @@ class PrgComponent extends Component {
 				$data[$field['field']] = $values;
 			}
 
-			if ($this->encode || !empty($field['encode'])) {
+			if ($this->_defaults['commonProcess']['paramType'] === 'named' && ($this->encode || !empty($field['encode']))) {
 				$fieldContent = $data[$field['field']];
 				$tmp = base64_encode($fieldContent);
 				// replace chars base64 uses that would mess up the url
 				$tmp = str_replace(array('/', '='), array('-', '_'), $tmp);
 				$data[$field['field']] = $tmp;
 			}
-			if (!empty($field['empty']) && isset($data[$field['field']]) && $data[$field['field']] == '') {
+			if (!empty($field['empty']) && isset($data[$field['field']]) && $data[$field['field']] === '') {
 				unset($data[$field['field']]);
 			}
 		}
