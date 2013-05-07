@@ -161,7 +161,7 @@ class PrgComponentTest extends CakeTestCase {
 				'title' => 'test'));
 
 		$this->Controller->Prg->commonProcess('Post');
-		$expected = (
+		$expected = array(
 			'title' => 'test',
 			'action' => 'search');
 		$this->assertEquals($expected, $this->Controller->redirectUrl);
