@@ -49,6 +49,13 @@ class PrgComponent extends Component {
 	public $isSearch = false;
 
 /**
+ * Parsed params of current request
+ *
+ * @var array
+ */
+	protected $_parsedParams = array();
+
+/**
  * Default options
  *
  * @var array
@@ -188,8 +195,22 @@ class PrgComponent extends Component {
 		}
 
 		$this->controller->request->data = $data;
-		$this->controller->parsedData = $data;
+		$this->_parsedParams = $data[$model];
+		// deprecated, don't use controller's parsedData or passedArgs anymore.
+		$this->controller->parsedData = $this->_parsedParams;
+		foreach ($this->controller->parsedData as $key => $value) {
+			$this->controller->passedArgs[$key] = $value;
+		}
 		$this->controller->set('isSearch', $this->isSearch);
+	}
+
+	/**
+	 * Return the parsed params of the current search request
+	 *
+	 * @return array Params
+	 */
+	public function parsedParams() {
+		return $this->_parsedParams;
 	}
 
 /**

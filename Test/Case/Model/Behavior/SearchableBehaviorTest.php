@@ -221,19 +221,19 @@ class SearchableTest extends CakeTestCase {
 	public function testGetWildcards() {
 		$result = $this->Article->getWildcards();
 		$expected = array('any' => '*', 'one' => '?');
-		$this->assertSame($result, $expected);
+		$this->assertSame($expected, $result);
 
 		$this->Article->Behaviors->Searchable->settings['Article']['wildcardAny'] = false;
 		$this->Article->Behaviors->Searchable->settings['Article']['wildcardOne'] = false;
 		$result = $this->Article->getWildcards();
 		$expected = array('any' => false, 'one' => false);
-		$this->assertSame($result, $expected);
+		$this->assertSame($expected, $result);
 
 		$this->Article->Behaviors->Searchable->settings['Article']['wildcardAny'] = '%';
 		$this->Article->Behaviors->Searchable->settings['Article']['wildcardOne'] = '_';
 		$result = $this->Article->getWildcards();
 		$expected = array('any' => '%', 'one' => '_');
-		$this->assertSame($result, $expected);
+		$this->assertSame($expected, $result);
 	}
 
 /**
