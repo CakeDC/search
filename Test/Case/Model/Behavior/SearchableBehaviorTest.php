@@ -681,4 +681,33 @@ class SearchableTest extends CakeTestCase {
 		$this->assertEquals($expected, $result);
 	}
 
+/**
+ * testRespectsAllowEmpty
+ *
+ * @return void
+ */
+	public function testRespectsAllowEmpty() {
+		$this->Article->filterArgs = array(
+			'title' => array(
+				'name' => 'title',
+				'type' => 'like',
+				'field' => 'Article.title',
+				'allowEmpty' => true
+			),
+			'slug' => array(
+				'name' => 'slug',
+				'type' => 'value',
+				'field' => 'Article.slug',
+				'allowEmpty' => true
+			),
+		);
+
+		$expected = array('Article.title LIKE' => '%first%');
+
+		$data = array('title' => 'first', 'slug' => null);
+		$result = $this->Article->parseCriteria($data);
+
+		$this->assertEquals($result, $expected);
+	}
+
 }
