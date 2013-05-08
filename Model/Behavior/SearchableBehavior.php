@@ -359,9 +359,9 @@ class SearchableBehavior extends ModelBehavior {
 				$cond[$fieldName] = $fieldValue;
 			} elseif (isset($data[$field['name']]) && !empty($field['allowEmpty'])) {
 				$schema = $Model->schema($field['name']);
-				if ($schema) {
+				if (isset($schema) && $schema['default'] !== null) {
 					$cond[$fieldName] = $schema['default'];
-				} else {
+				} elseif (!empty($fieldValue)) {
 					$cond[$fieldName] = $fieldValue;
 				}
 			}
