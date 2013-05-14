@@ -129,6 +129,7 @@ class PrgComponentTest extends CakeTestCase {
 
 		$this->Controller = new PostsTestController(new CakeRequest(), new CakeResponse());
 		$this->Controller->constructClasses();
+		$this->Controller->startupProcess();
 		$this->Controller->request->params = array(
 			'named' => array(),
 			'pass' => array(),
@@ -407,7 +408,7 @@ class PrgComponentTest extends CakeTestCase {
 	public function testCommonProcessWithPresetVarsNotEmpty() {
 		$this->Controller->request->params['named'] = array();
 		$this->Controller->presetVars = array('title' => array('type' => 'value'));
-		
+
 		$this->Controller->action = 'search';
 		$this->Controller->request->data = array(
 			'Post' => array(
@@ -713,6 +714,7 @@ class PrgComponentTest extends CakeTestCase {
 			'title' => array('type' => 'value'));
 
 		$this->Controller->Prg->__construct($this->Controller->Components, array());
+		$this->Controller->Prg->initialize($this->Controller);
 		$this->Controller->request->data = array();
 
 		$this->Controller->request->params['named'] = array('title' => 'test');
@@ -731,6 +733,7 @@ class PrgComponentTest extends CakeTestCase {
 			'title' => array('type' => 'value'));
 
 		$this->Controller->Prg->__construct($this->Controller->Components, array());
+		$this->Controller->Prg->initialize($this->Controller);
 		$this->Controller->request->data = array();
 
 		$this->Controller->request->params['named'] = array('title' => 'test');
