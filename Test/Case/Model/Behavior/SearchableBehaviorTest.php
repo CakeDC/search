@@ -300,6 +300,17 @@ class SearchableTest extends CakeTestCase {
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('OR' =>array('Article.title' => 'First', 'User.name' => 'First'));
 		$this->assertEquals($expected, $result);
+
+		// multiple select dropdown
+		$this->Article->Behaviors->detach('Searchable');
+		$this->Article->filterArgs = array(
+			'fakesource' => array('type' => 'value')
+		);
+		$this->Article->Behaviors->attach('Search.Searchable');
+		$data = array('fakesource' => array(5, 9));
+		$result = $this->Article->parseCriteria($data);
+		$expected = array('Article.fakesource' => array(5, 9));
+		$this->assertEquals($expected, $result);
 	}
 
 /**
