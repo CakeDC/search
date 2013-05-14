@@ -89,6 +89,12 @@ class PrgComponent extends Component {
 		), $settings);
 	}
 
+/**
+ * Called before the Controller::beforeFilter().
+ *
+ * @param Controller $controller Controller with components to initialize
+ * @return void
+ */
 	public function initialize(Controller $controller) {
 		$this->controller = $controller;
 
