@@ -717,6 +717,7 @@ class SearchableTest extends CakeTestCase {
  * @return void
  */
 	public function testAllowEmptyWithNullValues() {
+		// author is just empty, created will be mapped against schema default (NULL) and slug omitted as its NULL already
 		$this->Article->filterArgs = array(
 			'title' => array(
 				'name' => 'title',
@@ -730,20 +731,20 @@ class SearchableTest extends CakeTestCase {
 				'field' => 'Article.author',
 				'allowEmpty' => true
 			),
-			'slug' => array(
-				'name' => 'slug',
-				'type' => 'value',
-				'field' => 'Article.slug',
-				'allowEmpty' => true
-			),
 			'created' => array(
 				'name' => 'created',
 				'type' => 'value',
 				'field' => 'Article.created',
 				'allowEmpty' => true
 			),
+			'slug' => array(
+				'name' => 'slug',
+				'type' => 'value',
+				'field' => 'Article.slug',
+				'allowEmpty' => true
+			),
 		);
-		$data = array('title' => 'first', 'author' => '', 'created' => '');
+		$data = array('title' => 'first', 'author' => '', 'created' => '', 'slug' => null);
 		$expected = array(
 			'Article.title LIKE' => '%first%',
 			'Article.author' => '',
