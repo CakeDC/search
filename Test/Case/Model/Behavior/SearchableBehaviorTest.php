@@ -716,12 +716,25 @@ class SearchableTest extends CakeTestCase {
  *
  * @return void
  */
-	public function testRespectsAllowEmpty() {
+	public function testAllowEmptyWithNullValues() {
+		// author is just empty, created will be mapped against schema default (NULL) and slug omitted as its NULL already
 		$this->Article->filterArgs = array(
 			'title' => array(
 				'name' => 'title',
 				'type' => 'like',
 				'field' => 'Article.title',
+				'allowEmpty' => true
+			),
+			'author' => array(
+				'name' => 'author',
+				'type' => 'value',
+				'field' => 'Article.author',
+				'allowEmpty' => true
+			),
+			'created' => array(
+				'name' => 'created',
+				'type' => 'value',
+				'field' => 'Article.created',
 				'allowEmpty' => true
 			),
 			'slug' => array(
@@ -731,13 +744,14 @@ class SearchableTest extends CakeTestCase {
 				'allowEmpty' => true
 			),
 		);
-
-		$expected = array('Article.title LIKE' => '%first%');
-
-		$data = array('title' => 'first', 'slug' => null);
+		$data = array('title' => 'first', 'author' => '', 'created' => '', 'slug' => null);
+		$expected = array(
+			'Article.title LIKE' => '%first%',
+			'Article.author' => '',
+			'Article.created' => null,
+		);
 		$result = $this->Article->parseCriteria($data);
-
-		$this->assertEquals($result, $expected);
+		$this->assertSame($expected, $result);
 	}
 
 }

@@ -915,6 +915,10 @@ class PrgComponentTest extends CakeTestCase {
 				'category_id' => '0'));
 		$this->assertEquals($expected, $this->Controller->request->data);
 		$this->assertFalse($this->Controller->Prg->isSearch);
+
+		$expected = array(
+			'Post' => array(
+				'category_id' => ''));
 		$this->assertEquals($expected['Post'], $this->Controller->Prg->parsedParams());
 	}
 
@@ -953,6 +957,14 @@ class PrgComponentTest extends CakeTestCase {
 					2 => 'test3')));
 		$this->assertEquals($expected, $this->Controller->request->data);
 		$this->assertTrue($this->Controller->Prg->isSearch);
+
+		$expected = array(
+			'Post' => array(
+				'category_id' => '',
+				'checkbox' => array(
+					0 => 'test',
+					1 => 'test2',
+					2 => 'test3')));
 		$this->assertEquals($expected['Post'], $this->Controller->Prg->parsedParams());
 	}
 

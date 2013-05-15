@@ -355,13 +355,22 @@ class SearchableBehavior extends ModelBehavior {
 			if (strpos($fieldName, '.') === false) {
 				$fieldName = $Model->alias . '.' . $fieldName;
 			}
-			if (is_array($fieldValue) && !empty($fieldValue) || !is_array($fieldValue) && (String)$fieldValue !== '') {
+			if (is_array($fieldValue) && empty($fieldValue)) {
+				continue;
+			}
+			if (!is_array($fieldValue) && ($fieldValue === null || $fieldValue === '' && empty($field['allowEmpty']))) {
+				continue;
+			}
+
+			if (is_array($fieldValue) || !is_array($fieldValue) && (String)$fieldValue !== '') {
 				$cond[$fieldName] = $fieldValue;
 			} elseif (isset($data[$field['name']]) && !empty($field['allowEmpty'])) {
 				$schema = $Model->schema($field['name']);
-				if (isset($schema) && $schema['default'] !== null) {
+				if (isset($schema) && ($schema['default'] !== null || !empty($schema['null']))) {
 					$cond[$fieldName] = $schema['default'];
 				} elseif (!empty($fieldValue)) {
+					$cond[$fieldName] = $fieldValue;
+				} else {
 					$cond[$fieldName] = $fieldValue;
 				}
 			}
