@@ -162,13 +162,14 @@ class PrgComponent extends Component {
 		}
 		extract(Set::merge($this->_defaults['presetForm'], $options));
 
-		$data = array($model => array());
 		if ($paramType === 'named') {
 			$args = $this->controller->passedArgs;
 		} else {
 			$args = $this->controller->request->query;
 		}
 
+		$parsedParams = array();
+		$data = array($model => array());
 		foreach ($this->controller->presetVars as $field) {
 			if (!isset($args[$field['field']])) {
 				continue;
@@ -176,9 +177,8 @@ class PrgComponent extends Component {
 
 			if ($paramType === 'named' && ($this->encode || !empty($field['encode']))) {
 				// Its important to set it also back to the controllers passed args!
-				$fieldContent = $args[$field['field']];
-				$fieldContent = str_replace(array('-', '_'), array('/', '='), $fieldContent);
-				$this->controller->passedArgs[$field['field']] = $args[$field['field']] = base64_decode($fieldContent);
+				$fieldContent = str_replace(array('-', '_'), array('/', '='), $args[$field['field']]);
+				$args[$field['field']] = base64_decode($fieldContent);
 			}
 
 			if ($field['type'] === 'lookup') {
@@ -186,14 +186,18 @@ class PrgComponent extends Component {
 				$this->controller->loadModel($searchModel);
 				$this->controller->{$searchModel}->recursive = -1;
 				$result = $this->controller->{$searchModel}->findById($args[$field['field']]);
+				$parsedParams[$field['field']] = $args[$field['field']];
+				$parsedParams[$field['formField']] = $result[$searchModel][$field['modelField']];
 				$data[$model][$field['field']] = $args[$field['field']];
 				$data[$model][$field['formField']] = $result[$searchModel][$field['modelField']];
 
 			} elseif ($field['type'] === 'checkbox') {
 				$values = explode('|', $args[$field['field']]);
+				$parsedParams[$field['field']] = $values;
 				$data[$model][$field['field']] = $values;
 
 			} elseif ($field['type'] === 'value') {
+				$parsedParams[$field['field']] = $args[$field['field']];
 				$data[$model][$field['field']] = $args[$field['field']];
 			}
 
@@ -207,7 +211,7 @@ class PrgComponent extends Component {
 		}
 
 		$this->controller->request->data = $data;
-		$this->_parsedParams = $data[$model];
+		$this->_parsedParams = $parsedParams;
 		// deprecated, don't use controller's parsedData or passedArgs anymore.
 		$this->controller->parsedData = $this->_parsedParams;
 		foreach ($this->controller->parsedData as $key => $value) {
