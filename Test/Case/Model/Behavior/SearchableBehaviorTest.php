@@ -488,7 +488,7 @@ class SearchableTest extends CakeTestCase {
  * @return void
  */
 	public function testSubQueryCondition() {
-		if ($this->skipIf($this->db->config['datasource'] != 'Database/Mysql', 'Test requires mysql db. %s')) {
+		if ($this->skipIf($this->db->config['datasource'] !== 'Database/Mysql', 'Test requires mysql db. %s')) {
 			return;
 		}
 		$database = $this->db->config['database'];
@@ -513,20 +513,29 @@ class SearchableTest extends CakeTestCase {
  * @return void
  */
 	public function testSubQueryEmptyCondition() {
-		if ($this->skipIf($this->db->config['datasource'] != 'Database/Mysql', 'Test requires mysql db. %s')) {
+		if ($this->skipIf($this->db->config['datasource'] !== 'Database/Mysql', 'Test requires mysql db. %s')) {
 			return;
 		}
 		$database = $this->db->config['database'];
 
+		// old syntax
 		$this->Article->filterArgs = array(
 			array('name' => 'tags', 'type' => 'subquery', 'method' => 'findByTags', 'field' => 'Article.id')
 		);
 
 		$data = array('tags' => 'Cake');
 		$result = $this->Article->parseCriteria($data);
-
 		$expected = array(array('Article.id in (SELECT `Tagged`.`foreign_key` FROM `' . $database . '`.`' . $this->Article->tablePrefix . 'tagged` AS `Tagged` LEFT JOIN `' . $database . '`.`' . $this->Article->tablePrefix . 'tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = \'Cake\')'));
 
+		$this->Article->Behaviors->detach('Searchable');
+
+		// new syntax
+		$this->Article->filterArgs = array(
+			'tags' => array('type' => 'subquery', 'method' => 'findByTags', 'field' => 'Article.id')
+		);
+		$this->Article->Behaviors->attach('Search.Searchable');
+
+		$result = $this->Article->parseCriteria($data);
 		$this->assertEquals($expected, $result);
 	}
 
@@ -692,7 +701,7 @@ class SearchableTest extends CakeTestCase {
  * @return void
  */
 	public function testGetQuery() {
-		if ($this->skipIf($this->db->config['datasource'] != 'Database/Mysql', 'Test requires mysql db. %s')) {
+		if ($this->skipIf($this->db->config['datasource'] !== 'Database/Mysql', 'Test requires mysql db. %s')) {
 			return;
 		}
 		$database = $this->db->config['database'];
