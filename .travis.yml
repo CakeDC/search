@@ -1,0 +1,30 @@
+language: php
+
+php:
+  - 5.3
+  - 5.4
+
+env:
+  - CAKE_VERSION=master
+  - CAKE_VERSION=2.4
+
+before_script:
+  - git clone --depth 1 --branch $CAKE_VERSION git://github.com/cakephp/cakephp ../cakephp && cd ../cakephp
+  - cp -R ../search plugins/Search
+  - sh -c "mysql -e 'CREATE DATABASE cakephp_test;'"
+  - echo "<?php
+    class DATABASE_CONFIG {
+    public \$test = array(
+      'datasource' => 'Database/Mysql',
+      'database' => 'cakephp_test',
+      'host' => '0.0.0.0',
+      'login' => 'travis',
+      'persistent' => false,
+    );
+    }" > app/Config/database.php
+  - cd app
+script:
+  - ../lib/Cake/Console/cake test Search AllSearchPlugin --stderr
+
+notifications:
+  email: false
