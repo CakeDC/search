@@ -49,6 +49,13 @@ class PrgComponent extends Component {
 	public $isSearch = false;
 
 /**
+ * Parsed params of current request
+ *
+ * @var array
+ */
+	protected $_parsedParams = array();
+
+/**
  * Default options
  *
  * @var array
@@ -76,16 +83,24 @@ class PrgComponent extends Component {
  * @param array $settings
  */
 	public function __construct(ComponentCollection $collection, $settings) {
-		$this->controller = $collection->getController();
-
 		$this->_defaults = Set::merge($this->_defaults, array(
 			'commonProcess' => (array)Configure::read('Search.Prg.commonProcess'),
 			'presetForm' => (array)Configure::read('Search.Prg.presetForm'),
 		), $settings);
+	}
+
+/**
+ * Called before the Controller::beforeFilter().
+ *
+ * @param Controller $controller Controller with components to initialize
+ * @return void
+ */
+	public function initialize(Controller $controller) {
+		$this->controller = $controller;
 
 		// fix for not throwing warnings
 		if (!isset($this->controller->presetVars)) {
-			$this->controller->presetVars = array();
+			$this->controller->presetVars = true;
 		}
 
 		$model = $this->controller->modelClass;
@@ -96,7 +111,11 @@ class PrgComponent extends Component {
 		if ($this->controller->presetVars === true) {
 			// auto-set the presetVars based on search definitions in model
 			$this->controller->presetVars = array();
-			$filterArgs = $this->controller->$model->filterArgs;
+			$filterArgs = array();
+			if (!empty($this->controller->$model->filterArgs)) {
+				$filterArgs = $this->controller->$model->filterArgs;
+			}
+
 			foreach ($filterArgs as $key => $arg) {
 				if ($args = $this->_parseFromModel($arg, $key)) {
 					$this->controller->presetVars[] = $args;
@@ -143,23 +162,23 @@ class PrgComponent extends Component {
 		}
 		extract(Set::merge($this->_defaults['presetForm'], $options));
 
-		$data = array($model => array());
-		if ($paramType == 'named') {
+		if ($paramType === 'named') {
 			$args = $this->controller->passedArgs;
 		} else {
 			$args = $this->controller->request->query;
 		}
 
+		$parsedParams = array();
+		$data = array($model => array());
 		foreach ($this->controller->presetVars as $field) {
 			if (!isset($args[$field['field']])) {
 				continue;
 			}
 
-			if ($this->encode || !empty($field['encode'])) {
+			if ($paramType === 'named' && ($this->encode || !empty($field['encode']))) {
 				// Its important to set it also back to the controllers passed args!
-				$fieldContent = $args[$field['field']];
-				$fieldContent = str_replace(array('-', '_'), array('/', '='), $fieldContent);
-				$this->controller->passedArgs[$field['field']] = $args[$field['field']] = base64_decode($fieldContent);
+				$fieldContent = str_replace(array('-', '_'), array('/', '='), $args[$field['field']]);
+				$args[$field['field']] = base64_decode($fieldContent);
 			}
 
 			if ($field['type'] === 'lookup') {
@@ -167,29 +186,47 @@ class PrgComponent extends Component {
 				$this->controller->loadModel($searchModel);
 				$this->controller->{$searchModel}->recursive = -1;
 				$result = $this->controller->{$searchModel}->findById($args[$field['field']]);
+				$parsedParams[$field['field']] = $args[$field['field']];
+				$parsedParams[$field['formField']] = $result[$searchModel][$field['modelField']];
 				$data[$model][$field['field']] = $args[$field['field']];
 				$data[$model][$field['formField']] = $result[$searchModel][$field['modelField']];
 
 			} elseif ($field['type'] === 'checkbox') {
 				$values = explode('|', $args[$field['field']]);
+				$parsedParams[$field['field']] = $values;
 				$data[$model][$field['field']] = $values;
 
 			} elseif ($field['type'] === 'value') {
+				$parsedParams[$field['field']] = $args[$field['field']];
 				$data[$model][$field['field']] = $args[$field['field']];
-			}
-
-			if ($data[$model][$field['field']] === '' && isset($field['emptyValue'])) {
-				$data[$model][$field['field']] = $field['emptyValue'];
 			}
 
 			if (isset($data[$model][$field['field']]) && $data[$model][$field['field']] !== '') {
 				$this->isSearch = true;
 			}
+
+			if (isset($data[$model][$field['field']]) && $data[$model][$field['field']] === '' && isset($field['emptyValue'])) {
+				$data[$model][$field['field']] = $field['emptyValue'];
+			}
 		}
 
 		$this->controller->request->data = $data;
-		$this->controller->parsedData = $data;
+		$this->_parsedParams = $parsedParams;
+		// deprecated, don't use controller's parsedData or passedArgs anymore.
+		$this->controller->parsedData = $this->_parsedParams;
+		foreach ($this->controller->parsedData as $key => $value) {
+			$this->controller->passedArgs[$key] = $value;
+		}
 		$this->controller->set('isSearch', $this->isSearch);
+	}
+
+	/**
+	 * Return the parsed params of the current search request
+	 *
+	 * @return array Params
+	 */
+	public function parsedParams() {
+		return $this->_parsedParams;
 	}
 
 /**
@@ -209,14 +246,14 @@ class PrgComponent extends Component {
 				$data[$field['field']] = $values;
 			}
 
-			if ($this->encode || !empty($field['encode'])) {
+			if ($this->_defaults['commonProcess']['paramType'] === 'named' && ($this->encode || !empty($field['encode']))) {
 				$fieldContent = $data[$field['field']];
 				$tmp = base64_encode($fieldContent);
 				// replace chars base64 uses that would mess up the url
 				$tmp = str_replace(array('/', '='), array('-', '_'), $tmp);
 				$data[$field['field']] = $tmp;
 			}
-			if (!empty($field['empty']) && isset($data[$field['field']]) && $data[$field['field']] == '') {
+			if (!empty($field['empty']) && isset($data[$field['field']]) && $data[$field['field']] === '') {
 				unset($data[$field['field']]);
 			}
 		}
@@ -328,8 +365,11 @@ class PrgComponent extends Component {
 					if ($filterEmpty) {
 						$params = Set::filter($params);
 					}
-					foreach ($this->controller->presetVars as $presetVar) {
-						$field = $presetVar['name'];
+					foreach ($this->controller->presetVars as $key => $presetVar) {
+						$field = $key;
+						if (!empty($presetVar['name'])) {
+							$field = $presetVar['name'];
+						}
 						if (!isset($params[$field])) {
 							continue;
 						}
@@ -384,7 +424,7 @@ class PrgComponent extends Component {
 		if (isset($arg['presetType'])) {
 			$arg['type'] = $arg['presetType'];
 			unset($arg['presetType']);
-		} elseif (!isset($arg['type']) || in_array($arg['type'], array('expression', 'query', 'subquery', 'like'))) {
+		} elseif (!isset($arg['type']) || in_array($arg['type'], array('expression', 'query', 'subquery', 'like', 'type'))) {
 			$arg['type'] = 'value';
 		}
 

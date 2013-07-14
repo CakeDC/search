@@ -221,19 +221,19 @@ class SearchableTest extends CakeTestCase {
 	public function testGetWildcards() {
 		$result = $this->Article->getWildcards();
 		$expected = array('any' => '*', 'one' => '?');
-		$this->assertSame($result, $expected);
+		$this->assertSame($expected, $result);
 
 		$this->Article->Behaviors->Searchable->settings['Article']['wildcardAny'] = false;
 		$this->Article->Behaviors->Searchable->settings['Article']['wildcardOne'] = false;
 		$result = $this->Article->getWildcards();
 		$expected = array('any' => false, 'one' => false);
-		$this->assertSame($result, $expected);
+		$this->assertSame($expected, $result);
 
 		$this->Article->Behaviors->Searchable->settings['Article']['wildcardAny'] = '%';
 		$this->Article->Behaviors->Searchable->settings['Article']['wildcardOne'] = '_';
 		$result = $this->Article->getWildcards();
 		$expected = array('any' => '%', 'one' => '_');
-		$this->assertSame($result, $expected);
+		$this->assertSame($expected, $result);
 	}
 
 /**
@@ -299,6 +299,17 @@ class SearchableTest extends CakeTestCase {
 		$data = array('faketitle' => 'First');
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('OR' =>array('Article.title' => 'First', 'User.name' => 'First'));
+		$this->assertEquals($expected, $result);
+
+		// multiple select dropdown
+		$this->Article->Behaviors->detach('Searchable');
+		$this->Article->filterArgs = array(
+			'fakesource' => array('type' => 'value')
+		);
+		$this->Article->Behaviors->attach('Search.Searchable');
+		$data = array('fakesource' => array(5, 9));
+		$result = $this->Article->parseCriteria($data);
+		$expected = array('Article.fakesource' => array(5, 9));
 		$this->assertEquals($expected, $result);
 	}
 
@@ -477,7 +488,7 @@ class SearchableTest extends CakeTestCase {
  * @return void
  */
 	public function testSubQueryCondition() {
-		if ($this->skipIf($this->db->config['datasource'] != 'Database/Mysql', 'Test requires mysql db. %s')) {
+		if ($this->skipIf($this->db->config['datasource'] !== 'Database/Mysql', 'Test requires mysql db. %s')) {
 			return;
 		}
 		$database = $this->db->config['database'];
@@ -502,20 +513,29 @@ class SearchableTest extends CakeTestCase {
  * @return void
  */
 	public function testSubQueryEmptyCondition() {
-		if ($this->skipIf($this->db->config['datasource'] != 'Database/Mysql', 'Test requires mysql db. %s')) {
+		if ($this->skipIf($this->db->config['datasource'] !== 'Database/Mysql', 'Test requires mysql db. %s')) {
 			return;
 		}
 		$database = $this->db->config['database'];
 
+		// old syntax
 		$this->Article->filterArgs = array(
 			array('name' => 'tags', 'type' => 'subquery', 'method' => 'findByTags', 'field' => 'Article.id')
 		);
 
 		$data = array('tags' => 'Cake');
 		$result = $this->Article->parseCriteria($data);
-
 		$expected = array(array('Article.id in (SELECT `Tagged`.`foreign_key` FROM `' . $database . '`.`' . $this->Article->tablePrefix . 'tagged` AS `Tagged` LEFT JOIN `' . $database . '`.`' . $this->Article->tablePrefix . 'tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = \'Cake\')'));
 
+		$this->Article->Behaviors->detach('Searchable');
+
+		// new syntax
+		$this->Article->filterArgs = array(
+			'tags' => array('type' => 'subquery', 'method' => 'findByTags', 'field' => 'Article.id')
+		);
+		$this->Article->Behaviors->attach('Search.Searchable');
+
+		$result = $this->Article->parseCriteria($data);
 		$this->assertEquals($expected, $result);
 	}
 
@@ -609,6 +629,25 @@ class SearchableTest extends CakeTestCase {
 	}
 
 /**
+ * testDefaultValue
+ *
+ * @return void
+ */
+	public function testDefaultValue() {
+		$this->Article->Behaviors->detach('Searchable');
+		$this->Article->filterArgs = array(
+			'range' => array('type' => 'expression', 'defaultValue' => '100', 'method' => 'makeRangeCondition', 'field' => 'Article.views BETWEEN ? AND ?'));
+		$this->Article->Behaviors->attach('Search.Searchable');
+
+		$data = array();
+		$result = $this->Article->parseCriteria($data);
+		$expected = array(
+			'Article.views BETWEEN ? AND ?' => array(11, 100));
+		$this->assertEquals($expected, $result);
+
+	}
+
+/**
  * testUnbindAll
  *
  * @return void
@@ -662,7 +701,7 @@ class SearchableTest extends CakeTestCase {
  * @return void
  */
 	public function testGetQuery() {
-		if ($this->skipIf($this->db->config['datasource'] != 'Database/Mysql', 'Test requires mysql db. %s')) {
+		if ($this->skipIf($this->db->config['datasource'] !== 'Database/Mysql', 'Test requires mysql db. %s')) {
 			return;
 		}
 		$database = $this->db->config['database'];
@@ -679,6 +718,49 @@ class SearchableTest extends CakeTestCase {
 		$expected = 'SELECT `Tagged`.`id`, `Tagged`.`foreign_key`, `Tagged`.`tag_id`, `Tagged`.`model`, `Tagged`.`language`, `Tagged`.`created`, `Tagged`.`modified` FROM `' . $database . '`.`' . $this->Article->tablePrefix . 'tagged` AS `Tagged`   WHERE `Tagged`.`tag_id` = \'1\'   ORDER BY `Tagged`.`id` ASC  LIMIT 1';
 
 		$this->assertEquals($expected, $result);
+	}
+
+/**
+ * testRespectsAllowEmpty
+ *
+ * @return void
+ */
+	public function testAllowEmptyWithNullValues() {
+		// author is just empty, created will be mapped against schema default (NULL) and slug omitted as its NULL already
+		$this->Article->filterArgs = array(
+			'title' => array(
+				'name' => 'title',
+				'type' => 'like',
+				'field' => 'Article.title',
+				'allowEmpty' => true
+			),
+			'author' => array(
+				'name' => 'author',
+				'type' => 'value',
+				'field' => 'Article.author',
+				'allowEmpty' => true
+			),
+			'created' => array(
+				'name' => 'created',
+				'type' => 'value',
+				'field' => 'Article.created',
+				'allowEmpty' => true
+			),
+			'slug' => array(
+				'name' => 'slug',
+				'type' => 'value',
+				'field' => 'Article.slug',
+				'allowEmpty' => true
+			),
+		);
+		$data = array('title' => 'first', 'author' => '', 'created' => '', 'slug' => null);
+		$expected = array(
+			'Article.title LIKE' => '%first%',
+			'Article.author' => '',
+			'Article.created' => null,
+		);
+		$result = $this->Article->parseCriteria($data);
+		$this->assertSame($expected, $result);
 	}
 
 }
