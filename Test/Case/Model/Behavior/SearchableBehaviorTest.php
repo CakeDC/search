@@ -503,7 +503,8 @@ class SearchableTest extends CakeTestCase {
 
 		$data = array('tags' => 'Cake');
 		$result = $this->Article->parseCriteria($data);
-		$expected = array(array('Article.id in (SELECT `Tagged`.`foreign_key` FROM `' . $database . '`.`' . $this->Article->tablePrefix . 'tagged` AS `Tagged` LEFT JOIN `' . $database . '`.`' . $this->Article->tablePrefix . 'tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = \'Cake\')'));
+		$expression = $this->Article->getDatasource()->expression('Article.id in (SELECT `Tagged`.`foreign_key` FROM `' . $database . '`.`' . $this->Article->tablePrefix . 'tagged` AS `Tagged` LEFT JOIN `' . $database . '`.`' . $this->Article->tablePrefix . 'tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = \'Cake\')');
+		$expected = array($expression);
 		$this->assertEquals($expected, $result);
 	}
 
@@ -525,7 +526,8 @@ class SearchableTest extends CakeTestCase {
 
 		$data = array('tags' => 'Cake');
 		$result = $this->Article->parseCriteria($data);
-		$expected = array(array('Article.id in (SELECT `Tagged`.`foreign_key` FROM `' . $database . '`.`' . $this->Article->tablePrefix . 'tagged` AS `Tagged` LEFT JOIN `' . $database . '`.`' . $this->Article->tablePrefix . 'tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = \'Cake\')'));
+		$expression = $this->Article->getDatasource()->expression('Article.id in (SELECT `Tagged`.`foreign_key` FROM `' . $database . '`.`' . $this->Article->tablePrefix . 'tagged` AS `Tagged` LEFT JOIN `' . $database . '`.`' . $this->Article->tablePrefix . 'tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = \'Cake\')');
+		$expected = array($expression);
 
 		$this->Article->Behaviors->detach('Searchable');
 

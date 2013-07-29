@@ -445,7 +445,7 @@ class SearchableBehavior extends ModelBehavior {
 			$subquery = $Model->{$field['method']}($data, $field);
 			// if our subquery function returns something empty, nothing to merge in
 			if (!empty($subquery)) {
-				$conditions[] = array("$fieldName in ($subquery)");
+				$conditions[] = $Model->getDataSource()->expression("$fieldName in ($subquery)");
 			}
 		}
 		return $conditions;
