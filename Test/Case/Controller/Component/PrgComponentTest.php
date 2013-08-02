@@ -10,7 +10,7 @@
  */
 
 App::uses('Controller', 'Controller');
-App::uses('Component', 'Search.Prg');
+App::uses('PrgComponent', 'Search.Controller/Component');
 App::uses('Router', 'Routing');
 
 /**
