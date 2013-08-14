@@ -73,7 +73,7 @@ Associated snippet for the controller class:
 
 		public function find() {
 			$this->Prg->commonProcess();
-			$this->Paginator->settings['conditions'] = $this->Article->parseCriteria($this->passedArgs);
+			$this->Paginator->settings['conditions'] = $this->Article->parseCriteria($this->Prg->parsedParams());
 			$this->set('articles', $this->Paginator->paginate());
 		}
 	}
