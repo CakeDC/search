@@ -158,7 +158,7 @@ class SearchableBehavior extends ModelBehavior {
  * Clear all associations
  *
  * @param Model $Model
- * @param bool $reset
+ * @param boolean $reset
  */
 	public function unbindAllModels(Model $Model, $reset = false) {
 		$assocs = array('belongsTo', 'hasOne', 'hasMany', 'hasAndBelongsToMany');
@@ -472,7 +472,7 @@ class SearchableBehavior extends ModelBehavior {
 			$recursive = $queryData['recursive'];
 		}
 
-		if (!is_null($recursive)) {
+		if ($recursive !== null) {
 			$_recursive = $Model->recursive;
 			$Model->recursive = $recursive;
 		}
