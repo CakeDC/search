@@ -340,8 +340,8 @@ class PrgComponentTest extends CakeTestCase {
 	public function testConnectNamed() {
 		$this->Controller->passedArgs = array(
 			'title' => 'test');
-		$this->assertTrue(is_null($this->Controller->Prg->connectNamed()));
-		$this->assertTrue(is_null($this->Controller->Prg->connectNamed(1)));
+		$this->assertNull($this->Controller->Prg->connectNamed());
+		$this->assertNull($this->Controller->Prg->connectNamed(1));
 	}
 
 /**
