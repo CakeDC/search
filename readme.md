@@ -23,7 +23,7 @@ It supports simple methods to search inside models using strict and non-strict c
 An example of how to implement complex searching in your application.
 
 Model code:
-
+```php
 	class Article extends AppModel {
 
 		public $actsAs = array('Search.Searchable');
@@ -63,9 +63,9 @@ Model code:
 			return $cond;
 		}
 	}
-
+```
 Associated snippet for the controller class:
-
+```php
 	class ArticlesController extends AppController {
 		public $components = array('Search.Prg');
 
@@ -77,9 +77,9 @@ Associated snippet for the controller class:
 			$this->set('articles', $this->Paginator->paginate());
 		}
 	}
-
+```
 or verbose (and overriding the model configuration):
-
+```php
 	class ArticlesController extends AppController {
 		public $components = array('Search.Prg');
 
@@ -95,9 +95,9 @@ or verbose (and overriding the model configuration):
 			$this->set('articles', $this->Paginator->paginate());
 		}
 	}
-
+```
 The `find.ctp` view is the same as `index.ctp` with the addition of the search form:
-
+```php
 	echo $this->Form->create('Article', array(
 		'url' => array_merge(array('action' => 'find'), $this->params['pass'])
 	));
@@ -107,11 +107,11 @@ The `find.ctp` view is the same as `index.ctp` with the addition of the search f
 	echo $this->Form->input('username', array('div' => false));
 	echo $this->Form->submit(__('Search'), array('div' => false));
 	echo $this->Form->end();
-
+```
 In this example on model level shon example of search by OR condition. For this purpose defined method orConditions and added filter arg `array('name' => 'filter', 'type' => 'query', 'method' => 'orConditions')`.
 
 ## Advanced usage ##
-
+```php
 		public $filterArgs = array(
 			// match results with `%searchstring`:
 			'search_exact_beginning' => array('type' => 'like', 'encode' => true, 'before' => true, 'after' => false),
@@ -124,18 +124,18 @@ In this example on model level shon example of search by OR condition. For this 
 			// use and/or connectors ('First + Second, Third'):
 			'search_with_connectors' => array('type' => 'like', 'field' => 'Article.title', 'connectorAnd' => '+', 'connectorOr' => ',')
 		);
-
+```
 ### `emptyValue` default values to allow search for "not any of the below"
 
 Let's say we have categories and a dropdown list to select any of those or "empty = ignore this filter". But what if we also want to have an option to find all non-categorized items?
 With "default 0 NOT NULL" fields this works as we can use 0 here explicitly:
-
+```php
 		$categories = $this->Model->Category->find('list');
 		array_unshift($categories, '- not categorized -'); // before passing it on to the view (the key will be 0, not '' as the ignore-filter key will be)
-
+```
 But for char36 foreign keys or "default NULL" fields this does not work. The posted empty string will result in the omitting of the rule.
 That's where `emptyValue` comes into play.
-
+```php
 		// controller
 		public $presetVars = array(
 			'category_id' => array(
@@ -143,22 +143,22 @@ That's where `emptyValue` comes into play.
 				'emptyValue' => '0',
 			);
 		);
-
+```
 This way we assign '' for 0, and "ignore" for '' on POST, and the opposite for presetForm().
 
 Note: This only works if you use `allowEmpty` here. If you fail to do that it will always trigger the lookup here.
 
 ### `defaultValue` default values to allow search in default case
-
+```php
 	// model
 	public $filterArgs = array(
 		'some_related_table_id' => array('type' => 'value', 'defaultValue' => 'none'),
 	);
-
+```
 This will always trigger the filter for it (looking for string `none` in the table field).
 
 ## Full example for model/controller configuration with overriding
-
+```php
 	// model
 	public $filterArgs = array(
 		'some_related_table_id' => array('type' => 'value'),
@@ -190,7 +190,7 @@ This will always trigger the filter for it (looking for string `none` in the tab
 
 	// search example with wildcards in the view for field `search`
 	20??BE* => matches 2011BES and 2012BETR etc
-
+```
 ## Behavior and Model configuration ##
 
 All search fields need to be configured in the Model::filterArgs array.
@@ -230,7 +230,7 @@ Most importantly the component acts as the glue between your app and the searcha
 
 You can attach the component to your controller, here is an example
 using defaults alreay set in the component itself:
-
+```php
 	public $components = array('Search.Prg' => array(
 		//Options for preset form method
 		'presetForm' => array(
@@ -248,7 +248,7 @@ using defaults alreay set in the component itself:
 			'filterEmpty' => false
 		)
 	));
-
+```
 ### Controller configuration ###
 
 All search fields parameters need to configure in the Controller::presetVars array (if you didn't yet in the model).
