@@ -242,7 +242,7 @@ public $components = array('Search.Prg' => array(
 		'keepPassed' => true,
 		'action' => null,
 		'modelMethod' => 'validateSearch',
-		'allowlowedParams' => array(),
+		'allowedParams' => array(),
 		'paramType' => 'named', // or 'querystring'
 		'filterEmpty' => false
 	)
