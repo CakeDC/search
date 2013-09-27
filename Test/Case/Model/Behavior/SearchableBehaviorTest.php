@@ -15,8 +15,6 @@ App::uses('ModelBehavior', 'Model');
 /**
  * Searchable behavior tests
  *
- * @package search
- * @subpackage search.tests.cases.behaviors
  */
 class FilterBehavior extends ModelBehavior {
 
@@ -48,8 +46,6 @@ class FilterBehavior extends ModelBehavior {
 /**
  * Tag model
  *
- * @package search
- * @subpackage search.tests.cases.behaviors
  */
 class Tag extends CakeTestModel {
 }
@@ -57,8 +53,6 @@ class Tag extends CakeTestModel {
 /**
  * Tagged model
  *
- * @package search
- * @subpackage search.tests.cases.behaviors
  */
 class Tagged extends CakeTestModel {
 
@@ -81,8 +75,6 @@ class Tagged extends CakeTestModel {
 /**
  * Article model
  *
- * @package search
- * @subpackage search.tests.cases.behaviors
  */
 class Article extends CakeTestModel {
 
@@ -182,8 +174,6 @@ class Article extends CakeTestModel {
 /**
  * SearchableTestCase
  *
- * @package search
- * @subpackage search.tests.cases.behaviors
  */
 class SearchableTest extends CakeTestCase {
 
