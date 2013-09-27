@@ -13,8 +13,6 @@ App::uses('ModelBehavior', 'Model');
 /**
  * Searchable behavior
  *
- * @package		plugins.search
- * @subpackage	plugins.search.models.behaviors
  */
 class SearchableBehavior extends ModelBehavior {
 
@@ -198,7 +196,7 @@ class SearchableBehavior extends ModelBehavior {
  * @param Model $Model
  * @param $data
  * @param array $options
- * @return string $queryLikeString
+ * @return string queryLikeString
  */
 	public function formatLike(Model $Model, $data, $options = array()) {
 		$options = array_merge($this->settings[$Model->alias], $options);
