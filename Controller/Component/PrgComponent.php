@@ -12,8 +12,6 @@
 /**
  * Post-Redirect-Get: Transfers POST Requests to GET Requests
  *
- * @package		plugins.search
- * @subpackage	plugins.search.controllers.components
  */
 App::uses('Component', 'Controller');
 App::uses('Set', 'Utility');

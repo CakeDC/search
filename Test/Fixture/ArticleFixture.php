@@ -12,8 +12,6 @@
 /**
  * Article Fixture
  *
- * @package search
- * @subpackage search.tests.fixtures
  */
 class ArticleFixture extends CakeTestFixture {
 

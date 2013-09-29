@@ -16,8 +16,6 @@ App::uses('Router', 'Routing');
 /**
  * Post-Redirect-Get: Transfers POST Requests to GET Requests tests
  *
- * @package search
- * @subpackage search.tests.cases.components
  */
 class Post extends CakeTestModel {
 
@@ -33,8 +31,6 @@ class Post extends CakeTestModel {
 /**
  * PostsTest Controller
  *
- * @package search
- * @subpackage search.tests.cases.components
  */
 class PostsTestController extends Controller {
 
@@ -82,8 +78,6 @@ class PostsTestController extends Controller {
 /**
  * Posts Options Test Controller
  *
- * @package search
- * @subpackage search.tests.cases.components
  */
 class PostOptionsTestController extends PostsTestController {
 
@@ -105,8 +99,6 @@ class PostOptionsTestController extends PostsTestController {
 /**
  * PRG Component Test
  *
- * @package search
- * @subpackage search.tests.cases.components
  */
 class PrgComponentTest extends CakeTestCase {
 

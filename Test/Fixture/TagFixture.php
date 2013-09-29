@@ -12,8 +12,6 @@
 /**
  * Tag Fixture
  *
- * @package search
- * @subpackage search.tests.fixtures
  */
 class TagFixture extends CakeTestFixture {
 
