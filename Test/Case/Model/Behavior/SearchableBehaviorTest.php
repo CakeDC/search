@@ -169,6 +169,13 @@ class Article extends CakeTestModel {
 		return $cond;
 	}
 
+	public function orConditionsDoubleArray($data = array()) {
+		return array( $this->orConditions($data) );
+	}
+	public function or2ConditionsDoubleArray($data = array()) {
+		return array( $this->or2Conditions($data) );
+	}
+
 }
 
 /**
@@ -573,6 +580,42 @@ class SearchableTest extends CakeTestCase {
 			'Article.body LIKE' => '%ticl%',
 			'Article.field1 LIKE' => '%test%',
 			'Article.field2 LIKE' => '%test%'));
+		$this->assertEquals($expected, $result);
+	}
+
+/**
+ * testQueryOr2DoubleArrayExample
+ *
+ * Tests classic cakephp pattern of returning array(array('OR' => array( ... ))) from
+ * multiple filters.  They should NOT be merged into one large OR.
+ *
+ * @return void
+ */
+	public function testQueryOr2DoubleArrayExample() {
+		$this->Article->filterArgs = array(
+			array('name' => 'filter', 'type' => 'query', 'method' => 'orConditionsDoubleArray'),
+			array('name' => 'filter2', 'type' => 'query', 'method' => 'or2ConditionsDoubleArray'));
+
+		$data = array();
+		$result = $this->Article->parseCriteria($data);
+		$this->assertEquals(array(), $result);
+
+		$data = array('filter' => 'ticl', 'filter2' => 'test');
+		$result = $this->Article->parseCriteria($data);
+		$expected = array(
+			array(
+				'OR' => array(
+					'Article.title LIKE' => '%ticl%',
+					'Article.body LIKE' => '%ticl%',
+				),
+			),
+			array(
+				'OR' => array(
+					'Article.field1 LIKE' => '%test%',
+					'Article.field2 LIKE' => '%test%',
+				),
+			),
+		);
 		$this->assertEquals($expected, $result);
 	}
 
