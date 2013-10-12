@@ -48,29 +48,29 @@ class TagFixture extends CakeTestFixture {
  */
 	public $records = array(
 		array(
-			'id'  => 1,
-			'identifier'  => null,
-			'name'  => 'CakePHP',
-			'keyname'  => 'cakephp',
+			'id' => 1,
+			'identifier' => null,
+			'name' => 'CakePHP',
+			'keyname' => 'cakephp',
 			'weight' => 2,
-			'created'  => '2008-06-02 18:18:11',
-			'modified'  => '2008-06-02 18:18:37'),
+			'created' => '2008-06-02 18:18:11',
+			'modified' => '2008-06-02 18:18:37'),
 		array(
-			'id'  => 2,
-			'identifier'  => null,
-			'name'  => 'CakeDC',
-			'keyname'  => 'cakedc',
+			'id' => 2,
+			'identifier' => null,
+			'name' => 'CakeDC',
+			'keyname' => 'cakedc',
 			'weight' => 2,
-			'created'  => '2008-06-01 18:18:15',
-			'modified'  => '2008-06-01 18:18:15'),
+			'created' => '2008-06-01 18:18:15',
+			'modified' => '2008-06-01 18:18:15'),
 		array(
-			'id'  => 3,
-			'identifier'  => null,
-			'name'  => 'CakeDC',
-			'keyname'  => 'cakedc',
+			'id' => 3,
+			'identifier' => null,
+			'name' => 'CakeDC',
+			'keyname' => 'cakedc',
 			'weight' => 2,
-			'created'  => '2008-06-01 18:18:15',
-			'modified'  => '2008-06-01 18:18:15',
+			'created' => '2008-06-01 18:18:15',
+			'modified' => '2008-06-01 18:18:15',
 		)
 	);
 
