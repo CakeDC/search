@@ -105,6 +105,7 @@ class Article extends CakeTestModel {
 		if (!empty($data['tags'])) {
 			$conditions = array('Tag.name' => $data['tags']);
 		}
+		$this->Tagged->order = null;
 		$query = $this->Tagged->getQuery('all', array(
 			'conditions' => $conditions,
 			'fields' => array('foreign_key'),
