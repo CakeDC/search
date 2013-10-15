@@ -103,7 +103,7 @@ class Article extends CakeTestModel {
 		$this->Tagged->Behaviors->attach('Search.Searchable');
 		$conditions = array();
 		if (!empty($data['tags'])) {
-			$conditions = array('Tag.name'  => $data['tags']);
+			$conditions = array('Tag.name' => $data['tags']);
 		}
 		$query = $this->Tagged->getQuery('all', array(
 			'conditions' => $conditions,
