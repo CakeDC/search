@@ -159,6 +159,13 @@ class Article extends CakeTestModel {
 		return $cond;
 	}
 
+/**
+ * orConditions 2 (alternate, single)
+ *
+ * @param array $data
+ * @return array
+ * @link http://github.com/CakeDC/Search/issues/51
+ */
 	public function or2Conditions($data = array()) {
 		$filter = $data['filter2'];
 		$cond = array(
@@ -169,9 +176,24 @@ class Article extends CakeTestModel {
 		return $cond;
 	}
 
+/**
+ * orConditions nested (same as orConditions() but nested in array())
+ *
+ * @param array $data
+ * @return array
+ * @link http://github.com/CakeDC/Search/issues/51
+ */
 	public function orConditionsDoubleArray($data = array()) {
 		return array( $this->orConditions($data) );
 	}
+
+/**
+ * orConditions 2 nested (same as orConditions2() but nested in array())
+ *
+ * @param array $data
+ * @return array
+ * @link http://github.com/CakeDC/Search/issues/51
+ */
 	public function or2ConditionsDoubleArray($data = array()) {
 		return array( $this->or2Conditions($data) );
 	}
