@@ -289,7 +289,7 @@ class SearchableTest extends CakeTestCase {
 		$this->Article->Behaviors->attach('Search.Searchable');
 		$data = array('faketitle' => 'First');
 		$result = $this->Article->parseCriteria($data);
-		$expected = array('OR' =>array('Article.title' => 'First', 'User.name' => 'First'));
+		$expected = array('OR' => array('Article.title' => 'First', 'User.name' => 'First'));
 		$this->assertEquals($expected, $result);
 
 		// multiple select dropdown
@@ -637,7 +637,6 @@ class SearchableTest extends CakeTestCase {
 		$expected = array(
 			'Article.views BETWEEN ? AND ?' => array(11, 100));
 		$this->assertEquals($expected, $result);
-
 	}
 
 /**

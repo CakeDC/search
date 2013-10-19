@@ -17,13 +17,6 @@ App::uses('ModelBehavior', 'Model');
 class SearchableBehavior extends ModelBehavior {
 
 /**
- * settings indexed by model name.
- *
- * @var array
- */
-	public $settings = array();
-
-/**
  * Default settings
  * - wildcardAny: the character used instead of % (% is a normal character then)
  * - wildcardOne: the character used instead of _ (_ is a normal character then)
@@ -46,6 +39,7 @@ class SearchableBehavior extends ModelBehavior {
  *
  * @param Model $Model
  * @param array $config
+ * @return void
  */
 	public function setup(Model $Model, $config = array()) {
 		$this->_defaults = array_merge($this->_defaults, (array)Configure::read('Search.Searchable'));
@@ -157,6 +151,7 @@ class SearchableBehavior extends ModelBehavior {
  *
  * @param Model $Model
  * @param boolean $reset
+ * @return void
  */
 	public function unbindAllModels(Model $Model, $reset = false) {
 		$assocs = array('belongsTo', 'hasOne', 'hasMany', 'hasAndBelongsToMany');
