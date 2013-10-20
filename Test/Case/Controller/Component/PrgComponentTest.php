@@ -563,7 +563,7 @@ class PrgComponentTest extends CakeTestCase {
 		$this->Controller->Prg->commonProcess('Post', array(
 			'form' => 'Post',
 			'modelMethod' => false,
-			'paramType' =>'querystring',
+			'paramType' => 'querystring',
 			'allowedParams' => array('lang')));
 		$expected = array(
 			'?' => array('title' => 'test', 'foo' => '', 'bar' => ''),
@@ -595,7 +595,7 @@ class PrgComponentTest extends CakeTestCase {
 			'form' => 'Post',
 			'modelMethod' => false,
 			'filterEmpty' => true,
-			'paramType' =>'querystring',
+			'paramType' => 'querystring',
 			'allowedParams' => array('lang')));
 		$expected = array(
 			'?' => array('title' => 'test/slashes?!'),
@@ -635,7 +635,7 @@ class PrgComponentTest extends CakeTestCase {
 		$this->Controller->Prg->commonProcess('Post', array(
 			'form' => 'Post',
 			'modelMethod' => false,
-			'paramType' =>'querystring',
+			'paramType' => 'querystring',
 			'allowedParams' => array('lang')));
 		$expected = array(
 			'?' => array('title' => 'test', 'foo' => '', 'bar' => '', 'sort' => 'created', 'direction' => 'asc'),
@@ -667,7 +667,7 @@ class PrgComponentTest extends CakeTestCase {
 			'form' => 'Post',
 			'modelMethod' => false,
 			'filterEmpty' => true,
-			'paramType' =>'querystring',
+			'paramType' => 'querystring',
 			'allowedParams' => array('lang')));
 		$expected = array(
 			'?' => array('title' => 'test'),
