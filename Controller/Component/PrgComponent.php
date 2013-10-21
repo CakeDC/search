@@ -12,8 +12,6 @@
 /**
  * Post-Redirect-Get: Transfers POST Requests to GET Requests
  *
- * @package		plugins.search
- * @subpackage	plugins.search.controllers.components
  */
 App::uses('Component', 'Controller');
 App::uses('Set', 'Utility');
@@ -155,6 +153,7 @@ class PrgComponent extends Component {
  * 2, 3 need only field parameter
  *
  * @param array $options
+ * @return void
  */
 	public function presetForm($options) {
 		if (!is_array($options)) {
@@ -220,11 +219,11 @@ class PrgComponent extends Component {
 		$this->controller->set('isSearch', $this->isSearch);
 	}
 
-	/**
-	 * Return the parsed params of the current search request
-	 *
-	 * @return array Params
-	 */
+/**
+ * Return the parsed params of the current search request
+ *
+ * @return array Params
+ */
 	public function parsedParams() {
 		return $this->_parsedParams;
 	}

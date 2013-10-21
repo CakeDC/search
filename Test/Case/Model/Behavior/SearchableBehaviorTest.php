@@ -15,8 +15,6 @@ App::uses('ModelBehavior', 'Model');
 /**
  * Searchable behavior tests
  *
- * @package search
- * @subpackage search.tests.cases.behaviors
  */
 class FilterBehavior extends ModelBehavior {
 
@@ -48,8 +46,6 @@ class FilterBehavior extends ModelBehavior {
 /**
  * Tag model
  *
- * @package search
- * @subpackage search.tests.cases.behaviors
  */
 class Tag extends CakeTestModel {
 }
@@ -57,8 +53,6 @@ class Tag extends CakeTestModel {
 /**
  * Tagged model
  *
- * @package search
- * @subpackage search.tests.cases.behaviors
  */
 class Tagged extends CakeTestModel {
 
@@ -81,8 +75,6 @@ class Tagged extends CakeTestModel {
 /**
  * Article model
  *
- * @package search
- * @subpackage search.tests.cases.behaviors
  */
 class Article extends CakeTestModel {
 
@@ -111,8 +103,9 @@ class Article extends CakeTestModel {
 		$this->Tagged->Behaviors->attach('Search.Searchable');
 		$conditions = array();
 		if (!empty($data['tags'])) {
-			$conditions = array('Tag.name'  => $data['tags']);
+			$conditions = array('Tag.name' => $data['tags']);
 		}
+		$this->Tagged->order = null;
 		$query = $this->Tagged->getQuery('all', array(
 			'conditions' => $conditions,
 			'fields' => array('foreign_key'),
@@ -182,8 +175,6 @@ class Article extends CakeTestModel {
 /**
  * SearchableTestCase
  *
- * @package search
- * @subpackage search.tests.cases.behaviors
  */
 class SearchableTest extends CakeTestCase {
 
@@ -298,7 +289,7 @@ class SearchableTest extends CakeTestCase {
 		$this->Article->Behaviors->attach('Search.Searchable');
 		$data = array('faketitle' => 'First');
 		$result = $this->Article->parseCriteria($data);
-		$expected = array('OR' =>array('Article.title' => 'First', 'User.name' => 'First'));
+		$expected = array('OR' => array('Article.title' => 'First', 'User.name' => 'First'));
 		$this->assertEquals($expected, $result);
 
 		// multiple select dropdown
@@ -503,7 +494,8 @@ class SearchableTest extends CakeTestCase {
 
 		$data = array('tags' => 'Cake');
 		$result = $this->Article->parseCriteria($data);
-		$expected = array(array('Article.id in (SELECT `Tagged`.`foreign_key` FROM `' . $database . '`.`' . $this->Article->tablePrefix . 'tagged` AS `Tagged` LEFT JOIN `' . $database . '`.`' . $this->Article->tablePrefix . 'tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = \'Cake\')'));
+		$expression = $this->Article->getDatasource()->expression('Article.id in (SELECT `Tagged`.`foreign_key` FROM `' . $database . '`.`' . $this->Article->tablePrefix . 'tagged` AS `Tagged` LEFT JOIN `' . $database . '`.`' . $this->Article->tablePrefix . 'tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = \'Cake\')');
+		$expected = array($expression);
 		$this->assertEquals($expected, $result);
 	}
 
@@ -525,7 +517,8 @@ class SearchableTest extends CakeTestCase {
 
 		$data = array('tags' => 'Cake');
 		$result = $this->Article->parseCriteria($data);
-		$expected = array(array('Article.id in (SELECT `Tagged`.`foreign_key` FROM `' . $database . '`.`' . $this->Article->tablePrefix . 'tagged` AS `Tagged` LEFT JOIN `' . $database . '`.`' . $this->Article->tablePrefix . 'tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = \'Cake\')'));
+		$expression = $this->Article->getDatasource()->expression('Article.id in (SELECT `Tagged`.`foreign_key` FROM `' . $database . '`.`' . $this->Article->tablePrefix . 'tagged` AS `Tagged` LEFT JOIN `' . $database . '`.`' . $this->Article->tablePrefix . 'tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = \'Cake\')');
+		$expected = array($expression);
 
 		$this->Article->Behaviors->detach('Searchable');
 
@@ -644,7 +637,6 @@ class SearchableTest extends CakeTestCase {
 		$expected = array(
 			'Article.views BETWEEN ? AND ?' => array(11, 100));
 		$this->assertEquals($expected, $result);
-
 	}
 
 /**

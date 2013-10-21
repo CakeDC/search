@@ -13,8 +13,6 @@
 /**
  * Post Fixture
  *
- * @package search
- * @subpackage search.tests.fixtures
  */
 class PostFixture extends CakeTestFixture {
 

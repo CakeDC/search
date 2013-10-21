@@ -13,17 +13,8 @@ App::uses('ModelBehavior', 'Model');
 /**
  * Searchable behavior
  *
- * @package		plugins.search
- * @subpackage	plugins.search.models.behaviors
  */
 class SearchableBehavior extends ModelBehavior {
-
-/**
- * settings indexed by model name.
- *
- * @var array
- */
-	public $settings = array();
 
 /**
  * Default settings
@@ -48,6 +39,7 @@ class SearchableBehavior extends ModelBehavior {
  *
  * @param Model $Model
  * @param array $config
+ * @return void
  */
 	public function setup(Model $Model, $config = array()) {
 		$this->_defaults = array_merge($this->_defaults, (array)Configure::read('Search.Searchable'));
@@ -158,7 +150,8 @@ class SearchableBehavior extends ModelBehavior {
  * Clear all associations
  *
  * @param Model $Model
- * @param bool $reset
+ * @param boolean $reset
+ * @return void
  */
 	public function unbindAllModels(Model $Model, $reset = false) {
 		$assocs = array('belongsTo', 'hasOne', 'hasMany', 'hasAndBelongsToMany');
@@ -198,7 +191,7 @@ class SearchableBehavior extends ModelBehavior {
  * @param Model $Model
  * @param $data
  * @param array $options
- * @return string $queryLikeString
+ * @return string queryLikeString
  */
 	public function formatLike(Model $Model, $data, $options = array()) {
 		$options = array_merge($this->settings[$Model->alias], $options);
@@ -323,7 +316,7 @@ class SearchableBehavior extends ModelBehavior {
  */
 	protected function _connectedLike($value, $field, $fieldName) {
 		$or = array();
-		$orValues  = String::tokenize($value, $field['connectorOr']);
+		$orValues = String::tokenize($value, $field['connectorOr']);
 		foreach ($orValues as $orValue) {
 			$andValues = String::tokenize($orValue, $field['connectorAnd']);
 			$and = array();
@@ -362,7 +355,7 @@ class SearchableBehavior extends ModelBehavior {
 				continue;
 			}
 
-			if (is_array($fieldValue) || !is_array($fieldValue) && (String)$fieldValue !== '') {
+			if (is_array($fieldValue) || !is_array($fieldValue) && (string)$fieldValue !== '') {
 				$cond[$fieldName] = $fieldValue;
 			} elseif (isset($data[$field['name']]) && !empty($field['allowEmpty'])) {
 				$schema = $Model->schema($field['name']);
@@ -399,7 +392,7 @@ class SearchableBehavior extends ModelBehavior {
 	protected function _addCondExpression(Model $Model, &$conditions, $data, $field) {
 		$fieldName = $field['field'];
 
-		if ((method_exists($Model, $field['method']) || $this->_checkBehaviorMethods($Model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && (String)$data[$field['name']] !== ''))) {
+		if ((method_exists($Model, $field['method']) || $this->_checkBehaviorMethods($Model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && (string)$data[$field['name']] !== ''))) {
 			$fieldValues = $Model->{$field['method']}($data, $field);
 			if (!empty($conditions[$fieldName]) && is_array($conditions[$fieldName])) {
 				$conditions[$fieldName] = array_unique(array_merge(array($conditions[$fieldName]), array($fieldValues)));
@@ -420,7 +413,7 @@ class SearchableBehavior extends ModelBehavior {
  * @return array of conditions modified by this method
  */
 	protected function _addCondQuery(Model $Model, &$conditions, $data, $field) {
-		if ((method_exists($Model, $field['method']) || $this->_checkBehaviorMethods($Model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && (String)$data[$field['name']] !== ''))) {
+		if ((method_exists($Model, $field['method']) || $this->_checkBehaviorMethods($Model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && (string)$data[$field['name']] !== ''))) {
 			$conditionsAdd = $Model->{$field['method']}($data, $field);
 			// if our conditions function returns something empty, nothing to merge in
 			if (!empty($conditionsAdd)) {
@@ -441,11 +434,11 @@ class SearchableBehavior extends ModelBehavior {
  */
 	protected function _addCondSubquery(Model $Model, &$conditions, $data, $field) {
 		$fieldName = $field['field'];
-		if ((method_exists($Model, $field['method']) || $this->_checkBehaviorMethods($Model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && (String)$data[$field['name']] !== ''))) {
+		if ((method_exists($Model, $field['method']) || $this->_checkBehaviorMethods($Model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && (string)$data[$field['name']] !== ''))) {
 			$subquery = $Model->{$field['method']}($data, $field);
 			// if our subquery function returns something empty, nothing to merge in
 			if (!empty($subquery)) {
-				$conditions[] = array("$fieldName in ($subquery)");
+				$conditions[] = $Model->getDataSource()->expression("$fieldName in ($subquery)");
 			}
 		}
 		return $conditions;
@@ -472,7 +465,7 @@ class SearchableBehavior extends ModelBehavior {
 			$recursive = $queryData['recursive'];
 		}
 
-		if (!is_null($recursive)) {
+		if ($recursive !== null) {
 			$_recursive = $Model->recursive;
 			$Model->recursive = $recursive;
 		}
@@ -502,7 +495,7 @@ class SearchableBehavior extends ModelBehavior {
 					if ($byPass) {
 						$assocData['fields'] = false;
 					}
-					if (true === $db->generateAssociationQuery($Model, $linkModel, $type, $assoc, $assocData, $queryData, $external, $null)) {
+					if ($db->generateAssociationQuery($Model, $linkModel, $type, $assoc, $assocData, $queryData, $external, $null) === true) {
 						$linkedModels[$type . '/' . $assoc] = true;
 					}
 				}

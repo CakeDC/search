@@ -23,174 +23,173 @@ It supports simple methods to search inside models using strict and non-strict c
 An example of how to implement complex searching in your application.
 
 Model code:
+```php
+class Article extends AppModel {
 
-	class Article extends AppModel {
+	public $actsAs = array('Search.Searchable');
+	public $belongsTo = array('User');
+	public $hasAndBelongsToMany = array('Tag' => array('with' => 'Tagged'));
 
-		public $actsAs = array('Search.Searchable');
-		public $belongsTo = array('User');
-		public $hasAndBelongsToMany = array('Tag' => array('with' => 'Tagged'));
+	public $filterArgs = array(
+		'title' => array('type' => 'like'),
+		'status' => array('type' => 'value'),
+		'blog_id' => array('type' => 'value'),
+		'search' => array('type' => 'like', 'field' => 'Article.description'),
+		'range' => array('type' => 'expression', 'method' => 'makeRangeCondition', 'field' => 'Article.views BETWEEN ? AND ?'),
+		'username' => array('type' => 'like', 'field' => array('User.username', 'UserInfo.first_name')),
+		'tags' => array('type' => 'subquery', 'method' => 'findByTags', 'field' => 'Article.id'),
+		'filter' => array('type' => 'query', 'method' => 'orConditions'),
+		'enhanced_search' => array('type' => 'like', 'encode' => true, 'before' => false, 'after' => false, 'field' => array('ThisModel.name', 'OtherModel.name')),
+	);
 
-		public $filterArgs = array(
-			'title' => array('type' => 'like'),
-			'status' => array('type' => 'value'),
-			'blog_id' => array('type' => 'value'),
-			'search' => array('type' => 'like', 'field' => 'Article.description'),
-			'range' => array('type' => 'expression', 'method' => 'makeRangeCondition', 'field' => 'Article.views BETWEEN ? AND ?'),
-			'username' => array('type' => 'like', 'field' => array('User.username', 'UserInfo.first_name')),
-			'tags' => array('type' => 'subquery', 'method' => 'findByTags', 'field' => 'Article.id'),
-			'filter' => array('type' => 'query', 'method' => 'orConditions'),
-			'enhanced_search' => array('type' => 'like', 'encode' => true, 'before' => false, 'after' => false, 'field' => array('ThisModel.name', 'OtherModel.name')),
-		);
+	public function findByTags($data = array()) {
+		$this->Tagged->Behaviors->attach('Containable', array('autoFields' => false));
+		$this->Tagged->Behaviors->attach('Search.Searchable');
+		$query = $this->Tagged->getQuery('all', array(
+			'conditions' => array('Tag.name'  => $data['tags']),
+			'fields' => array('foreign_key'),
+			'contain' => array('Tag')
+		));
+		return $query;
+	}
 
-		public function findByTags($data = array()) {
-			$this->Tagged->Behaviors->attach('Containable', array('autoFields' => false));
-			$this->Tagged->Behaviors->attach('Search.Searchable');
-			$query = $this->Tagged->getQuery('all', array(
-				'conditions' => array('Tag.name'  => $data['tags']),
-				'fields' => array('foreign_key'),
-				'contain' => array('Tag')
+	public function orConditions($data = array()) {
+		$filter = $data['filter'];
+		$cond = array(
+			'OR' => array(
+				$this->alias . '.title LIKE' => '%' . $filter . '%',
+				$this->alias . '.body LIKE' => '%' . $filter . '%',
 			));
-			return $query;
-		}
-
-		public function orConditions($data = array()) {
-			$filter = $data['filter'];
-			$cond = array(
-				'OR' => array(
-					$this->alias . '.title LIKE' => '%' . $filter . '%',
-					$this->alias . '.body LIKE' => '%' . $filter . '%',
-				));
-			return $cond;
-		}
+		return $cond;
 	}
-
+}
+```
 Associated snippet for the controller class:
+```php
+class ArticlesController extends AppController {
+	public $components = array('Search.Prg');
 
-	class ArticlesController extends AppController {
-		public $components = array('Search.Prg');
+	public $presetVars = true; // using the model configuration
 
-		public $presetVars = true; // using the model configuration
-
-		public function find() {
-			$this->Prg->commonProcess();
-			$this->paginate['conditions'] = $this->Article->parseCriteria($this->Prg->parsedParams());
-			$this->set('articles', $this->paginate());
-		}
+	public function find() {
+		$this->Prg->commonProcess();
+		$this->Paginator->settings['conditions'] = $this->Article->parseCriteria($this->Prg->parsedParams());
+		$this->set('articles', $this->Paginator->paginate());
 	}
-
+}
+```
 or verbose (and overriding the model configuration):
+```php
+class ArticlesController extends AppController {
+	public $components = array('Search.Prg');
 
-	class ArticlesController extends AppController {
-		public $components = array('Search.Prg');
+	public $presetVars = array(
+		'title' => array('type' => 'value'),
+		'status' => array('type' => 'checkbox'),
+		'blog_id' => array('type' => 'lookup', 'formField' => 'blog_input', 'modelField' => 'title', 'model' => 'Blog')
+	);
 
-		public $presetVars = array(
-			'title' => array('type' => 'value'),
-			'status' => array('type' => 'checkbox'),
-			'blog_id' => array('type' => 'lookup', 'formField' => 'blog_input', 'modelField' => 'title', 'model' => 'Blog')
-		);
-
-		public function find() {
-			$this->Prg->commonProcess();
-			$this->Paginator->settings['conditions'] = $this->Article->parseCriteria($this->Prg->parsedParams());
-			$this->set('articles', $this->Paginator->paginate());
-		}
+	public function find() {
+		$this->Prg->commonProcess();
+		$this->Paginator->settings['conditions'] = $this->Article->parseCriteria($this->Prg->parsedParams());
+		$this->set('articles', $this->Paginator->paginate());
 	}
-
+}
+```
 The `find.ctp` view is the same as `index.ctp` with the addition of the search form:
-
-	echo $this->Form->create('Article', array(
-		'url' => array_merge(array('action' => 'find'), $this->params['pass'])
-	));
-	echo $this->Form->input('title', array('div' => false));
-	echo $this->Form->input('blog_id', array('div' => false, 'options' => $blogs));
-	echo $this->Form->input('status', array('div' => false, 'multiple' => 'checkbox', 'options' => array('open', 'closed')));
-	echo $this->Form->input('username', array('div' => false));
-	echo $this->Form->submit(__('Search'), array('div' => false));
-	echo $this->Form->end();
-
+```php
+echo $this->Form->create('Article', array(
+	'url' => array_merge(array('action' => 'find'), $this->params['pass'])
+));
+echo $this->Form->input('title', array('div' => false));
+echo $this->Form->input('blog_id', array('div' => false, 'options' => $blogs));
+echo $this->Form->input('status', array('div' => false, 'multiple' => 'checkbox', 'options' => array('open', 'closed')));
+echo $this->Form->input('username', array('div' => false));
+echo $this->Form->submit(__('Search'), array('div' => false));
+echo $this->Form->end();
+```
 In this example on model level shon example of search by OR condition. For this purpose defined method orConditions and added filter arg `array('name' => 'filter', 'type' => 'query', 'method' => 'orConditions')`.
 
 ## Advanced usage ##
-
-		public $filterArgs = array(
-			// match results with `%searchstring`:
-			'search_exact_beginning' => array('type' => 'like', 'encode' => true, 'before' => true, 'after' => false),
-			// match results with `searchstring%`:
-			'search_exact_end' => array('type' => 'like', 'encode' => true, 'before' => false, 'after' => true),
-			// match results with `__searchstring%`:
-			'search_special_like' => array('type' => 'like', 'encode' => true, 'before' => '__', 'after' => '%'),
-			// use custom wildcards in the frontend (instead of * and ?):
-			'search_custom_like' => array('type' => 'like', 'encode' => true, 'before' => false, 'after' => false, 'wildcardAny' => '%', 'wildcardOne' => '_'),
-			// use and/or connectors ('First + Second, Third'):
-			'search_with_connectors' => array('type' => 'like', 'field' => 'Article.title', 'connectorAnd' => '+', 'connectorOr' => ',')
-		);
-
+```php
+public $filterArgs = array(
+	// match results with `%searchstring`:
+	'search_exact_beginning' => array('type' => 'like', 'encode' => true, 'before' => true, 'after' => false),
+	// match results with `searchstring%`:
+	'search_exact_end' => array('type' => 'like', 'encode' => true, 'before' => false, 'after' => true),
+	// match results with `__searchstring%`:
+	'search_special_like' => array('type' => 'like', 'encode' => true, 'before' => '__', 'after' => '%'),
+	// use custom wildcards in the frontend (instead of * and ?):
+	'search_custom_like' => array('type' => 'like', 'encode' => true, 'before' => false, 'after' => false, 'wildcardAny' => '%', 'wildcardOne' => '_'),
+	// use and/or connectors ('First + Second, Third'):
+	'search_with_connectors' => array('type' => 'like', 'field' => 'Article.title', 'connectorAnd' => '+', 'connectorOr' => ',')
+);
+```
 ### `emptyValue` default values to allow search for "not any of the below"
 
 Let's say we have categories and a dropdown list to select any of those or "empty = ignore this filter". But what if we also want to have an option to find all non-categorized items?
 With "default 0 NOT NULL" fields this works as we can use 0 here explicitly:
-
+```php
 		$categories = $this->Model->Category->find('list');
 		array_unshift($categories, '- not categorized -'); // before passing it on to the view (the key will be 0, not '' as the ignore-filter key will be)
-
+```
 But for char36 foreign keys or "default NULL" fields this does not work. The posted empty string will result in the omitting of the rule.
 That's where `emptyValue` comes into play.
-
-		// controller
-		public $presetVars = array(
-			'category_id' => array(
-				'allowEmpty' => true,
-				'emptyValue' => '0',
-			);
-		);
-
+```php
+// controller
+public $presetVars = array(
+	'category_id' => array(
+		'allowEmpty' => true,
+		'emptyValue' => '0',
+	);
+);
+```
 This way we assign '' for 0, and "ignore" for '' on POST, and the opposite for presetForm().
 
 Note: This only works if you use `allowEmpty` here. If you fail to do that it will always trigger the lookup here.
 
 ### `defaultValue` default values to allow search in default case
-
-	// model
-	public $filterArgs = array(
-		'some_related_table_id' => array('type' => 'value', 'defaultValue' => 'none'),
-	);
-
+```php
+// model
+public $filterArgs = array(
+	'some_related_table_id' => array('type' => 'value', 'defaultValue' => 'none'),
+);
+```
 This will always trigger the filter for it (looking for string `none` in the table field).
 
 ## Full example for model/controller configuration with overriding
+```php
+// model
+public $filterArgs = array(
+	'some_related_table_id' => array('type' => 'value'),
+	'search'=> array('type' => 'like', 'encode' => true, 'before' => false, 'after' => false, 'field' => array('ThisModel.name', 'OtherModel.name')),
+	'name'=> array('type' => 'query', 'method' => 'searchNameCondition')
+);
 
-	// model
-	public $filterArgs = array(
-		'some_related_table_id' => array('type' => 'value'),
-		'search'=> array('type' => 'like', 'encode' => true, 'before' => false, 'after' => false, 'field' => array('ThisModel.name', 'OtherModel.name')),
-		'name'=> array('type' => 'query', 'method' => 'searchNameCondition')
-	);
-
-	public function searchNameCondition($data = array()) {
-		$filter = $data['name'];
-		$cond = array(
-			'OR' => array(
-				$this->alias . '.name LIKE' => '' . $this->formatLike($filter) . '',
-				$this->alias . '.invoice_number LIKE' => '' . $this->formatLike($filter) . '',
-		));
-		return $cond;
-	}
-
-
-	// controller (dry setup, only override/extend what is necessary)
-	public $presetVars = array(
-		'some_related_table_id' => true,
-		'search' => true,
-		'name'=> array( // overriding/extending the model defaults
-			'type' => 'value',
-			'encode' => true
-		),
-	);
+public function searchNameCondition($data = array()) {
+	$filter = $data['name'];
+	$cond = array(
+		'OR' => array(
+			$this->alias . '.name LIKE' => '' . $this->formatLike($filter) . '',
+			$this->alias . '.invoice_number LIKE' => '' . $this->formatLike($filter) . '',
+	));
+	return $cond;
+}
 
 
-	// search example with wildcards in the view for field `search`
-	20??BE* => matches 2011BES and 2012BETR etc
+// controller (dry setup, only override/extend what is necessary)
+public $presetVars = array(
+	'some_related_table_id' => true,
+	'search' => true,
+	'name'=> array( // overriding/extending the model defaults
+		'type' => 'value',
+		'encode' => true
+	),
+);
 
+
+// search example with wildcards in the view for field `search` 20??BE* => matches 2011BES and 2012BETR etc
+```
 ## Behavior and Model configuration ##
 
 All search fields need to be configured in the Model::filterArgs array.
@@ -230,25 +229,25 @@ Most importantly the component acts as the glue between your app and the searcha
 
 You can attach the component to your controller, here is an example
 using defaults alreay set in the component itself:
-
-	public $components = array('Search.Prg' => array(
-		//Options for preset form method
-		'presetForm' => array(
-			'paramType' => 'named' // or 'querystring'
-			'model' => null // or a default model name
-		),
-		//Options for commonProcess method
-		'commonProcess' => array(
-			'formName' => null,
-			'keepPassed' => true,
-			'action' => null,
-			'modelMethod' => 'validateSearch',
-			'allowlowedParams' => array(),
-			'paramType' => 'named', // or 'querystring'
-			'filterEmpty' => false
-		)
-	));
-
+```php
+public $components = array('Search.Prg' => array(
+	//Options for preset form method
+	'presetForm' => array(
+		'paramType' => 'named' // or 'querystring'
+		'model' => null // or a default model name
+	),
+	//Options for commonProcess method
+	'commonProcess' => array(
+		'formName' => null,
+		'keepPassed' => true,
+		'action' => null,
+		'modelMethod' => 'validateSearch',
+		'allowedParams' => array(),
+		'paramType' => 'named', // or 'querystring'
+		'filterEmpty' => false
+	)
+));
+```
 ### Controller configuration ###
 
 All search fields parameters need to configure in the Controller::presetVars array (if you didn't yet in the model).
