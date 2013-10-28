@@ -547,7 +547,9 @@ class SearchableBehaviorTest extends CakeTestCase {
 
 		// Old syntax
 		$this->Article->filterArgs = array(
-			array('name' => 'tags', 'type' => 'subquery', 'method' => 'findByTags', 'field' => 'Article.id')
+			array('name' => 'tags', 'type' => 'subquery', 'method' => 'findByTags',
+				'field' => 'Article.id', 'allowEmpty' => true
+			)
 		);
 
 		$data = array('tags' => 'Cake');
@@ -562,7 +564,9 @@ class SearchableBehaviorTest extends CakeTestCase {
 
 		// New syntax
 		$this->Article->filterArgs = array(
-			'tags' => array('type' => 'subquery', 'method' => 'findByTags', 'field' => 'Article.id')
+			'tags' => array('type' => 'subquery', 'method' => 'findByTags',
+				'field' => 'Article.id', 'allowEmpty' => true
+			)
 		);
 		$this->Article->Behaviors->load('Search.Searchable');
 
