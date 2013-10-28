@@ -234,10 +234,9 @@ class SearchableTest extends CakeTestCase {
  * @link http://github.com/CakeDC/Search/issues#issue/3
  */
 	public function testValueCondition() {
-		$this->Article->Behaviors->detach('Searchable');
 		$this->Article->filterArgs = array(
 			array('name' => 'slug', 'type' => 'value'));
-		$this->Article->Behaviors->attach('Search.Searchable');
+		$this->Article->Behaviors->load('Search.Searchable');
 		$data = array();
 		$result = $this->Article->parseCriteria($data);
 		$this->assertEquals(array(), $result);
@@ -247,57 +246,51 @@ class SearchableTest extends CakeTestCase {
 		$expected = array('Article.slug' => 'first_article');
 		$this->assertEquals($expected, $result);
 
-		$this->Article->Behaviors->detach('Searchable');
 		$this->Article->filterArgs = array(
 			array('name' => 'fakeslug', 'type' => 'value', 'field' => 'Article2.slug'));
-		$this->Article->Behaviors->attach('Search.Searchable');
+		$this->Article->Behaviors->load('Search.Searchable');
 		$data = array('fakeslug' => 'first_article');
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('Article2.slug' => 'first_article');
 		$this->assertEquals($expected, $result);
 
 		// Testing http://github.com/CakeDC/Search/issues#issue/3
-		$this->Article->Behaviors->detach('Searchable');
 		$this->Article->filterArgs = array(
 			array('name' => 'views', 'type' => 'value'));
-		$this->Article->Behaviors->attach('Search.Searchable');
+		$this->Article->Behaviors->load('Search.Searchable');
 		$data = array('views' => '0');
 		$result = $this->Article->parseCriteria($data);
 		$this->assertEquals(array('Article.views' => 0), $result);
 
-		$this->Article->Behaviors->detach('Searchable');
 		$this->Article->filterArgs = array(
 			array('name' => 'views', 'type' => 'value'));
-		$this->Article->Behaviors->attach('Search.Searchable');
+		$this->Article->Behaviors->load('Search.Searchable');
 		$data = array('views' => 0);
 		$result = $this->Article->parseCriteria($data);
 		$this->assertEquals(array('Article.views' => 0), $result);
 
-		$this->Article->Behaviors->detach('Searchable');
 		$this->Article->filterArgs = array(
 			array('name' => 'views', 'type' => 'value'));
-		$this->Article->Behaviors->attach('Search.Searchable');
+		$this->Article->Behaviors->load('Search.Searchable');
 		$data = array('views' => '');
 		$result = $this->Article->parseCriteria($data);
 		$this->assertEquals(array(), $result);
 
 		// multiple fields + cross model searches
-		$this->Article->Behaviors->detach('Searchable');
 		$this->Article->filterArgs = array(
 			'faketitle' => array('type' => 'value', 'field' => array('title', 'User.name'))
 		);
-		$this->Article->Behaviors->attach('Search.Searchable');
+		$this->Article->Behaviors->load('Search.Searchable');
 		$data = array('faketitle' => 'First');
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('OR' => array('Article.title' => 'First', 'User.name' => 'First'));
 		$this->assertEquals($expected, $result);
 
 		// multiple select dropdown
-		$this->Article->Behaviors->detach('Searchable');
 		$this->Article->filterArgs = array(
 			'fakesource' => array('type' => 'value')
 		);
-		$this->Article->Behaviors->attach('Search.Searchable');
+		$this->Article->Behaviors->load('Search.Searchable');
 		$data = array('fakesource' => array(5, 9));
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('Article.fakesource' => array(5, 9));
@@ -310,10 +303,9 @@ class SearchableTest extends CakeTestCase {
  * @return void
  */
 	public function testLikeCondition() {
-		$this->Article->Behaviors->detach('Searchable');
 		$this->Article->filterArgs = array(
 			array('name' => 'title', 'type' => 'like'));
-		$this->Article->Behaviors->attach('Search.Searchable');
+		$this->Article->Behaviors->load('Search.Searchable');
 
 		$data = array();
 		$result = $this->Article->parseCriteria($data);
@@ -324,10 +316,9 @@ class SearchableTest extends CakeTestCase {
 		$expected = array('Article.title LIKE' => '%First%');
 		$this->assertEquals($expected, $result);
 
-		$this->Article->Behaviors->detach('Searchable');
 		$this->Article->filterArgs = array(
 			array('name' => 'faketitle', 'type' => 'like', 'field' => 'Article.title'));
-		$this->Article->Behaviors->attach('Search.Searchable');
+		$this->Article->Behaviors->load('Search.Searchable');
 
 		$data = array('faketitle' => 'First');
 		$result = $this->Article->parseCriteria($data);
@@ -335,11 +326,10 @@ class SearchableTest extends CakeTestCase {
 		$this->assertEquals($expected, $result);
 
 		// wildcards should be treated as normal text
-		$this->Article->Behaviors->detach('Searchable');
 		$this->Article->filterArgs = array(
 			array('name' => 'faketitle', 'type' => 'like', 'field' => 'Article.title')
 		);
-		$this->Article->Behaviors->attach('Search.Searchable');
+		$this->Article->Behaviors->load('Search.Searchable');
 		$data = array('faketitle' => '%First_');
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('Article.title LIKE' => '%\%First\_%');
@@ -392,11 +382,10 @@ class SearchableTest extends CakeTestCase {
 		$this->assertEquals($expected, $result);
 
 		// multiple OR fields per field
-		$this->Article->Behaviors->detach('Searchable');
 		$this->Article->filterArgs = array(
 			array('name' => 'faketitle', 'type' => 'like', 'field' => array('title', 'descr'))
 		);
-		$this->Article->Behaviors->attach('Search.Searchable');
+		$this->Article->Behaviors->load('Search.Searchable');
 		$data = array('faketitle' => 'First');
 
 		$result = $this->Article->parseCriteria($data);
@@ -404,22 +393,20 @@ class SearchableTest extends CakeTestCase {
 		$this->assertEquals($expected, $result);
 
 		// set before => false dynamically
-		$this->Article->Behaviors->detach('Searchable');
 		$this->Article->filterArgs = array(
 			array('name' => 'faketitle', 'type' => 'like', 'field' => array('title', 'descr'), 'before' => false)
 		);
-		$this->Article->Behaviors->attach('Search.Searchable');
+		$this->Article->Behaviors->load('Search.Searchable');
 		$data = array('faketitle' => 'First');
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('OR' => array('Article.title LIKE' => 'First%', 'Article.descr LIKE' => 'First%'));
 		$this->assertEquals($expected, $result);
 
 		// manually define the before/after type
-		$this->Article->Behaviors->detach('Searchable');
 		$this->Article->filterArgs = array(
 			array('name' => 'faketitle', 'type' => 'like', 'field' => array('title'), 'before' => '_', 'after' => '_')
 		);
-		$this->Article->Behaviors->attach('Search.Searchable');
+		$this->Article->Behaviors->load('Search.Searchable');
 		$data = array('faketitle' => 'First');
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('Article.title LIKE' => '_First_');
@@ -427,23 +414,21 @@ class SearchableTest extends CakeTestCase {
 
 		// cross model searches + named keys (shorthand)
 		$this->Article->bindModel(array('belongsTo' => array('User')));
-		$this->Article->Behaviors->detach('Searchable');
 		$this->Article->filterArgs = array(
 			'faketitle' => array('type' => 'like', 'field' => array('title', 'User.name'), 'before' => false, 'after' => true)
 		);
-		$this->Article->Behaviors->attach('Search.Searchable');
+		$this->Article->Behaviors->load('Search.Searchable');
 		$data = array('faketitle' => 'First');
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('OR' => array('Article.title LIKE' => 'First%', 'User.name LIKE' => 'First%'));
 		$this->assertEquals($expected, $result);
 
 		// with already existing or conditions + named keys (shorthand)
-		$this->Article->Behaviors->detach('Searchable');
 		$this->Article->filterArgs = array(
 			'faketitle' => array('type' => 'like', 'field' => array('title', 'User.name'), 'before' => false, 'after' => true),
 			'otherfaketitle' => array('type' => 'like', 'field' => array('descr', 'comment'), 'before' => false, 'after' => true)
 		);
-		$this->Article->Behaviors->attach('Search.Searchable');
+		$this->Article->Behaviors->load('Search.Searchable');
 
 		$data = array('faketitle' => 'First', 'otherfaketitle' => 'Second');
 		$result = $this->Article->parseCriteria($data);
@@ -454,11 +439,10 @@ class SearchableTest extends CakeTestCase {
 		$this->assertEquals($expected, $result);
 
 		// wildcards and and/or connectors
-		$this->Article->Behaviors->detach('Searchable');
 		$this->Article->filterArgs = array(
 			array('name' => 'faketitle', 'type' => 'like', 'field' => 'Article.title', 'connectorAnd' => '+', 'connectorOr' => ',', 'before' => true, 'after' => true)
 		);
-		$this->Article->Behaviors->attach('Search.Searchable');
+		$this->Article->Behaviors->load('Search.Searchable');
 		$data = array('faketitle' => 'First%+Second%, Third%');
 		$result = $this->Article->parseCriteria($data);
 		$expected = array(0 => array('OR' => array(
@@ -520,13 +504,12 @@ class SearchableTest extends CakeTestCase {
 		$expression = $this->Article->getDatasource()->expression('Article.id in (SELECT `Tagged`.`foreign_key` FROM `' . $database . '`.`' . $this->Article->tablePrefix . 'tagged` AS `Tagged` LEFT JOIN `' . $database . '`.`' . $this->Article->tablePrefix . 'tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = \'Cake\')');
 		$expected = array($expression);
 
-		$this->Article->Behaviors->detach('Searchable');
 
 		// new syntax
 		$this->Article->filterArgs = array(
 			'tags' => array('type' => 'subquery', 'method' => 'findByTags', 'field' => 'Article.id')
 		);
-		$this->Article->Behaviors->attach('Search.Searchable');
+		$this->Article->Behaviors->load('Search.Searchable');
 
 		$result = $this->Article->parseCriteria($data);
 		$this->assertEquals($expected, $result);
@@ -583,7 +566,7 @@ class SearchableTest extends CakeTestCase {
  * @return void
  */
 	public function testQueryWithBehaviorCallCondition() {
-		$this->Article->Behaviors->attach('Filter');
+		$this->Article->Behaviors->load('Filter');
 		$this->Article->filterArgs = array(
 			array('name' => 'filter', 'type' => 'query', 'method' => 'mostFilterConditions'));
 
@@ -627,10 +610,9 @@ class SearchableTest extends CakeTestCase {
  * @return void
  */
 	public function testDefaultValue() {
-		$this->Article->Behaviors->detach('Searchable');
 		$this->Article->filterArgs = array(
 			'range' => array('type' => 'expression', 'defaultValue' => '100', 'method' => 'makeRangeCondition', 'field' => 'Article.views BETWEEN ? AND ?'));
-		$this->Article->Behaviors->attach('Search.Searchable');
+		$this->Article->Behaviors->load('Search.Searchable');
 
 		$data = array();
 		$result = $this->Article->parseCriteria($data);
