@@ -11,7 +11,6 @@
 
 /**
  * Tag Fixture
- *
  */
 class TagFixture extends CakeTestFixture {
 
