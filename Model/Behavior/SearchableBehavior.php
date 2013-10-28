@@ -459,7 +459,6 @@ class SearchableBehavior extends ModelBehavior {
 		}
 
 		if ($recursive !== null) {
-			$_recursive = $Model->recursive;
 			$Model->recursive = $recursive;
 		}
 
