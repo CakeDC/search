@@ -1,13 +1,23 @@
 <?php
 /**
- * Group test - Search
+ * Copyright (c) Cake Development Corporation (http://cakedc.com)
+ *
+ * Licensed under The MIT License
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright Copyright (c) Cake Development Corporation (http://cakedc.com)
+ * @license http://www.opensource.org/licenses/mit-license.php MIT License
+ */
+
+/**
+ * AllSearchPluginTest test suite
  */
 class AllSearchPluginTest extends PHPUnit_Framework_TestSuite {
 
 /**
- * suite method, defines tests for this suite.
+ * Compile test suite with all tests
  *
- * @return void
+ * @return CakeTestSuite The compiled test suite.
  */
 	public static function suite() {
 		$Suite = new CakeTestSuite('All Plugin tests');
