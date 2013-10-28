@@ -494,8 +494,8 @@ class SearchableBehaviorTest extends CakeTestCase {
  * @return void
  */
 	public function testSubQueryCondition() {
-		if ($this->skipIf($this->db->config['datasource'] !== 'Database/Mysql', 'Test requires mysql db. %s')) {
-			return;
+		if ($this->db->config['datasource'] !== 'Database/Mysql') {
+			$this->markTestSkipped('Test requires mysql db.');
 		}
 		$database = $this->db->config['database'];
 
@@ -525,8 +525,8 @@ class SearchableBehaviorTest extends CakeTestCase {
  * @return void
  */
 	public function testSubQueryEmptyCondition() {
-		if ($this->skipIf($this->db->config['datasource'] !== 'Database/Mysql', 'Test requires mysql db. %s')) {
-			return;
+		if ($this->db->config['datasource'] !== 'Database/Mysql') {
+			$this->markTestSkipped('Test requires mysql db.');
 		}
 		$database = $this->db->config['database'];
 
@@ -730,8 +730,8 @@ class SearchableBehaviorTest extends CakeTestCase {
  * @return void
  */
 	public function testGetQuery() {
-		if ($this->skipIf($this->db->config['datasource'] !== 'Database/Mysql', 'Test requires mysql db. %s')) {
-			return;
+		if ($this->db->config['datasource'] !== 'Database/Mysql') {
+			$this->markTestSkipped('Test requires mysql db.');
 		}
 		$database = $this->db->config['database'];
 
