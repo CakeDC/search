@@ -363,8 +363,23 @@ class SearchableTest extends CakeTestCase {
 		$expected = array('Article.title LIKE' => '%First_');
 		$this->assertEquals($expected, $result);
 
+		$data = array('faketitle' => 'F?rst');
+		$this->Article->Behaviors->Searchable->settings['Article']['like']['before'] = true;
+		$this->Article->Behaviors->Searchable->settings['Article']['like']['after'] = true;
+		$result = $this->Article->parseCriteria($data);
+		$expected = array('Article.title LIKE' => '%F_rst%');
+		$this->assertEquals($expected, $result);
+
+		$data = array('faketitle' => 'F*t');
+		$this->Article->Behaviors->Searchable->settings['Article']['like']['before'] = true;
+		$this->Article->Behaviors->Searchable->settings['Article']['like']['after'] = true;
+		$result = $this->Article->parseCriteria($data);
+		$expected = array('Article.title LIKE' => '%F%t%');
+		$this->assertEquals($expected, $result);
+
 		// now we try the default wildcards % and _
 		$data = array('faketitle' => '*First?');
+		$this->Article->Behaviors->Searchable->settings['Article']['like']['before'] = false;
 		$this->Article->Behaviors->Searchable->settings['Article']['like']['after'] = false;
 		$this->Article->Behaviors->Searchable->settings['Article']['wildcardAny'] = '%';
 		$this->Article->Behaviors->Searchable->settings['Article']['wildcardOne'] = '_';
@@ -383,12 +398,6 @@ class SearchableTest extends CakeTestCase {
 		$this->Article->Behaviors->Searchable->settings['Article']['like'] = false;
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('Article.title LIKE' => '%First_');
-		$this->assertEquals($expected, $result);
-
-		$data = array('faketitle' => '%First_');
-		$this->Article->Behaviors->Searchable->settings['Article']['like'] = true;
-		$result = $this->Article->parseCriteria($data);
-		$expected = array('Article.title LIKE' => '%\%First\_%');
 		$this->assertEquals($expected, $result);
 
 		// multiple OR fields per field

@@ -260,31 +260,24 @@ class SearchableBehavior extends ModelBehavior {
 			if ($field['after'] === true) {
 				$field['after'] = '%';
 			}
-			//if both before and after are false, LIKE allows custom placeholders, % and _ are always treated as normal chars
+
 			$options = $this->settings[$Model->alias];
 			$from = $to = $substFrom = $substTo = array();
-			if ($options['wildcardAny'] !== '%' || ($field['before'] !== false || $field['after'] !== false)) {
+			if ($options['wildcardAny'] !== '%') {
 				$from[] = '%';
 				$to[] = '\%';
+				$from[] = $options['wildcardAny'];
+				$to[] = '%';
 			}
-			if ($options['wildcardOne'] !== '_' || ($field['before'] !== false || $field['after'] !== false)) {
+			if ($options['wildcardOne'] !== '_') {
 				$from[] = '_';
 				$to[] = '\_';
+				$from[] = $options['wildcardOne'];
+				$to[] = '_';
 			}
 			$value = $data[$field['name']];
 			if (!empty($from)) {
 				$value = str_replace($from, $to, $value);
-			}
-			if ($field['before'] === false && $field['after'] === false) {
-				if ($options['wildcardAny'] !== '%') {
-					$substFrom[] = $options['wildcardAny'];
-					$substTo[] = '%';
-				}
-				if ($options['wildcardOne'] !== '_') {
-					$substFrom[] = $options['wildcardOne'];
-					$substTo[] = '_';
-				}
-				$value = str_replace($substFrom, $substTo, $value);
 			}
 
 			if (!empty($field['connectorAnd']) || !empty($field['connectorOr'])) {
