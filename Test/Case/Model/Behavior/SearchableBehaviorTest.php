@@ -160,6 +160,13 @@ class Article extends CakeTestModel {
 		return $cond;
 	}
 
+/**
+ * orConditions 2 (alternate, single)
+ *
+ * @param array $data
+ * @return array
+ * @link http://github.com/CakeDC/Search/issues/51
+ */
 	public function or2Conditions($data = array()) {
 		$filter = $data['filter2'];
 		$cond = array(
@@ -168,6 +175,28 @@ class Article extends CakeTestModel {
 				$this->alias . '.field2 LIKE' => '%' . $filter . '%',
 			));
 		return $cond;
+	}
+
+/**
+ * orConditions nested (same as orConditions() but nested in array())
+ *
+ * @param array $data
+ * @return array
+ * @link http://github.com/CakeDC/Search/issues/51
+ */
+	public function orConditionsDoubleArray($data = array()) {
+		return array( $this->orConditions($data) );
+	}
+
+/**
+ * orConditions 2 nested (same as orConditions2() but nested in array())
+ *
+ * @param array $data
+ * @return array
+ * @link http://github.com/CakeDC/Search/issues/51
+ */
+	public function or2ConditionsDoubleArray($data = array()) {
+		return array( $this->or2Conditions($data) );
 	}
 
 }
@@ -503,7 +532,7 @@ class SearchableTest extends CakeTestCase {
 
 		$data = array('tags' => 'Cake');
 		$result = $this->Article->parseCriteria($data);
-		$expression = $this->Article->getDatasource()->expression('Article.id in (SELECT `Tagged`.`foreign_key` FROM `' . $database . '`.`' . $this->Article->tablePrefix . 'tagged` AS `Tagged` LEFT JOIN `' . $database . '`.`' . $this->Article->tablePrefix . 'tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = \'Cake\')');
+		$expression = $this->Article->getDatasource()->expression('Article.id in (SELECT `Tagged`.`foreign_key` FROM `' . $database . '`.`' . $this->Article->tablePrefix . 'tagged` AS `Tagged` LEFT JOIN `' . $database . '`.`' . $this->Article->tablePrefix . 'tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = \'Cake\'   ORDER BY `Tagged`.`id` ASC)');
 		$expected = array($expression);
 		$this->assertEquals($expected, $result);
 	}
@@ -526,7 +555,7 @@ class SearchableTest extends CakeTestCase {
 
 		$data = array('tags' => 'Cake');
 		$result = $this->Article->parseCriteria($data);
-		$expression = $this->Article->getDatasource()->expression('Article.id in (SELECT `Tagged`.`foreign_key` FROM `' . $database . '`.`' . $this->Article->tablePrefix . 'tagged` AS `Tagged` LEFT JOIN `' . $database . '`.`' . $this->Article->tablePrefix . 'tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = \'Cake\')');
+		$expression = $this->Article->getDatasource()->expression('Article.id in (SELECT `Tagged`.`foreign_key` FROM `' . $database . '`.`' . $this->Article->tablePrefix . 'tagged` AS `Tagged` LEFT JOIN `' . $database . '`.`' . $this->Article->tablePrefix . 'tags` AS `Tag` ON (`Tagged`.`tag_id` = `Tag`.`id`)  WHERE `Tag`.`name` = \'Cake\'   ORDER BY `Tagged`.`id` ASC)');
 		$expected = array($expression);
 
 		$this->Article->Behaviors->detach('Searchable');
@@ -583,6 +612,42 @@ class SearchableTest extends CakeTestCase {
 			'Article.body LIKE' => '%ticl%',
 			'Article.field1 LIKE' => '%test%',
 			'Article.field2 LIKE' => '%test%'));
+		$this->assertEquals($expected, $result);
+	}
+
+/**
+ * testQueryOr2DoubleArrayExample
+ *
+ * Tests classic cakephp pattern of returning array(array('OR' => array( ... ))) from
+ * multiple filters.  They should NOT be merged into one large OR.
+ *
+ * @return void
+ */
+	public function testQueryOr2DoubleArrayExample() {
+		$this->Article->filterArgs = array(
+			array('name' => 'filter', 'type' => 'query', 'method' => 'orConditionsDoubleArray'),
+			array('name' => 'filter2', 'type' => 'query', 'method' => 'or2ConditionsDoubleArray'));
+
+		$data = array();
+		$result = $this->Article->parseCriteria($data);
+		$this->assertEquals(array(), $result);
+
+		$data = array('filter' => 'ticl', 'filter2' => 'test');
+		$result = $this->Article->parseCriteria($data);
+		$expected = array(
+			array(
+				'OR' => array(
+					'Article.title LIKE' => '%ticl%',
+					'Article.body LIKE' => '%ticl%',
+				),
+			),
+			array(
+				'OR' => array(
+					'Article.field1 LIKE' => '%test%',
+					'Article.field2 LIKE' => '%test%',
+				),
+			),
+		);
 		$this->assertEquals($expected, $result);
 	}
 
