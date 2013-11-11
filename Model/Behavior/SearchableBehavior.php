@@ -1,11 +1,11 @@
 <?php
 /**
- * Copyright (c) Cake Development Corporation (http://cakedc.com)
+ * Copyright 2009 Cake Development Corporation (http://cakedc.com)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright Copyright (c) Cake Development Corporation (http://cakedc.com)
+ * @copyright Copyright 2009 Cake Development Corporation (http://cakedc.com)
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
 App::uses('ModelBehavior', 'Model');
