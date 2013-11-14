@@ -405,19 +405,13 @@ class SearchableBehaviorTest extends CakeTestCase {
 		$expected = array('Article.title LIKE' => '%First_');
 		$this->assertEquals($expected, $result);
 
-		$data = array('faketitle' => '%First_');
-		$this->Article->Behaviors->Searchable->settings['Article']['like'] = true;
-		$result = $this->Article->parseCriteria($data);
-		$expected = array('Article.title LIKE' => '%\%First\_%');
-		$this->assertEquals($expected, $result);
-
 		// Multiple OR fields per field
 		$this->Article->filterArgs = array(
 			array('name' => 'faketitle', 'type' => 'like', 'field' => array('title', 'descr'))
 		);
 		$this->Article->Behaviors->load('Search.Searchable');
 		$data = array('faketitle' => 'First');
-
+		$this->Article->Behaviors->Searchable->settings['Article']['like'] = true;
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('OR' => array('Article.title LIKE' => '%First%',
 			'Article.descr LIKE' => '%First%')
@@ -484,6 +478,7 @@ class SearchableBehaviorTest extends CakeTestCase {
 		$this->assertEquals($expected, $result);
 
 		// Wildcards and and/or connectors
+		$this->Article->Behaviors->unload('Search.Searchable');
 		$this->Article->filterArgs = array(
 			array('name' => 'faketitle', 'type' => 'like', 'field' => 'Article.title',
 				'connectorAnd' => '+', 'connectorOr' => ',', 'before' => true, 'after' => true)
