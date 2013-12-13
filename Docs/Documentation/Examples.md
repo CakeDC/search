@@ -250,7 +250,7 @@ public $filterArgs = array(
 ```
 
 Default Values to Allow Search for "Not Any of The Below"
-----------------------------------------------------------------------
+---------------------------------------------------------
 
 Let's say we have categories and a dropdown list to select any of those or "empty = ignore this filter". But what if we also want to have an option to find all non-categorized items? With "default 0 NOT NULL" fields this works as we can use 0 here explicitly.
 
@@ -278,7 +278,7 @@ This way we assign '' for 0, and "ignore" for '' on POST, and the opposite for `
 Note: This only works if you use ```allowEmpty``` here. If you fail to do that it will always trigger the lookup here.
 
 Default Values to Allow Search in Default Case
---------------------------------------------------------------
+----------------------------------------------
 
 The filterArgs property in your model.
 
