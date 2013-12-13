@@ -191,7 +191,7 @@ echo $this->Form->submit(__('Search'), array(
 echo $this->Form->end();
 ```
 
-In this example the search by OR condition is shown. For this purpose we defined the method ```orConditions()``` and added filter arg.
+In this example the search by OR condition is shown. For this purpose we defined the method ```orConditions()``` and added filter argument.
 
 ```php
 array(
@@ -199,7 +199,7 @@ array(
 	'type' => 'query',
 	'method' => 'orConditions'
 )
-php
+```
 
 Advanced Usage
 --------------
@@ -261,7 +261,7 @@ $categories = $this->Model->Category->find('list');
 array_unshift($categories, '- not categorized -');
 ```
 
-But for char(36) foreign keys or "default NULL" fields this does not work. The posted empty string will result in the omitting of the rule. That's where ```emptyValue``` comes into play.
+But for char(36) foreign keys or "default NULL" fields this doesn't work. The posted empty string will result in the omitting of the rule. That's where ```emptyValue``` comes into play.
 
 ```php
 // controller

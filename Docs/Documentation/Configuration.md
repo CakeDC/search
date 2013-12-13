@@ -33,7 +33,7 @@ Each preset variable is a array record that contains next keys:
 
 * field - field that defined in the view search form.
 * type  - one of search types:
-* value - should used for value that does not require any processing,
+* value - should used for value that doesn't require any processing,
 * checkbox - used for checkbox fields in view (Prg component pack and unpack checkbox values when pass it through the get named action).
 * lookup - this type used when you have autocomplete lookup field implemented in your view. This lookup field is a text field, and also you have hidden field id value. In this case component will fill both text and id values.
 * model - param that specifies what model used in Controller::data at a key for this field.
