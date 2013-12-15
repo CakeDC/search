@@ -325,7 +325,8 @@ public function searchNameCondition($data = array()) {
 		'OR' => array(
 			$this->alias . '.name LIKE' => '' . $this->formatLike($filter) . '',
 			$this->alias . '.invoice_number LIKE' => '' . $this->formatLike($filter) . '',
-	));
+		)
+	);
 	return $conditions;
 }
 ```
