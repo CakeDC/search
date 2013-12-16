@@ -35,8 +35,14 @@ public $components = array('Search.Prg' => array(
 ));
 ```
 
-Prg::commonProcess Method Usage
--------------------------------
+PrgComponent::presetForm Options
+--------------------------------
+
+* **paramType:** ```named``` or ```querystring```, by default ```named```.
+* **model:** Model name or null, by default ```null```.
+
+PrgComponent::commonProcess Options
+-----------------------------------
 
 The ```commonProcess()``` method defined in the Prg component allows you to inject search in any controller with just 1-2 lines of additional code. You should pass model name that used for search. By default it is Controller::modelClass model.
 
