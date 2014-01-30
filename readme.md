@@ -13,10 +13,10 @@ The Search plugin is an easy way to implement PRG into your application, and pro
 [![Downloads](https://poser.pugx.org/CakeDC/search/d/total.png)](https://packagist.org/packages/CakeDC/search)
 [![Latest Version](https://poser.pugx.org/CakeDC/search/v/stable.png)](https://packagist.org/packages/CakeDC/search)
 
-This is NOT a Search Engine or Index
+This is *not* a Search Engine or Index
 ------------------------------------
 
-As already mentioned before this plugin helps you to implement searching for data using the PRG pattern. It is **not** any kind of search engine implementation or search index builder but it can be used to search a search index like Elastic Search or Sphinx as well.
+As already mentioned before this plugin helps you to implement searching for data using [the PRG pattern](Docs/Documentation/Post-Redirect-Get.md). It is **not** any kind of search engine implementation or search index builder but it can be used to search a search index like Elastic Search or Sphinx as well.
 
 Requirements
 ------------
