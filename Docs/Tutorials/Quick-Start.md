@@ -46,7 +46,7 @@ class User extends AppModel {
 }
 ```
 
-app/View/Users/index.ctp
+The view file for the users index app/View/Users/index.ctp. You don't have to do anything special here.
 
 ```php
 <?php
@@ -59,5 +59,6 @@ app/View/Users/index.ctp
 	echo $this->Form->submit(__('Submit'));
 	echo $this->Form->end();
 ?>
+```
 
 For more complex examples check the [Example](../Documentation/Examples) section of the documentation.

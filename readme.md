@@ -1,7 +1,7 @@
 CakeDC Search Plugin
 ========================
 
-This **Search** plugin enables developers to quickly implement the POST-Redirect-GET pattern.
+This **Search** plugin enables developers to quickly implement [the POST-Redirect-GET pattern](Docs/Documentation/Post-Redirect-Get.md).
 
 The Search plugin is an easy way to implement PRG into your application, and provides you with a paginate-able search in any controller. It supports simple methods to search inside models using strict and non-strict comparing, but also allows you to implement any complex type of searching.
 
@@ -14,7 +14,7 @@ The Search plugin is an easy way to implement PRG into your application, and pro
 [![Latest Version](https://poser.pugx.org/CakeDC/search/v/stable.png)](https://packagist.org/packages/CakeDC/search)
 
 This is *not* a Search Engine or Index
-------------------------------------
+--------------------------------------
 
 As already mentioned before this plugin helps you to implement searching for data using [the PRG pattern](Docs/Documentation/Post-Redirect-Get.md). It is **not** any kind of search engine implementation or search index builder but it can be used to search a search index like Elastic Search or Sphinx as well.
 
