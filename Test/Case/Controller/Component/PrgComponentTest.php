@@ -1015,7 +1015,53 @@ class PrgComponentTest extends CakeTestCase {
 		);
 		$expected = array(
 			'action' => 'search',
-			'category_id' => ''
+			'category_id' => null
+		);
+		$this->assertEquals($expected, $this->Controller->redirectUrl);
+	}
+
+/**
+ * Test commonProcess() with empty value
+ *
+ * @return void
+ */
+	public function testCommonProcessGetWithEmptyValueQueryStrings() {
+		$this->Controller->presetVars = array(
+			array(
+				'field' => 'category_id',
+				'name' => 'category_id',
+				'type' => 'value',
+				'allowEmpty' => true,
+				'emptyValue' => '0',
+			),
+			array(
+				'field' => 'checkbox',
+				'name' => 'checkbox',
+				'type' => 'checkbox'
+			),
+		);
+
+		$this->Controller->action = 'search';
+		$this->Controller->request->data = array(
+			'Post' => array(
+				'category_id' => '0',
+				'checkbox' => 'x'
+			)
+		);
+
+		$this->Controller->Prg->commonProcess('Post', array(
+				'form' => 'Post',
+				'paramType' => 'querystring',
+				'filterEmpty' => true
+			)
+		);
+
+		$expected = array(
+			'?' => array(
+				'category_id' => '',
+				'checkbox' => 'x'
+			),
+			'action' => 'search'
 		);
 		$this->assertEquals($expected, $this->Controller->redirectUrl);
 	}
