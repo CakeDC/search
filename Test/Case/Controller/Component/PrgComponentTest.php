@@ -1058,7 +1058,7 @@ class PrgComponentTest extends CakeTestCase {
 
 		$expected = array(
 			'?' => array(
-				'category_id' => '',
+				'category_id' => null,
 				'checkbox' => 'x'
 			),
 			'action' => 'search'
