@@ -98,9 +98,7 @@ class ArticlesController extends AppController {
 ```
 The `find.ctp` view is the same as `index.ctp` with the addition of the search form:
 ```php
-echo $this->Form->create('Article', array(
-	'url' => array_merge(array('action' => 'find'), $this->params['pass'])
-));
+echo $this->Form->create('Article');
 echo $this->Form->input('title', array('div' => false));
 echo $this->Form->input('blog_id', array('div' => false, 'options' => $blogs));
 echo $this->Form->input('status', array('div' => false, 'multiple' => 'checkbox', 'options' => array('open', 'closed')));
