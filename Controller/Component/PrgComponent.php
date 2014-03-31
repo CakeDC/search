@@ -364,28 +364,21 @@ class PrgComponent extends Component {
 					if ($filterEmpty) {
 						$params = Set::filter($params);
 					}
-					foreach ($this->controller->presetVars as $key => $presetVar) {
-						$field = $key;
-						if (!empty($presetVar['name'])) {
-							$field = $presetVar['name'];
-						}
-						if (!isset($params[$field])) {
-							continue;
-						}
-						if (!isset($presetVar['emptyValue']) || $presetVar['emptyValue'] !== $params[$field]) {
-							continue;
-						}
-						$params[$field] = '';
-					}
+
+					$params = $this->_filter($params);
 
 					$this->connectNamed($params, array());
+
 				} else {
 					$searchParams = array_merge($this->controller->request->query, $searchParams);
 					$searchParams = $this->exclude($searchParams, $excludedParams);
 					if ($filterEmpty) {
 						$searchParams = Set::filter($searchParams);
 					}
-					$this->connectNamed($params, array());
+
+					$searchParams = $this->_filter($searchParams);
+
+					$this->connectNamed($searchParams, array());
 					$params['?'] = $searchParams;
 				}
 
@@ -407,6 +400,29 @@ class PrgComponent extends Component {
 			$this->connectNamed($this->controller->passedArgs, array());
 			$this->presetForm(array('model' => $formName, 'paramType' => $paramType));
 		}
+	}
+
+/**
+ * Filter params based on emptyValue.
+ *
+ * @param array $params Params
+ * @return array Params
+ */
+	protected function _filter(array $params) {
+		foreach ($this->controller->presetVars as $key => $presetVar) {
+			$field = $key;
+			if (!empty($presetVar['field'])) {
+				$field = $presetVar['field'];
+			}
+			if (!isset($params[$field])) {
+				continue;
+			}
+			if (!isset($presetVar['emptyValue']) || $presetVar['emptyValue'] !== $params[$field]) {
+				continue;
+			}
+			$params[$field] = null;
+		}
+		return $params;
 	}
 
 /**

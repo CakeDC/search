@@ -44,8 +44,22 @@ class SearchableBehavior extends ModelBehavior {
 	public function setup(Model $Model, $config = array()) {
 		$this->_defaults = array_merge($this->_defaults, (array)Configure::read('Search.Searchable'));
 		$this->settings[$Model->alias] = array_merge($this->_defaults, $config);
+	}
+
+/**
+ * Prepares the filter args based on the model information and calls
+ * Model::getFilterArgs if present to set up the filterArgs with proper model
+ * aliases.
+ *
+ * @param Model $Model
+ * @return boolean|array
+ */
+	public function setupFilterArgs(Model $Model) {
+		if (method_exists($Model, 'getFilterArgs')) {
+			$Model->getFilterArgs();
+		}
 		if (empty($Model->filterArgs)) {
-			return;
+			return false;
 		}
 		foreach ($Model->filterArgs as $key => $val) {
 			if (!isset($val['name'])) {
@@ -58,6 +72,7 @@ class SearchableBehavior extends ModelBehavior {
 				$Model->filterArgs[$key]['type'] = 'value';
 			}
 		}
+		return $Model->filterArgs;
 	}
 
 /**
@@ -70,7 +85,9 @@ class SearchableBehavior extends ModelBehavior {
  * @return array Array of conditions that express the conditions needed for the search
  */
 	public function parseCriteria(Model $Model, $data) {
+		$this->setupFilterArgs($Model);
 		$conditions = array();
+
 		foreach ($Model->filterArgs as $field) {
 			// If this field was not passed and a default value exists, use that instead.
 			if (!array_key_exists($field['name'], $data) && array_key_exists('defaultValue', $field)) {
@@ -120,6 +137,8 @@ class SearchableBehavior extends ModelBehavior {
  * @return array, filtered args
  */
 	public function passedArgs(Model $Model, $vars) {
+		$this->setupFilterArgs($Model);
+
 		$result = array();
 		foreach ($vars as $var => $val) {
 			if (in_array($var, Set::extract($Model->filterArgs, '{n}.name'))) {
