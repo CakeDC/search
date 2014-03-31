@@ -3,7 +3,7 @@ Quick Start
 
 This quick start guide will help you get ready to use the **Search** plugin with your application.
 
-Add the [Prg component](../../Controller/Component/PrgComponent.php) to the controller and call the component methods to process post and get. You can debug the paginator settings to see what the component does there.
+Add the [Prg](../../Controller/Component/PrgComponent.php) component to the controller and call the component methods to process POST and GET. You can debug the paginator settings to see what the component does there, for example:
 
 ```php
 class UsersController extends AppController {
@@ -20,7 +20,7 @@ class UsersController extends AppController {
 }
 ```
 
-The user model, attach the [Searchable behavior](../../Model/Behavior/SearchableBehavior.php) and configure the filterArgs for the fields you want to make searchable.
+For the previous example, in your User model, attach the [Searchable](../../Model/Behavior/SearchableBehavior.php) behavior and configure the ```$filterArgs``` property for the fields you want to make searchable.
 
 ```php
 class User extends AppModel {
@@ -46,7 +46,7 @@ class User extends AppModel {
 }
 ```
 
-The view file for the users index app/View/Users/index.ctp. You don't have to do anything special here.
+There is no need to make any additional changes in your view, only make sure that your form includes the fields defined in your ```$filterAgrs``` property, for example:
 
 ```php
 <?php
@@ -61,4 +61,4 @@ The view file for the users index app/View/Users/index.ctp. You don't have to do
 ?>
 ```
 
-For more complex examples check the [Example](../Documentation/Examples) section of the documentation.
+For more complex examples see the [Examples](../Documentation/Examples.md) section of the documentation.
