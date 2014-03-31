@@ -4,7 +4,7 @@ Configuration
 Behavior and Model Configuration
 --------------------------------
 
-All search fields must be configured in the ```Model::$filterArgs``` array.
+All search fields must be configured in the ```Model::$filterArgs``` property as an array.
 
 Each filter record should contain an array with several keys:
 
@@ -26,19 +26,19 @@ Supported Types of Search
 Controller Configuration
 ------------------------
 
-All search fields parameters need to configure in the ```Controller::presetVars``` array - if you didn't yet in the model.
+All search fields parameters need to be configured in the ```Controller::$presetVars``` array - if you didn't yet in the model.
 
-Each preset variable is a array record that contains next keys:
+Each preset variable is an array that that contains some of the following keys:
 
 * **field:** Field that defined in the view search form.
-* **type:** One of search types:
-* **value:** Should used for value that doesn't require any processing,
-* **checkbox:** Used for checkbox fields in view (Prg component pack and unpack checkbox values when pass it through the get named action).
-* **lookup:** This type used when you have autocomplete lookup field implemented in your view. This lookup field is a text field, and also you have hidden field id value. In this case component will fill both text and id values.
-* **model:** Param that specifies what model used in Controller::data at a key for this field.
-* **formField:** Field in the form that contain text, and will populated using model.modelField based on field value.
-* **modelField:** Field in the model that contain text, and will used to fill formField in view.
-* **encode:** Boolean, by default false. If you want to use search strings in URL's with special characters like % or / you need to use encoding
+* **type:** One of the search types described above
+* **value:** Should be used for values that don't require any processing,
+* **checkbox:** Used for checkbox fields in the view (Prg component packs and unpacks checkbox values when it is passed through the get named action).
+* **lookup:** This type should be used when you have for example an auto-complete lookup field implemented in your view. This lookup field is a text field, and also you'll have a hidden field for the id value. In this case the component will fill both, text and id values.
+* **model:** Parameter that specifies what model is used in ```Request::$data``` for this field.
+* **formField:** Field in the form that contains text and will be populated using Model.modelField based on field value.
+* **modelField:** Field in the model that contains text and will be used to fill the formField in the view.
+* **encode:** Boolean, by default false. If you want to use search strings in URL's with special characters like % or / you need to use encoding.
 * **empty:** Boolean, by default false. If you want to omit this field in the PRG url if no value has been given (shorter urls).
 
-**Note:** Those can also be configured in the model itself (to keep it DRY). You can then set ```$presetVar = true``` then in the controller to use the model ones (see the example above). You can still use define the keys here where you want to overwrite certain settings. When using named params instead of query strings it is recommended to always use ```encode => true``` in combination with search strings (custom text input) to avoid url-breaking.
+**Note:** Those can also be configured in the model itself (to keep it DRY). You can then set ```public $presetVar = true;``` then in the controller to use the model ones (see the example above). You can still use define the keys here where you want to overwrite certain settings. When using named params instead of query strings it is recommended to always use ```encode => true``` in combination with search strings (custom text input) to avoid url-breaking.

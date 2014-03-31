@@ -44,11 +44,11 @@ PrgComponent::presetForm Options
 PrgComponent::commonProcess Options
 -----------------------------------
 
-The ```commonProcess()``` method defined in the Prg component allows you to inject search in any controller with just 1-2 lines of additional code. You should pass model name that used for search. By default it is Controller::modelClass model.
+The ```commonProcess()``` method defined in the Prg component allows you to inject search in any controller with just 1-2 lines of additional code. You should pass the model name that is used for search. By default it is ```Controller::$modelClass```.
 
 Additional options parameters.
 
-* **form:** search form name.
-* **keepPassed:** parameter that describe if you need to merge passedArgs to Get url where you will Redirect after Post
-* **action:** sometimes you want to have different actions for post and get. In this case you can define get action using this parameter.
-* **modelMethod:** method, used to filter named parameters, passed from form. By default it is validateSearch, and it defined in Searchable behavior.
+* **form:** Search form name.
+* **keepPassed:** Parameter that describes if you need to merge ```passedArgs``` to the url where you will be redirected to after post.
+* **action:** Sometimes you want to have different actions for post and get. In this case you can define get action using this parameter.
+* **modelMethod:** Method used to filter named parameters, passed from the form. By default it is validateSearch, and it defined in Searchable behavior.

@@ -3,7 +3,7 @@ Examples
 
 An example of how to implement complex search conditions in your application.
 
-Model code.
+Here is the model code.
 
 ```php
 class Article extends AppModel {
@@ -191,7 +191,7 @@ echo $this->Form->submit(__('Search'), array(
 echo $this->Form->end();
 ```
 
-In this example the search by OR condition is shown. For this purpose we defined the method ```orConditions()``` and added filter argument.
+In this example the search by OR condition is shown. For this purpose we defined the method ```orConditions()``` and added the filter method.
 
 ```php
 array(
