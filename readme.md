@@ -1,16 +1,16 @@
 CakeDC Search Plugin
 ========================
 
+[![Bake Status](https://secure.travis-ci.org/CakeDC/search.png?branch=master)](http://travis-ci.org/CakeDC/search)
+[![Downloads](https://poser.pugx.org/CakeDC/search/d/total.png)](https://packagist.org/packages/CakeDC/search)
+[![Latest Version](https://poser.pugx.org/CakeDC/search/v/stable.png)](https://packagist.org/packages/CakeDC/search)
+
 This **Search** plugin enables developers to quickly implement the [POST-Redirect-GET](Docs/Documentation/Post-Redirect-Get.md) pattern.
 
 The Search plugin is an easy way to implement PRG in your application, and provides you with a paginate-able search in any controller. It supports simple methods to search inside models using strict and non-strict comparing, but also allows you to implement any complex type of searching.
 
 * **PRG Component:** The component will turn GET parameters into POST to populate a form and vice versa.
 * **Search Behaviour:** The behavior will generate search conditions passed in the provided GET parameters.
-
-[![Bake Status](https://secure.travis-ci.org/CakeDC/search.png?branch=master)](http://travis-ci.org/CakeDC/search)
-[![Downloads](https://poser.pugx.org/CakeDC/search/d/total.png)](https://packagist.org/packages/CakeDC/search)
-[![Latest Version](https://poser.pugx.org/CakeDC/search/v/stable.png)](https://packagist.org/packages/CakeDC/search)
 
 This is *not* a Search Engine or Index
 --------------------------------------
