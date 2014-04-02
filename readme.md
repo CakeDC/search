@@ -67,7 +67,12 @@ class Article extends AppModel {
 Associated snippet for the controller class:
 ```php
 class ArticlesController extends AppController {
-	public $components = array('Search.Prg');
+	public $components = array(
+		'Search.Prg' => array(
+			'commonProcess' => array(
+				'paramType' => 'querystring',
+				),
+		));
 
 	public $presetVars = true; // using the model configuration
 
