@@ -233,7 +233,7 @@ using defaults alreay set in the component itself:
 public $components = array('Search.Prg' => array(
 	//Options for preset form method
 	'presetForm' => array(
-		'paramType' => 'named' // or 'querystring'
+		'paramType' => 'named', // or 'querystring'
 		'model' => null // or a default model name
 	),
 	//Options for commonProcess method
