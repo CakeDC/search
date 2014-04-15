@@ -30,7 +30,10 @@ class Article extends AppModel {
 			'type' => 'value'
 		),
 		'blog_id' => array(
-			'type' => 'value'
+			'type' => 'lookup',
+			'formField' => 'blog_input',
+			'modelField' => 'title',
+			'model' => 'Blog'
 		),
 		'search' => array(
 			'type' => 'like',
@@ -55,6 +58,10 @@ class Article extends AppModel {
 		'filter' => array(
 			'type' => 'query',
 			'method' => 'orConditions'
+		),
+		'year' => array(
+			'type' => 'query',
+			'method' => 'yearRange'
 		),
 		'enhanced_search' => array(
 			'type' => 'like',
@@ -88,6 +95,7 @@ class Article extends AppModel {
 		return $query;
 	}
 
+	// Or conditions with like
 	public function orConditions($data = array()) {
 		$filter = $data['filter'];
 		$condition = array(
@@ -98,6 +106,18 @@ class Article extends AppModel {
 		);
 		return $condition;
 	}
+
+	// Turns 2000 - 2014 into a search between these two years
+	public function yearRange($data = array()) {
+		if (strpos($data['year'], ' - ') !== false){
+			$tmp = explode(' - ', $data['year']);
+			$tmp[0] = $tmp[0] . '-01-01';
+			$tmp[1] = $tmp[1] . '-12-31';
+			return $tmp;
+		} else {
+			return array($data['year'] . '-01-01', $data['year']."-12-31");
+		}
+	}
 }
 ```
 
@@ -106,10 +126,9 @@ Associated snippet for the controller class.
 ```php
 class ArticlesController extends AppController {
 
-	public $components = array('Search.Prg');
-
-	// using the model configuration
-	public $presetVars = true;
+	public $components = array(
+		'Search.Prg'
+	);
 
 	public function find() {
 		$this->Prg->commonProcess();
@@ -119,7 +138,7 @@ class ArticlesController extends AppController {
 }
 ```
 
-or verbose (and overriding the model configuration)
+or verbose (overriding the model configuration)
 
 ```php
 class ArticlesController extends AppController {
@@ -128,6 +147,7 @@ class ArticlesController extends AppController {
 		'Search.Prg'
 	);
 
+	// This will override the model config
 	public $presetVars = array(
 		'title' => array(
 			'type' => 'value'
@@ -164,6 +184,10 @@ echo $this->Form->create('Article', array(
 	)
 );
 echo $this->Form->input('title', array(
+		'div' => false
+	)
+);
+echo $this->Form->input('year', array(
 		'div' => false
 	)
 );
