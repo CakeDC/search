@@ -81,7 +81,7 @@ class PrgComponent extends Component {
  * @param array $settings
  */
 	public function __construct(ComponentCollection $collection, $settings) {
-		$this->_defaults = Set::merge($this->_defaults, array(
+		$this->_defaults = Hash::merge($this->_defaults, array(
 			'commonProcess' => (array)Configure::read('Search.Prg.commonProcess'),
 			'presetForm' => (array)Configure::read('Search.Prg.presetForm'),
 		), $settings);
@@ -142,14 +142,14 @@ class PrgComponent extends Component {
  *
  * 1) 'lookup'
  *    Is used for autocomplete selectors
- *    For autocomplete we have hidden field with value and autocomplete text box
+ *    For auto-complete we have hidden field with value and autocomplete text box
  *    Component fills text part on id from hidden field
  * 2) 'value'
  *    The value as it is entered in form
  * 3) 'checkbox'
- *    Allows to pass several values internaly encoded as string
+ *    Allows to pass several values internally encoded as string
  *
- * 1 use field, model, formField, and modelField
+ * 1 uses field, model, formField, and modelField
  * 2, 3 need only field parameter
  *
  * @param array $options
@@ -159,7 +159,7 @@ class PrgComponent extends Component {
 		if (!is_array($options)) {
 			$options = array('model' => $options);
 		}
-		extract(Set::merge($this->_defaults['presetForm'], $options));
+		extract(Hash::merge($this->_defaults['presetForm'], $options));
 
 		if ($paramType === 'named') {
 			$args = $this->controller->passedArgs;
@@ -325,8 +325,8 @@ class PrgComponent extends Component {
 		$defaults = array(
 			'excludedParams' => array('page'),
 		);
-		$defaults = Set::merge($defaults, $this->_defaults['commonProcess']);
-		extract(Set::merge($defaults, $options));
+		$defaults = Hash::merge($defaults, $this->_defaults['commonProcess']);
+		extract(Hash::merge($defaults, $options));
 
 		$paramType = strtolower($paramType);
 
@@ -362,7 +362,7 @@ class PrgComponent extends Component {
 					$params = array_merge($params, $searchParams);
 					$params = $this->exclude($params, $excludedParams);
 					if ($filterEmpty) {
-						$params = Set::filter($params);
+						$params = Hash::filter($params);
 					}
 
 					$params = $this->_filter($params);
@@ -373,7 +373,7 @@ class PrgComponent extends Component {
 					$searchParams = array_merge($this->controller->request->query, $searchParams);
 					$searchParams = $this->exclude($searchParams, $excludedParams);
 					if ($filterEmpty) {
-						$searchParams = Set::filter($searchParams);
+						$searchParams = Hash::filter($searchParams);
 					}
 
 					$searchParams = $this->_filter($searchParams);
