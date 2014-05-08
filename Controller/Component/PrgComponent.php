@@ -1,12 +1,12 @@
 <?php
 /**
- * Copyright 2009 - 2013, Cake Development Corporation (http://cakedc.com)
+ * Copyright 2009 - 2014, Cake Development Corporation (http://cakedc.com)
  *
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright Copyright 2009 - 2013, Cake Development Corporation (http://cakedc.com)
- * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
+ * @copyright Copyright 2009 - 2014, Cake Development Corporation (http://cakedc.com)
+ * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
 /**
@@ -14,7 +14,7 @@
  *
  */
 App::uses('Component', 'Controller');
-App::uses('Set', 'Utility');
+App::uses('Hash', 'Utility');
 
 class PrgComponent extends Component {
 
@@ -81,7 +81,7 @@ class PrgComponent extends Component {
  * @param array $settings
  */
 	public function __construct(ComponentCollection $collection, $settings) {
-		$this->_defaults = Set::merge($this->_defaults, array(
+		$this->_defaults = Hash::merge($this->_defaults, array(
 			'commonProcess' => (array)Configure::read('Search.Prg.commonProcess'),
 			'presetForm' => (array)Configure::read('Search.Prg.presetForm'),
 		), $settings);
@@ -142,14 +142,14 @@ class PrgComponent extends Component {
  *
  * 1) 'lookup'
  *    Is used for autocomplete selectors
- *    For autocomplete we have hidden field with value and autocomplete text box
+ *    For auto-complete we have hidden field with value and autocomplete text box
  *    Component fills text part on id from hidden field
  * 2) 'value'
  *    The value as it is entered in form
  * 3) 'checkbox'
- *    Allows to pass several values internaly encoded as string
+ *    Allows to pass several values internally encoded as string
  *
- * 1 use field, model, formField, and modelField
+ * 1 uses field, model, formField, and modelField
  * 2, 3 need only field parameter
  *
  * @param array $options
@@ -159,7 +159,7 @@ class PrgComponent extends Component {
 		if (!is_array($options)) {
 			$options = array('model' => $options);
 		}
-		extract(Set::merge($this->_defaults['presetForm'], $options));
+		extract(Hash::merge($this->_defaults['presetForm'], $options));
 
 		if ($paramType === 'named') {
 			$args = $this->controller->passedArgs;
@@ -181,14 +181,16 @@ class PrgComponent extends Component {
 			}
 
 			if ($field['type'] === 'lookup') {
-				$searchModel = $field['model'];
-				$this->controller->loadModel($searchModel);
-				$this->controller->{$searchModel}->recursive = -1;
-				$result = $this->controller->{$searchModel}->findById($args[$field['field']]);
-				$parsedParams[$field['field']] = $args[$field['field']];
-				$parsedParams[$field['formField']] = $result[$searchModel][$field['modelField']];
-				$data[$model][$field['field']] = $args[$field['field']];
-				$data[$model][$field['formField']] = $result[$searchModel][$field['modelField']];
+				if (!empty($args[$field['field']])) {
+					$searchModel = $field['model'];
+					$this->controller->loadModel($searchModel);
+					$this->controller->{$searchModel}->recursive = -1;
+					$result = $this->controller->{$searchModel}->findById($args[$field['field']]);
+					$parsedParams[$field['field']] = $args[$field['field']];
+					$parsedParams[$field['formField']] = $result[$searchModel][$field['modelField']];
+					$data[$model][$field['field']] = $args[$field['field']];
+					$data[$model][$field['formField']] = $result[$searchModel][$field['modelField']];
+				}
 
 			} elseif ($field['type'] === 'checkbox') {
 				$values = explode('|', $args[$field['field']]);
@@ -325,8 +327,8 @@ class PrgComponent extends Component {
 		$defaults = array(
 			'excludedParams' => array('page'),
 		);
-		$defaults = Set::merge($defaults, $this->_defaults['commonProcess']);
-		extract(Set::merge($defaults, $options));
+		$defaults = Hash::merge($defaults, $this->_defaults['commonProcess']);
+		extract(Hash::merge($defaults, $options));
 
 		$paramType = strtolower($paramType);
 
@@ -362,30 +364,23 @@ class PrgComponent extends Component {
 					$params = array_merge($params, $searchParams);
 					$params = $this->exclude($params, $excludedParams);
 					if ($filterEmpty) {
-						$params = Set::filter($params);
-					}
-					foreach ($this->controller->presetVars as $key => $presetVar) {
-						$field = $key;
-						if (!empty($presetVar['name'])) {
-							$field = $presetVar['name'];
-						}
-						if (!isset($params[$field])) {
-							continue;
-						}
-						if (!isset($presetVar['emptyValue']) || $presetVar['emptyValue'] !== $params[$field]) {
-							continue;
-						}
-						$params[$field] = '';
+						$params = Hash::filter($params);
 					}
 
+					$params = $this->_filter($params);
+
 					$this->connectNamed($params, array());
+
 				} else {
 					$searchParams = array_merge($this->controller->request->query, $searchParams);
 					$searchParams = $this->exclude($searchParams, $excludedParams);
 					if ($filterEmpty) {
-						$searchParams = Set::filter($searchParams);
+						$searchParams = Hash::filter($searchParams);
 					}
-					$this->connectNamed($params, array());
+
+					$searchParams = $this->_filter($searchParams);
+
+					$this->connectNamed($searchParams, array());
 					$params['?'] = $searchParams;
 				}
 
@@ -407,6 +402,29 @@ class PrgComponent extends Component {
 			$this->connectNamed($this->controller->passedArgs, array());
 			$this->presetForm(array('model' => $formName, 'paramType' => $paramType));
 		}
+	}
+
+/**
+ * Filter params based on emptyValue.
+ *
+ * @param array $params Params
+ * @return array Params
+ */
+	protected function _filter(array $params) {
+		foreach ($this->controller->presetVars as $key => $presetVar) {
+			$field = $key;
+			if (!empty($presetVar['field'])) {
+				$field = $presetVar['field'];
+			}
+			if (!isset($params[$field])) {
+				continue;
+			}
+			if (!isset($presetVar['emptyValue']) || $presetVar['emptyValue'] !== $params[$field]) {
+				continue;
+			}
+			$params[$field] = null;
+		}
+		return $params;
 	}
 
 /**

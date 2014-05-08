@@ -5,8 +5,8 @@
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright Copyright 2009 - 2013, Cake Development Corporation (http://cakedc.com)
- * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
+ * @copyright Copyright 2009 - 2014, Cake Development Corporation (http://cakedc.com)
+ * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
 App::uses('ModelBehavior', 'Model');
 
@@ -44,8 +44,22 @@ class SearchableBehavior extends ModelBehavior {
 	public function setup(Model $Model, $config = array()) {
 		$this->_defaults = array_merge($this->_defaults, (array)Configure::read('Search.Searchable'));
 		$this->settings[$Model->alias] = array_merge($this->_defaults, $config);
+	}
+
+/**
+ * Prepares the filter args based on the model information and calls
+ * Model::getFilterArgs if present to set up the filterArgs with proper model
+ * aliases.
+ *
+ * @param Model $Model
+ * @return boolean|array
+ */
+	public function setupFilterArgs(Model $Model) {
+		if (method_exists($Model, 'getFilterArgs')) {
+			$Model->getFilterArgs();
+		}
 		if (empty($Model->filterArgs)) {
-			return;
+			return false;
 		}
 		foreach ($Model->filterArgs as $key => $val) {
 			if (!isset($val['name'])) {
@@ -58,6 +72,7 @@ class SearchableBehavior extends ModelBehavior {
 				$Model->filterArgs[$key]['type'] = 'value';
 			}
 		}
+		return $Model->filterArgs;
 	}
 
 /**
@@ -70,7 +85,9 @@ class SearchableBehavior extends ModelBehavior {
  * @return array Array of conditions that express the conditions needed for the search
  */
 	public function parseCriteria(Model $Model, $data) {
+		$this->setupFilterArgs($Model);
 		$conditions = array();
+
 		foreach ($Model->filterArgs as $field) {
 			// If this field was not passed and a default value exists, use that instead.
 			if (!array_key_exists($field['name'], $data) && array_key_exists('defaultValue', $field)) {
@@ -79,7 +96,7 @@ class SearchableBehavior extends ModelBehavior {
 
 			if (in_array($field['type'], array('like'))) {
 				$this->_addCondLike($Model, $conditions, $data, $field);
-			} elseif (in_array($field['type'], array('value'))) {
+			} elseif (in_array($field['type'], array('value', 'lookup'))) {
 				$this->_addCondValue($Model, $conditions, $data, $field);
 			} elseif ($field['type'] === 'expression') {
 				$this->_addCondExpression($Model, $conditions, $data, $field);
@@ -120,9 +137,11 @@ class SearchableBehavior extends ModelBehavior {
  * @return array, filtered args
  */
 	public function passedArgs(Model $Model, $vars) {
+		$this->setupFilterArgs($Model);
+
 		$result = array();
 		foreach ($vars as $var => $val) {
-			if (in_array($var, Set::extract($Model->filterArgs, '{n}.name'))) {
+			if (in_array($var, Hash::extract($Model->filterArgs, '{n}.name'))) {
 				$result[$var] = $val;
 			}
 		}
@@ -260,31 +279,24 @@ class SearchableBehavior extends ModelBehavior {
 			if ($field['after'] === true) {
 				$field['after'] = '%';
 			}
-			//if both before and after are false, LIKE allows custom placeholders, % and _ are always treated as normal chars
+
 			$options = $this->settings[$Model->alias];
 			$from = $to = $substFrom = $substTo = array();
-			if ($options['wildcardAny'] !== '%' || ($field['before'] !== false || $field['after'] !== false)) {
+			if ($options['wildcardAny'] !== '%') {
 				$from[] = '%';
 				$to[] = '\%';
+				$from[] = $options['wildcardAny'];
+				$to[] = '%';
 			}
-			if ($options['wildcardOne'] !== '_' || ($field['before'] !== false || $field['after'] !== false)) {
+			if ($options['wildcardOne'] !== '_') {
 				$from[] = '_';
 				$to[] = '\_';
+				$from[] = $options['wildcardOne'];
+				$to[] = '_';
 			}
 			$value = $data[$field['name']];
 			if (!empty($from)) {
 				$value = str_replace($from, $to, $value);
-			}
-			if ($field['before'] === false && $field['after'] === false) {
-				if ($options['wildcardAny'] !== '%') {
-					$substFrom[] = $options['wildcardAny'];
-					$substTo[] = '%';
-				}
-				if ($options['wildcardOne'] !== '_') {
-					$substFrom[] = $options['wildcardOne'];
-					$substTo[] = '_';
-				}
-				$value = str_replace($substFrom, $substTo, $value);
 			}
 
 			if (!empty($field['connectorAnd']) || !empty($field['connectorOr'])) {
@@ -417,7 +429,7 @@ class SearchableBehavior extends ModelBehavior {
 			$conditionsAdd = $Model->{$field['method']}($data, $field);
 			// if our conditions function returns something empty, nothing to merge in
 			if (!empty($conditionsAdd)) {
-				$conditions = Set::merge($conditions, (array)$conditionsAdd);
+				$conditions = Hash::merge($conditions, (array)$conditionsAdd);
 			}
 		}
 		return $conditions;
@@ -466,7 +478,6 @@ class SearchableBehavior extends ModelBehavior {
 		}
 
 		if ($recursive !== null) {
-			$_recursive = $Model->recursive;
 			$Model->recursive = $recursive;
 		}
 
