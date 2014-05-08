@@ -9,6 +9,7 @@ env:
   global:
     - PLUGIN_NAME=Search
     - DB=mysql
+    - REQUIRE="phpunit/phpunit:3.7.31"
 
   matrix:
     - DB=mysql CAKE_VERSION=master
@@ -31,6 +32,11 @@ matrix:
 before_script:
   - git clone https://github.com/burzum/travis.git --depth 1 ../travis
   - ../travis/before_script.sh
+  - if [ "$PHPCS" != 1 ]; then
+            echo "
+                require_once APP . DS . 'vendor' . DS . 'phpunit' . DS . 'phpunit' . DS . 'PHPUnit' . DS . 'Autoload.php';
+            " >> ../cakephp/app/Config/bootstrap.php;
+    fi
 
 script:
   - ../travis/script.sh

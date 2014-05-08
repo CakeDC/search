@@ -141,7 +141,7 @@ class SearchableBehavior extends ModelBehavior {
 
 		$result = array();
 		foreach ($vars as $var => $val) {
-			if (in_array($var, Set::extract($Model->filterArgs, '{n}.name'))) {
+			if (in_array($var, Hash::extract($Model->filterArgs, '{n}.name'))) {
 				$result[$var] = $val;
 			}
 		}
@@ -429,7 +429,7 @@ class SearchableBehavior extends ModelBehavior {
 			$conditionsAdd = $Model->{$field['method']}($data, $field);
 			// if our conditions function returns something empty, nothing to merge in
 			if (!empty($conditionsAdd)) {
-				$conditions = Set::merge($conditions, (array)$conditionsAdd);
+				$conditions = Hash::merge($conditions, (array)$conditionsAdd);
 			}
 		}
 		return $conditions;
