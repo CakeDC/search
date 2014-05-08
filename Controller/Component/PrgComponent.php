@@ -14,7 +14,7 @@
  *
  */
 App::uses('Component', 'Controller');
-App::uses('Set', 'Utility');
+App::uses('Hash', 'Utility');
 
 class PrgComponent extends Component {
 
