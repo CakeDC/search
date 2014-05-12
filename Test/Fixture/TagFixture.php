@@ -8,6 +8,7 @@
  * @copyright Copyright 2009 - 2014, Cake Development Corporation (http://cakedc.com)
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
+namespace Search\Test\Fixture;
 
 /**
  * Tag Fixture
@@ -27,17 +28,14 @@ class TagFixture extends CakeTestFixture {
  * @var array $fields
  */
 	public $fields = array(
-		'id' => array('type' => 'string', 'null' => false, 'default' => null, 'length' => 36, 'key' => 'primary'),
-		'identifier' => array('type' => 'string', 'null' => true, 'default' => null, 'length' => 30, 'key' => 'index'),
-		'name' => array('type' => 'string', 'null' => false, 'default' => null, 'length' => 30),
-		'keyname' => array('type' => 'string', 'null' => false, 'default' => null, 'length' => 30),
-		'weight' => array('type' => 'integer', 'null' => false, 'default' => 0, 'length' => 2),
-		'created' => array('type' => 'datetime', 'null' => true, 'default' => null),
-		'modified' => array('type' => 'datetime', 'null' => true, 'default' => null),
-		'indexes' => array(
-			'PRIMARY' => array('column' => 'id', 'unique' => 1),
-			'UNIQUE_TAG' => array('column' => array('identifier', 'keyname'), 'unique' => 1)
-		)
+		'id' => ['type' => 'string', 'null' => false, 'default' => null, 'length' => 36],
+		'identifier' => ['type' => 'string', 'null' => true, 'default' => null, 'length' => 30],
+		'name' => ['type' => 'string', 'null' => false, 'default' => null, 'length' => 30],
+		'keyname' => ['type' => 'string', 'null' => false, 'default' => null, 'length' => 30],
+		'weight' => ['type' => 'integer', 'null' => false, 'default' => 0, 'length' => 2],
+		'created' => ['type' => 'datetime', 'null' => true, 'default' => null],
+		'modified' => ['type' => 'datetime', 'null' => true, 'default' => null],
+		'_constraints' => ['primary' => ['type' => 'primary', 'columns' => ['id']], 'PRIMARY' => ['type' => 'unique', 'columns' => 'id'], 'UNIQUE_TAG' => ['type' => 'unique', 'columns' => ['identifier', 'keyname']]]
 	);
 
 /**

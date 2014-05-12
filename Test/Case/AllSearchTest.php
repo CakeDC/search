@@ -8,6 +8,7 @@
  * @copyright Copyright (c) Cake Development Corporation (http://cakedc.com)
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
+namespace Search\Test\Case;
 
 /**
  * AllSearchPluginTest test suite

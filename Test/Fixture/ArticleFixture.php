@@ -8,6 +8,7 @@
  * @copyright Copyright 2009 - 2014, Cake Development Corporation (http://cakedc.com)
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
+namespace Search\Test\Fixture;
 
 /**
  * Article Fixture
@@ -20,14 +21,15 @@ class ArticleFixture extends CakeTestFixture {
  * @var array $fields
  */
 	public $fields = array(
-		'id' => array('type' => 'integer', 'key' => 'primary'),
-		'title' => array('type' => 'string', 'null' => false),
-		'body' => array('type' => 'text', 'null' => false),
-		'slug' => array('type' => 'string', 'null' => false),
-		'views' => array('type' => 'integer', 'null' => false),
-		'comments' => array('type' => 'integer', 'null' => false, 'default' => '0', 'length' => 10),
+		'id' => ['type' => 'integer'],
+		'title' => ['type' => 'string', 'null' => false],
+		'body' => ['type' => 'text', 'null' => false],
+		'slug' => ['type' => 'string', 'null' => false],
+		'views' => ['type' => 'integer', 'null' => false],
+		'comments' => ['type' => 'integer', 'null' => false, 'default' => '0', 'length' => 10],
 		'created' => 'datetime',
 		'updated' => 'datetime',
+		'_constraints' => ['primary' => ['type' => 'primary', 'columns' => ['id']]]
 	);
 
 /**

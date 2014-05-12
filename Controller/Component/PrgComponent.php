@@ -8,13 +8,18 @@
  * @copyright Copyright 2009 - 2014, Cake Development Corporation (http://cakedc.com)
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
+namespace Search\Controller\Component;
 
+use Cake\Controller\Component;
+use Cake\Controller\ComponentRegistry;
+use Cake\Controller\Controller;
+use Cake\Core\Configure;
+use Cake\Routing\Router;
+use Cake\Utility\Hash;
 /**
  * Post-Redirect-Get: Transfers POST Requests to GET Requests
  *
  */
-App::uses('Component', 'Controller');
-App::uses('Hash', 'Utility');
 
 class PrgComponent extends Component {
 
@@ -77,10 +82,10 @@ class PrgComponent extends Component {
 /**
  * Constructor
  *
- * @param ComponentCollection $collection
+ * @param ComponentRegistry $collection
  * @param array $settings
  */
-	public function __construct(ComponentCollection $collection, $settings) {
+	public function __construct(ComponentRegistry $collection, $settings) {
 		$this->_defaults = Hash::merge($this->_defaults, array(
 			'commonProcess' => (array)Configure::read('Search.Prg.commonProcess'),
 			'presetForm' => (array)Configure::read('Search.Prg.presetForm'),

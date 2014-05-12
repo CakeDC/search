@@ -8,10 +8,12 @@
  * @copyright Copyright 2009 - 2014, Cake Development Corporation (http://cakedc.com)
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
+namespace Search\Test\Case\Controller\Component;
 
-App::uses('Controller', 'Controller');
-App::uses('PrgComponent', 'Search.Controller/Component');
-App::uses('Router', 'Routing');
+use Cake\Controller\Controller;
+use Cake\Core\Configure;
+use Cake\Routing\Router;
+use Search\Controller\Component\PrgComponent;
 
 /**
  * Post-Redirect-Get: Transfers POST Requests to GET Requests tests
@@ -117,7 +119,7 @@ class PrgComponentTest extends CakeTestCase {
 
 		Configure::delete('Search');
 
-		$this->Controller = new PostsTestController(new CakeRequest(), new CakeResponse());
+		$this->Controller = new PostsTestController(new Request(), new Response());
 		$this->Controller->constructClasses();
 		$this->Controller->startupProcess();
 		$this->Controller->request->params = array(

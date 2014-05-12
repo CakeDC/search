@@ -8,9 +8,10 @@
  * @copyright Copyright 2009 - 2014, Cake Development Corporation (http://cakedc.com)
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
+namespace Search\Test\Case\Model\Behavior;
 
-App::uses('Model', 'Model');
-App::uses('ModelBehavior', 'Model');
+use App\Model\Model;
+use App\Model\ModelBehavior;
 
 /**
  * FilterBehavior class

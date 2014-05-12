@@ -8,6 +8,7 @@
  * @copyright Copyright 2009 - 2014, Cake Development Corporation (http://cakedc.com)
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
+namespace Search\Test\Fixture;
 
 /**
  * Tagged Fixture
@@ -27,19 +28,15 @@ class TaggedFixture extends CakeTestFixture {
  * @var array $fields
  */
 	public $fields = array(
-		'id' => array('type' => 'string', 'null' => false, 'default' => null, 'length' => 36, 'key' => 'primary'),
-		'foreign_key' => array('type' => 'string', 'null' => false, 'default' => null, 'length' => 36),
-		'tag_id' => array('type' => 'string', 'null' => false, 'default' => null, 'length' => 36),
-		'model' => array('type' => 'string', 'null' => false, 'default' => null, 'key' => 'index'),
-		'language' => array('type' => 'string', 'null' => true, 'default' => null, 'length' => 6),
-		'created' => array('type' => 'datetime', 'null' => true, 'default' => null),
-		'modified' => array('type' => 'datetime', 'null' => true, 'default' => null),
-		'indexes' => array(
-			'PRIMARY' => array('column' => 'id', 'unique' => 1),
-			'UNIQUE_TAGGING' => array('column' => array('model', 'foreign_key', 'tag_id', 'language'), 'unique' => 1),
-			'INDEX_TAGGED' => array('column' => 'model', 'unique' => 0),
-			'INDEX_LANGUAGE' => array('column' => 'language', 'unique' => 0)
-		)
+		'id' => ['type' => 'string', 'null' => false, 'default' => null, 'length' => 36],
+		'foreign_key' => ['type' => 'string', 'null' => false, 'default' => null, 'length' => 36],
+		'tag_id' => ['type' => 'string', 'null' => false, 'default' => null, 'length' => 36],
+		'model' => ['type' => 'string', 'null' => false, 'default' => null],
+		'language' => ['type' => 'string', 'null' => true, 'default' => null, 'length' => 6],
+		'created' => ['type' => 'datetime', 'null' => true, 'default' => null],
+		'modified' => ['type' => 'datetime', 'null' => true, 'default' => null],
+		'_indexes' => ['INDEX_TAGGED' => ['unique' => 0, 'columns' => 'model'], 'INDEX_LANGUAGE' => ['unique' => 0, 'columns' => 'language']],
+		'_constraints' => ['primary' => ['type' => 'primary', 'columns' => ['id']], 'PRIMARY' => ['type' => 'unique', 'columns' => 'id'], 'UNIQUE_TAGGING' => ['type' => 'unique', 'columns' => ['model', 'foreign_key', 'tag_id', 'language']]]
 	);
 
 /**

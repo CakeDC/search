@@ -8,8 +8,9 @@
  * @copyright Copyright 2009 - 2014, Cake Development Corporation (http://cakedc.com)
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
-App::uses('ModelBehavior', 'Model');
+namespace Search\Model\Behavior;
 
+use App\Model\ModelBehavior;
 /**
  * Searchable behavior
  *
