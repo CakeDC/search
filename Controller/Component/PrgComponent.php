@@ -59,6 +59,7 @@ class PrgComponent extends Component {
  * @var array
  */
 	protected $_defaults = array(
+		'callback' => 'initialize',
 		'commonProcess' => array(
 			'formName' => null,
 			'keepPassed' => true,
@@ -88,12 +89,37 @@ class PrgComponent extends Component {
 	}
 
 /**
+ * Called after the Controller::beforeFilter() and before the controller action
+ *
+ * @param Controller $controller Controller with components to startup
+ * @return void
+ * @link http://book.cakephp.org/2.0/en/controllers/components.html#Component::startup
+ */
+	public function startup(Controller $controller) {
+		if ($this->_defaults['callback'] === 'startup') {
+			$this->init($controller);
+		}
+	}
+
+/**
  * Called before the Controller::beforeFilter().
  *
  * @param Controller $controller Controller with components to initialize
  * @return void
  */
 	public function initialize(Controller $controller) {
+		if ($this->_defaults['callback'] === 'initialize') {
+			$this->init($controller);
+		}
+	}
+
+/**
+ * Initializes the component based on the controller
+ *
+ * @param controller $controller
+ * @return void
+ */
+	public function init(Controller $controller) {
 		$this->controller = $controller;
 
 		// fix for not throwing warnings
