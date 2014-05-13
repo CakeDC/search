@@ -167,11 +167,11 @@ class PrgComponent extends Component {
 			if ($field['type'] === 'lookup') {
 				$searchModel = $field['table'];
 				$this->controller->loadModel($searchModel);
-				$result = $this->controller->{$searchModel}->findById($args[$field['field']]);
+				$result = $this->controller->{$searchModel}->findById($args[$field['field']])->first();
 				$parsedParams[$field['field']] = $args[$field['field']];
-				$parsedParams[$field['formField']] = $result[$searchModel][$field['modelField']];
+				$parsedParams[$field['formField']] = $result->{$field['tableField']};
 				$data[$field['field']] = $args[$field['field']];
-				$data[$field['formField']] = $result[$searchModel][$field['modelField']];
+				$data[$field['formField']] = $result->{$field['tableField']};
 
 			} elseif ($field['type'] === 'checkbox') {
 				$values = explode('|', $args[$field['field']]);
@@ -274,7 +274,7 @@ class PrgComponent extends Component {
  *  - string paramType - 'named' if you want to used named params or 'querystring' is you want to use query string
  * @return void
  */
-	public function commonProcess($modelName = null, array $options = array()) {
+	public function commonProcess($tableName = null, array $options = array()) {
 		$defaults = array(
 			'excludedParams' => array('page'),
 		);
@@ -283,10 +283,6 @@ class PrgComponent extends Component {
 
 		if (empty($tableName)) {
 			$tableName = $this->controller->modelClass;
-		}
-
-		if (empty($formName)) {
-			$formName = $tableName;
 		}
 
 		if (empty($action)) {
@@ -333,7 +329,7 @@ class PrgComponent extends Component {
 				$this->controller->Session->setFlash(__d('search', 'Please correct the errors below.'));
 			}
 		} elseif (!empty($this->controller->request->query)) {
-			$this->presetForm(array('model' => $formName, 'paramType' => $paramType));
+			$this->presetForm(array('table' => $tableName));
 		}
 	}
 

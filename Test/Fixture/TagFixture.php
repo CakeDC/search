@@ -10,10 +10,12 @@
  */
 namespace Search\Test\Fixture;
 
+use Cake\TestSuite\Fixture\TestFixture;
+
 /**
  * Tag Fixture
  */
-class TagFixture extends CakeTestFixture {
+class TagFixture extends TestFixture {
 
 /**
  * Table

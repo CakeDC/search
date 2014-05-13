@@ -10,10 +10,12 @@
  */
 namespace Search\Test\Fixture;
 
+use Cake\TestSuite\Fixture\TestFixture;
+
 /**
  * Article Fixture
  */
-class ArticleFixture extends CakeTestFixture {
+class ArticleFixture extends TestFixture {
 
 /**
  * Fields

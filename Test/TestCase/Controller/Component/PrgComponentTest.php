@@ -8,25 +8,27 @@
  * @copyright Copyright 2009 - 2014, Cake Development Corporation (http://cakedc.com)
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
-namespace Search\Test\Case\Controller\Component;
+namespace Search\Test\TestCase\Controller\Component;
 
 use Cake\Controller\Controller;
 use Cake\Core\Configure;
+use Cake\Datasource\ConnectionManager;
+use Cake\Event\Event;
+use Cake\Network\Request;
+use Cake\Network\Response;
 use Cake\Routing\Router;
-use Search\Controller\Component\PrgComponent;
+use Cake\ORM\Table;
+use Cake\TestSuite\TestCase;
 
 /**
  * Post-Redirect-Get: Transfers POST Requests to GET Requests tests
  *
  */
-class Post extends CakeTestModel {
+class Posts extends Table {
 
-/**
- * Behaviors
- *
- * @var array
- */
-	public $actsAs = array('Search.Searchable');
+	public function initialize(array $config) {
+		$this->addBehavior('Search.Searchable');
+	}
 
 }
 
@@ -35,12 +37,7 @@ class Post extends CakeTestModel {
  */
 class PostsTestController extends Controller {
 
-/**
- * Models to use
- *
- * @var array
- */
-	public $uses = array('Post');
+	public $modelClass = 'Posts';
 
 /**
  * Components
@@ -54,12 +51,13 @@ class PostsTestController extends Controller {
  *
  * @return void
  */
-	public function beforeFilter() {
-		parent::beforeFilter();
+	public function beforeFilter(Event $event) {
+		parent::beforeFilter($event);
 		$this->Prg->actions = array(
 			'search' => array(
 				'controller' => 'Posts',
-				'action' => 'result')
+				'action' => 'result'
+			)
 		);
 	}
 
@@ -91,7 +89,7 @@ class PostOptionsTestController extends PostsTestController {
 		'Search.Prg' => array(
 			'commonProcess' => array(
 				'form' => 'Post',
-				'modelMethod' => false,
+				'tableMethod' => false,
 				'allowedParams' => array('lang'))),
 		'Session'
 	);
@@ -100,7 +98,7 @@ class PostOptionsTestController extends PostsTestController {
 /**
  * PRG Component Test
  */
-class PrgComponentTest extends CakeTestCase {
+class PrgComponentTest extends TestCase {
 
 /**
  * Load relevant fixtures
@@ -110,18 +108,29 @@ class PrgComponentTest extends CakeTestCase {
 	public $fixtures = array('plugin.search.post');
 
 /**
+ * @var \Search\Test\TestCase\Controller\Component\PostTestController
+ */
+	public $Controller;
+
+/**
  * Setup test controller
  *
  * @return void
  */
 	public function setUp() {
 		parent::setUp();
+		$this->connection = ConnectionManager::get('test');
 
 		Configure::delete('Search');
 
 		$this->Controller = new PostsTestController(new Request(), new Response());
 		$this->Controller->constructClasses();
 		$this->Controller->startupProcess();
+		$this->Controller->Posts = new Posts([
+			'alias' => 'Post',
+			'table' => 'posts',
+			'connection' => $this->connection
+		]);
 		$this->Controller->request->params = array(
 			'named' => array(),
 			'pass' => array(),
@@ -137,7 +146,6 @@ class PrgComponentTest extends CakeTestCase {
  */
 	public function tearDown() {
 		unset($this->Controller);
-		ClassRegistry::flush();
 
 		parent::tearDown();
 	}
@@ -151,14 +159,12 @@ class PrgComponentTest extends CakeTestCase {
 		$this->Controller->presetVars = array();
 		$this->Controller->action = 'search';
 		$this->Controller->request->data = array(
-			'Post' => array(
-				'title' => 'test'
-			)
+			'title' => 'test'
 		);
 
-		$this->Controller->Prg->commonProcess('Post');
+		$this->Controller->Prg->commonProcess('Posts');
 		$expected = array(
-			'title' => 'test',
+			'?' => ['title' => 'test'],
 			'action' => 'search'
 		);
 		$this->assertEquals($expected, $this->Controller->redirectUrl);
@@ -169,9 +175,9 @@ class PrgComponentTest extends CakeTestCase {
 				'lang' => 'en',
 			)
 		);
-		$this->Controller->Prg->commonProcess('Post', array('allowedParams' => array('lang')));
+		$this->Controller->Prg->commonProcess('Posts', array('allowedParams' => array('lang')));
 		$expected = array(
-			'title' => 'test',
+			'?' => ['title' => 'test'],
 			'action' => 'search',
 			'lang' => 'en'
 		);
@@ -180,7 +186,7 @@ class PrgComponentTest extends CakeTestCase {
 		$this->Controller->presetVars = array(
 			array('field' => 'title', 'type' => 'value')
 		);
-		$this->Controller->Prg->commonProcess('Post', array('paramType' => 'querystring'));
+		$this->Controller->Prg->commonProcess('Posts', array('paramType' => 'querystring'));
 		$expected = array('action' => 'search', '?' => array('title' => 'test'));
 		$this->assertEquals($expected, $this->Controller->redirectUrl);
 	}
@@ -204,49 +210,30 @@ class PrgComponentTest extends CakeTestCase {
 				'field' => 'lookup',
 				'type' => 'lookup',
 				'formField' => 'lookup_input',
-				'modelField' => 'title',
-				'model' => 'Post'
+				'tableField' => 'title',
+				'table' => 'Posts'
 			)
 		);
-		$this->Controller->passedArgs = array(
-			'title' => 'test',
-			'checkbox' => 'test|test2|test3',
-			'lookup' => '1'
-		);
-		$this->Controller->beforeFilter();
-
-		$this->Controller->Prg->presetForm('Post');
-		$expected = array(
-			'Post' => array(
-				'title' => 'test',
-				'checkbox' => array(
-					0 => 'test',
-					1 => 'test2',
-					2 => 'test3'),
-				'lookup' => 1,
-				'lookup_input' => 'First Post'
-			)
-		);
-		$this->assertEquals($expected, $this->Controller->request->data);
-
-		$this->Controller->data = array();
-		$this->Controller->passedArgs = array();
 		$this->Controller->request->query = array(
 			'title' => 'test',
 			'checkbox' => 'test|test2|test3',
 			'lookup' => '1'
 		);
-		$this->Controller->beforeFilter();
+		$this->Controller->beforeFilter(new Event('Controller.beforeFilter'));
 
-		$this->Controller->Prg->presetForm(array(
-				'model' => 'Post', 'paramType' => 'querystring'
-			)
+		$this->Controller->Prg->presetForm('Posts');
+		$expected = array(
+			'title' => 'test',
+			'checkbox' => array(
+				0 => 'test',
+				1 => 'test2',
+				2 => 'test3'),
+			'lookup' => 1,
+			'lookup_input' => 'First Post'
 		);
-		$this->assertTrue($this->Controller->Prg->isSearch);
-		$this->assertEquals($expected['Post'], $this->Controller->Prg->parsedParams());
+		$this->assertEquals($expected, $this->Controller->request->data);
 
-		// Deprecated
-		$this->assertEquals($expected, $this->Controller->data);
+		$this->assertTrue($this->Controller->Prg->isSearch);
 	}
 
 /**
@@ -272,33 +259,16 @@ class PrgComponentTest extends CakeTestCase {
 				'model' => 'Post'
 			)
 		);
-		$this->Controller->passedArgs = array(
-			'page' => '2'
-		);
-		$this->Controller->beforeFilter();
-
-		$this->Controller->Prg->presetForm('Post');
-		$expected = array(
-			'Post' => array()
-		);
-		$this->assertEquals($expected, $this->Controller->request->data);
-
-		$this->Controller->data = array();
-		$this->Controller->passedArgs = array();
 		$this->Controller->request->query = array(
 			'page' => '2'
 		);
-		$this->Controller->beforeFilter();
+		$this->Controller->beforeFilter(new Event('Controller.beforeFilter'));
 
-		$this->Controller->Prg->presetForm(array(
-				'model' => 'Post', 'paramType' => 'querystring'
-			)
-		);
+		$this->Controller->Prg->presetForm('Post');
+		$expected = array();
+		$this->assertEquals($expected, $this->Controller->request->data);
+
 		$this->assertFalse($this->Controller->Prg->isSearch);
-		$this->assertEquals($expected['Post'], $this->Controller->Prg->parsedParams());
-
-		// Deprecated
-		$this->assertEquals($expected, $this->Controller->data);
 	}
 
 /**
@@ -317,20 +287,18 @@ class PrgComponentTest extends CakeTestCase {
 				'type' => 'value'
 			)
 		);
-		$this->Controller->passedArgs = array(
+		$this->Controller->request->query = array(
 			'views' => '0'
 		);
-		$this->Controller->beforeFilter();
+		$this->Controller->beforeFilter(new Event('Controller.beforeFilter'));
 
-		$this->Controller->Prg->presetForm('Post');
+		$this->Controller->Prg->presetForm('Posts');
 		$expected = array(
-			'Post' => array(
-				'views' => '0'
-			)
+			'views' => '0'
 		);
 		$this->assertEquals($expected, $this->Controller->request->data);
 		$this->assertTrue($this->Controller->Prg->isSearch);
-		$this->assertEquals($expected['Post'], $this->Controller->Prg->parsedParams());
+		$this->assertEquals($expected, $this->Controller->Prg->parsedParams());
 	}
 
 /**
@@ -364,24 +332,12 @@ class PrgComponentTest extends CakeTestCase {
 	}
 
 /**
- * Test connectNamed()
- *
- * @return void
- */
-	public function testConnectNamed() {
-		$this->Controller->passedArgs = array(
-			'title' => 'test');
-		$this->assertNull($this->Controller->Prg->connectNamed());
-		$this->assertNull($this->Controller->Prg->connectNamed(1));
-	}
-
-/**
  * Test exclude()
  *
  * @return void
  */
 	public function testExclude() {
-		$this->Controller->request->params['named'] = array();
+		$this->Controller->request->query = array();
 
 		$array = array('foo' => 'test', 'bar' => 'test', 'test' => 'test');
 		$exclude = array('bar', 'test');
@@ -402,41 +358,38 @@ class PrgComponentTest extends CakeTestCase {
  * @return void
  */
 	public function testCommonProcess() {
-		$this->Controller->request->params['named'] = array();
+		$this->Controller->request->query = array();
 		$this->Controller->presetVars = array();
 		$this->Controller->action = 'search';
 		$this->Controller->request->data = array(
-			'Post' => array(
-				'title' => 'test'
-			)
+			'title' => 'test'
 		);
-		$this->Controller->Prg->commonProcess('Post', array(
-				'form' => 'Post',
-				'modelMethod' => false
+		$this->Controller->Prg->commonProcess('Posts', array(
+				'tableMethod' => false
 			)
 		);
 		$expected = array(
-			'title' => 'test',
+			'?' => array('title' => 'test'),
 			'action' => 'search'
 		);
 		$this->assertEquals($expected, $this->Controller->redirectUrl);
 
 		$this->Controller->Prg->commonProcess(null, array(
-				'modelMethod' => false
+				'tableMethod' => false
 			)
 		);
 		$expected = array(
-			'title' => 'test',
+			'?' => array('title' => 'test'),
 			'action' => 'search'
 		);
 		$this->assertEquals($expected, $this->Controller->redirectUrl);
 
-		$this->Controller->Post->filterArgs = array(
+		$this->Controller->Posts->filterArgs = array(
 			array('name' => 'title', 'type' => 'value')
 		);
-		$this->Controller->Prg->commonProcess('Post');
+		$this->Controller->Prg->commonProcess('Posts');
 		$expected = array(
-			'title' => 'test',
+			'?' => array('title' => 'test'),
 			'action' => 'search'
 		);
 		$this->assertEquals($expected, $this->Controller->redirectUrl);
@@ -450,18 +403,16 @@ class PrgComponentTest extends CakeTestCase {
  * @return void
  */
 	public function testCommonProcessWithPresetVarsNotEmpty() {
-		$this->Controller->request->params['named'] = array();
+		$this->Controller->request->query = array();
 		$this->Controller->presetVars = array('title' => array('type' => 'value'));
 
 		$this->Controller->action = 'search';
 		$this->Controller->request->data = array(
-			'Post' => array(
-				'title' => 'test'
-			)
+			'title' => 'test'
 		);
-		$this->Controller->Prg->commonProcess('Post');
+		$this->Controller->Prg->commonProcess('Posts');
 		$expected = array(
-			'title' => 'test',
+			'?' => array('title' => 'test'),
 			'action' => 'search'
 		);
 		$this->assertEquals($expected, $this->Controller->redirectUrl);
@@ -473,70 +424,64 @@ class PrgComponentTest extends CakeTestCase {
  * @return void
  */
 	public function testCommonProcessAllowedParams() {
-		$this->Controller->request->params = array_merge(
-			$this->Controller->request->params,
+		$this->Controller->request->query = array_merge(
+			$this->Controller->request->query,
 			array(
-				'named' => array(),
 				'lang' => 'en',
 			)
 		);
 		$this->Controller->presetVars = array();
 		$this->Controller->action = 'search';
 		$this->Controller->request->data = array(
-			'Post' => array(
-				'title' => 'test'
-			)
+			'title' => 'test'
 		);
-		$this->Controller->Prg->commonProcess('Post', array(
-				'form' => 'Post',
-				'modelMethod' => false,
+		$this->Controller->Prg->commonProcess('Posts', array(
+				'tableMethod' => false,
 				'allowedParams' => array('lang')
 			)
 		);
 		$expected = array(
-			'title' => 'test',
-			'action' => 'search',
-			'lang' => 'en'
+			'?' => array('title' => 'test', 'lang' => 'en'),
+			'action' => 'search'
 		);
 		$this->assertEquals($expected, $this->Controller->redirectUrl);
 	}
 
 /**
- * Test commonProcess() when resetting 'named'
+ * Test commonProcess() when resetting 'query'
  *
  * @return void
  */
-	public function testCommonProcessResetNamed() {
-		$this->Controller->request->params = array_merge(
-			$this->Controller->request->params,
+	public function testCommonProcessResetQuery() {
+		$this->Controller->request->query = array_merge(
+			$this->Controller->request->query,
 			array(
-				'named' => array('page' => 2, 'sort' => 'name', 'direction' => 'asc'),
+				'page' => 2, 'sort' => 'name', 'direction' => 'asc',
 				'lang' => 'en',
 			)
 		);
 		$this->Controller->presetVars = array();
 		$this->Controller->action = 'search';
 		$this->Controller->request->data = array(
-			'Post' => array(
-				'title' => 'test',
-				'foo' => '',
-				'bar' => ''
-			)
+			'title' => 'test',
+			'foo' => '',
+			'bar' => ''
 		);
-		$this->Controller->Prg->commonProcess('Post', array(
-				'form' => 'Post',
-				'modelMethod' => false,
+		$this->Controller->Prg->commonProcess('Posts', array(
+				'tableMethod' => false,
 				'allowedParams' => array('lang')
 			)
 		);
 		$expected = array(
-			'sort' => 'name',
-			'direction' => 'asc',
-			'title' => 'test',
-			'foo' => '',
-			'bar' => '',
+			'?' => array(
+				'sort' => 'name',
+				'direction' => 'asc',
+				'title' => 'test',
+				'foo' => '',
+				'bar' => '',
+				'lang' => 'en'
+			),
 			'action' => 'search',
-			'lang' => 'en'
 		);
 		$this->assertEquals($expected, $this->Controller->redirectUrl);
 	}
@@ -547,33 +492,31 @@ class PrgComponentTest extends CakeTestCase {
  * @return void
  */
 	public function testCommonProcessFilterEmpty() {
-		$this->Controller->request->params = array_merge(
-			$this->Controller->request->params,
+		$this->Controller->request->query = array_merge(
+			$this->Controller->request->query,
 			array(
-				'named' => array(),
 				'lang' => 'en',
 			)
 		);
 		$this->Controller->presetVars = array();
 		$this->Controller->action = 'search';
 		$this->Controller->request->data = array(
-			'Post' => array(
-				'title' => 'test',
-				'foo' => '',
-				'bar' => ''
-			)
+			'title' => 'test',
+			'foo' => '',
+			'bar' => ''
 		);
-		$this->Controller->Prg->commonProcess('Post', array(
-				'form' => 'Post',
-				'modelMethod' => false,
+		$this->Controller->Prg->commonProcess('Posts', array(
+				'tableMethod' => false,
 				'filterEmpty' => true,
 				'allowedParams' => array('lang')
 			)
 		);
 		$expected = array(
-			'title' => 'test',
-			'action' => 'search',
-			'lang' => 'en'
+			'?' => array(
+				'title' => 'test',
+				'lang' => 'en',
+			),
+			'action' => 'search'
 		);
 		$this->assertEquals($expected, $this->Controller->redirectUrl);
 	}
@@ -584,201 +527,37 @@ class PrgComponentTest extends CakeTestCase {
  * @return void
  */
 	public function testCommonProcessSpecialChars() {
-		$this->Controller->request->params = array_merge(
-			$this->Controller->request->params,
+		$this->Controller->request->query = array_merge(
+			$this->Controller->request->query,
 			array(
-				'named' => array(),
 				'lang' => 'en',
 			)
 		);
 		$this->Controller->presetVars = array();
 		$this->Controller->action = 'search';
 		$this->Controller->request->data = array(
-			'Post' => array(
-				'title' => 'test/slashes?!',
-				'foo' => '',
-				'bar' => ''
-			)
-		);
-		$this->Controller->Prg->commonProcess('Post', array(
-				'form' => 'Post',
-				'modelMethod' => false,
-				'filterEmpty' => true,
-				'allowedParams' => array('lang')
-			)
-		);
-		$expected = array(
 			'title' => 'test/slashes?!',
-			'action' => 'search',
-			'lang' => 'en'
+			'foo' => '',
+			'bar' => ''
 		);
-		$this->assertEquals($expected, $this->Controller->redirectUrl);
-
-		$url = Router::url($this->Controller->redirectUrl);
-		$expected = '/search/title:test%2Fslashes%3F%21/lang:en';
-		$this->assertEquals($expected, $url);
-	}
-
-/**
- * Test commonProcess() with 'paramType' = 'querystring'
- *
- * @return void
- */
-	public function testCommonProcessQuerystring() {
-		$this->Controller->request->params = array_merge(
-			$this->Controller->request->params,
-			array(
-				'named' => array(),
-				'lang' => 'en',
-			)
-		);
-		$this->Controller->presetVars = array();
-		$this->Controller->action = 'search';
-		$this->Controller->request->data = array(
-			'Post' => array(
-				'title' => 'test',
-				'foo' => '',
-				'bar' => ''
-			)
-		);
-		$this->Controller->Prg->commonProcess('Post', array(
-				'form' => 'Post',
-				'modelMethod' => false,
-				'paramType' => 'querystring',
-				'allowedParams' => array('lang')
-			)
-		);
-		$expected = array(
-			'?' => array('title' => 'test', 'foo' => '', 'bar' => ''),
-			'action' => 'search',
-			'lang' => 'en'
-		);
-		$this->assertEquals($expected, $this->Controller->redirectUrl);
-	}
-
-/**
- * Test commonProcess() with 'paramType' = 'querystring' and special characters
- *
- * @return void
- */
-	public function testCommonProcessQuerystringSpecialChars() {
-		$this->Controller->request->params = array_merge(
-			$this->Controller->request->params,
-			array(
-				'named' => array(),
-				'lang' => 'en',
-			)
-		);
-		$this->Controller->presetVars = array();
-		$this->Controller->action = 'search';
-		$this->Controller->request->data = array(
-			'Post' => array(
-				'title' => 'test/slashes?!',
-				'foo' => '',
-				'bar' => ''
-			)
-		);
-		$this->Controller->Prg->commonProcess('Post', array(
-				'form' => 'Post',
-				'modelMethod' => false,
+		$this->Controller->Prg->commonProcess('Posts', array(
+				'tableMethod' => false,
 				'filterEmpty' => true,
-				'paramType' => 'querystring',
 				'allowedParams' => array('lang')
 			)
 		);
 		$expected = array(
-			'?' => array('title' => 'test/slashes?!'),
-			'action' => 'search',
-			'lang' => 'en'
-		);
-		$this->assertEquals($expected, $this->Controller->redirectUrl);
-
-		$url = Router::url($this->Controller->redirectUrl);
-		$expected = '/search/lang:en?title=test%2Fslashes%3F%21';
-		$this->assertEquals($expected, $url);
-	}
-
-/**
- * Test commonProcess() with 'paramType' = 'querystring' and pagination
- *
- * @return void
- */
-	public function testCommonProcessQuerystringPagination() {
-		$this->Controller->request->query = array(
-			'sort' => 'created',
-			'direction' => 'asc',
-			'page' => 3,
-		);
-		$this->Controller->request->params = array_merge(
-			$this->Controller->request->params,
-			array(
-				'named' => array(),
+			'?' => array(
+				'title' => 'test/slashes?!',
 				'lang' => 'en',
-			)
-		);
-		$this->Controller->presetVars = array();
-		$this->Controller->action = 'search';
-		$this->Controller->request->data = array(
-			'Post' => array(
-				'title' => 'test',
-				'foo' => '',
-				'bar' => ''
-			)
-		);
-		$this->Controller->Prg->commonProcess('Post', array(
-				'form' => 'Post',
-				'modelMethod' => false,
-				'paramType' => 'querystring',
-				'allowedParams' => array('lang')
-			)
-		);
-		$expected = array(
-			'?' => array('title' => 'test', 'foo' => '', 'bar' => '',
-				'sort' => 'created', 'direction' => 'asc'
 			),
 			'action' => 'search',
-			'lang' => 'en'
 		);
 		$this->assertEquals($expected, $this->Controller->redirectUrl);
-	}
 
-/**
- * Test commonProcess() with 'paramType' = 'querystring' and 'filterEmpty' = true
- *
- * @return void
- */
-	public function testCommonProcessQuerystringFilterEmpty() {
-		$this->Controller->request->params = array_merge(
-			$this->Controller->request->params,
-			array(
-				'named' => array(),
-				'lang' => 'en',
-			)
-		);
-		$this->Controller->presetVars = array();
-		$this->Controller->action = 'search';
-		$this->Controller->request->data = array(
-			'Post' => array(
-				'title' => 'test',
-				'foo' => '',
-				'bar' => ''
-			)
-		);
-
-		$this->Controller->Prg->commonProcess('Post', array(
-				'form' => 'Post',
-				'modelMethod' => false,
-				'filterEmpty' => true,
-				'paramType' => 'querystring',
-				'allowedParams' => array('lang')
-			)
-		);
-		$expected = array(
-			'?' => array('title' => 'test'),
-			'action' => 'search',
-			'lang' => 'en'
-		);
-		$this->assertEquals($expected, $this->Controller->redirectUrl);
+		$url = Router::url($this->Controller->redirectUrl);
+		$expected = '/search?lang=en&title=test%2Fslashes%3F%21';
+		$this->assertEquals($expected, $url);
 	}
 
 /**
@@ -792,19 +571,15 @@ class PrgComponentTest extends CakeTestCase {
 			array('field' => 'title', 'type' => 'value')
 		);
 		$this->Controller->request->data = array();
-		$this->Controller->Post->filterArgs = array(
+		$this->Controller->Posts->filterArgs = array(
 			array('name' => 'title', 'type' => 'value')
 		);
-		$this->Controller->request->params['named'] = array('title' => 'test');
-		$this->Controller->passedArgs = array_merge(
-			$this->Controller->request->params['named'],
-			$this->Controller->request->params['pass']
-		);
-		$this->Controller->Prg->commonProcess('Post');
+		$this->Controller->request->query = array('title' => 'test');
+		$this->Controller->Prg->commonProcess('Posts');
 
 		$this->assertTrue($this->Controller->Prg->isSearch);
-		$expected = array('Post' => array('title' => 'test'));
-		$this->assertEquals($expected['Post'], $this->Controller->Prg->parsedParams());
+		$expected = array('title' => 'test');
+		$this->assertEquals($expected, $this->Controller->Prg->parsedParams());
 		$this->assertEquals($expected, $this->Controller->request->data);
 	}
 
@@ -818,22 +593,18 @@ class PrgComponentTest extends CakeTestCase {
 		$this->Controller->presetVars = array(
 			'title' => array('type' => 'value')
 		);
-		$this->Controller->Post->filterArgs = array(
+		$this->Controller->Posts->filterArgs = array(
 			'title' => array('type' => 'value')
 		);
 
-		$this->Controller->Prg->__construct($this->Controller->Components, array());
-		$this->Controller->Prg->initialize($this->Controller);
+		$this->Controller->Prg->__construct($this->Controller->components(), array());
+		$this->Controller->Prg->initialize(new Event('Controller.initialize', $this->Controller));
 		$this->Controller->request->data = array();
 
-		$this->Controller->request->params['named'] = array('title' => 'test');
-		$this->Controller->passedArgs = array_merge(
-			$this->Controller->request->params['named'],
-			$this->Controller->request->params['pass']
-		);
-		$this->Controller->Prg->commonProcess('Post');
-		$expected = array('Post' => array('title' => 'test'));
-		$this->assertEquals($expected['Post'], $this->Controller->Prg->parsedParams());
+		$this->Controller->request->query = array('title' => 'test');
+		$this->Controller->Prg->commonProcess('Posts');
+		$expected = array('title' => 'test');
+		$this->assertEquals($expected, $this->Controller->Prg->parsedParams());
 		$this->assertEquals($expected, $this->Controller->request->data);
 	}
 
@@ -847,132 +618,19 @@ class PrgComponentTest extends CakeTestCase {
 		$this->Controller->presetVars = array(
 			'title' => true
 		);
-		$this->Controller->Post->filterArgs = array(
+		$this->Controller->Posts->filterArgs = array(
 			'title' => array('type' => 'value')
 		);
 
-		$this->Controller->Prg->__construct($this->Controller->Components, array());
-		$this->Controller->Prg->initialize($this->Controller);
+		$this->Controller->Prg->__construct($this->Controller->components(), array());
+		$this->Controller->Prg->initialize(new Event('Controller.initialize', $this->Controller));
 		$this->Controller->request->data = array();
 
-		$this->Controller->request->params['named'] = array('title' => 'test');
-		$this->Controller->passedArgs = array_merge(
-			$this->Controller->request->params['named'],
-			$this->Controller->request->params['pass']
-		);
+		$this->Controller->request->query = array('title' => 'test');
 		$this->Controller->Prg->commonProcess('Post');
-		$expected = array('Post' => array('title' => 'test'));
-		$this->assertEquals($expected['Post'], $this->Controller->Prg->parsedParams());
+		$expected = array('title' => 'test');
+		$this->assertEquals($expected, $this->Controller->Prg->parsedParams());
 		$this->assertEquals($expected, $this->Controller->request->data);
-	}
-
-/**
- * Test serializeParams() with encoding
- *
- * @return void
- */
-	public function testSerializeParamsWithEncoding() {
-		$this->Controller->action = 'search';
-		$this->Controller->presetVars = array(
-			array('field' => 'title', 'type' => 'value', 'encode' => true));
-		$this->Controller->request->data = array();
-		$this->Controller->Post->filterArgs = array(
-			array('name' => 'title', 'type' => 'value')
-		);
-		$this->Controller->Prg->encode = true;
-		$test = array('title' => 'Something new');
-		$result = $this->Controller->Prg->serializeParams($test);
-		$this->assertEquals($this->_urlEncode('Something new'), $result['title']);
-
-		$test = array('title' => 'ef?');
-		$result = $this->Controller->Prg->serializeParams($test);
-		$this->assertEquals($this->_urlEncode('ef?'), $result['title']);
-	}
-
-/**
- * Replace the base64encoded values
- *
- * Replace the base64encoded values that could harm the url (/ and =) with harmless characters
- *
- * @param $str
- * @return string
- */
-	protected function _urlEncode($str) {
-		return str_replace(array('/', '='), array('-', '_'), base64_encode($str));
-	}
-
-/**
- * Test serializeParams() with encoding
- *
- * @return void
- */
-	public function testSerializeParamsWithEncodingAndSpace() {
-		$this->Controller->action = 'search';
-		$this->Controller->presetVars = array(
-			array('field' => 'title', 'type' => 'value', 'encode' => true));
-		$this->Controller->request->data = array();
-		$this->Controller->Post->filterArgs = array(
-			array('name' => 'title', 'type' => 'value')
-		);
-		$this->Controller->Prg->encode = true;
-		$testData = $test = array('title' => 'Something new');
-		$result = $this->Controller->Prg->serializeParams($test);
-		$this->assertEquals($this->_urlEncode('Something new'), $result['title']);
-
-		$this->Controller->passedArgs = $result;
-		$this->Controller->Prg->presetForm('Post');
-		$expected = array('Post' => $testData);
-		$this->assertEquals($expected['Post'], $this->Controller->Prg->parsedParams());
-		$this->assertEquals($expected, $this->Controller->request->data);
-	}
-
-/**
- * Test presetForm() with encoded parameters
- *
- * @return void
- */
-	public function testPresetFormWithEncodedParams() {
-		$this->Controller->presetVars = array(
-			array(
-				'field' => 'title',
-				'type' => 'value'
-			),
-			array(
-				'field' => 'checkbox',
-				'type' => 'checkbox'
-			),
-			array(
-				'field' => 'lookup',
-				'type' => 'lookup',
-				'formField' => 'lookup_input',
-				'modelField' => 'title',
-				'model' => 'Post'
-			)
-		);
-		$this->Controller->passedArgs = array(
-			'title' => $this->_urlEncode('test'),
-			'checkbox' => $this->_urlEncode('test|test2|test3'),
-			'lookup' => $this->_urlEncode('1')
-		);
-
-		$this->Controller->beforeFilter();
-
-		$this->Controller->Prg->encode = true;
-		$this->Controller->Prg->presetForm('Post');
-		$expected = array(
-			'Post' => array(
-				'title' => 'test',
-				'checkbox' => array(
-					0 => 'test',
-					1 => 'test2',
-					2 => 'test3'),
-				'lookup' => 1,
-				'lookup_input' => 'First Post'
-			)
-		);
-		$this->assertEquals($expected, $this->Controller->request->data);
-		$this->assertTrue($this->Controller->Prg->isSearch);
-		$this->assertEquals($expected['Post'], $this->Controller->Prg->parsedParams());
 	}
 
 /**
@@ -1004,66 +662,17 @@ class PrgComponentTest extends CakeTestCase {
 		);
 		$this->Controller->action = 'search';
 		$this->Controller->request->data = array(
-			'Post' => array(
-				'category_id' => '0',
-				'foo' => ''
-			)
+			'category_id' => '0',
+			'foo' => ''
 		);
-		$this->Controller->Prg->commonProcess('Post', array(
-				'form' => 'Post',
-				'modelMethod' => false,
+		$this->Controller->Prg->commonProcess('Posts', array(
+				'tableMethod' => false,
 				'filterEmpty' => true
 			)
 		);
 		$expected = array(
 			'action' => 'search',
-			'category_id' => null
-		);
-		$this->assertEquals($expected, $this->Controller->redirectUrl);
-	}
-
-/**
- * Test commonProcess() with empty value
- *
- * @return void
- */
-	public function testCommonProcessGetWithEmptyValueQueryStrings() {
-		$this->Controller->presetVars = array(
-			array(
-				'field' => 'category_id',
-				'name' => 'category_id',
-				'type' => 'value',
-				'allowEmpty' => true,
-				'emptyValue' => '0',
-			),
-			array(
-				'field' => 'checkbox',
-				'name' => 'checkbox',
-				'type' => 'checkbox'
-			),
-		);
-
-		$this->Controller->action = 'search';
-		$this->Controller->request->data = array(
-			'Post' => array(
-				'category_id' => '0',
-				'checkbox' => 'x'
-			)
-		);
-
-		$this->Controller->Prg->commonProcess('Post', array(
-				'form' => 'Post',
-				'paramType' => 'querystring',
-				'filterEmpty' => true
-			)
-		);
-
-		$expected = array(
-			'?' => array(
-				'category_id' => null,
-				'checkbox' => 'x'
-			),
-			'action' => 'search'
+			'?' => array('category_id' => null)
 		);
 		$this->assertEquals($expected, $this->Controller->redirectUrl);
 	}
@@ -1087,79 +696,23 @@ class PrgComponentTest extends CakeTestCase {
 				'allowEmpty' => true,
 			),
 		);
-		$this->Controller->passedArgs = array(
+		$this->Controller->request->query = array(
 			'category_id' => '',
 		);
-		$this->Controller->beforeFilter();
+		$this->Controller->beforeFilter(new Event('Controller.beforeFilter'));
 
 		$this->Controller->Prg->encode = true;
-		$this->Controller->Prg->presetForm(array('model' => 'Post'));
+		$this->Controller->Prg->presetForm(array('table' => 'Posts'));
 		$expected = array(
-			'Post' => array(
-				'category_id' => '0'
-			)
+			'category_id' => '0'
 		);
 		$this->assertEquals($expected, $this->Controller->request->data);
 		$this->assertFalse($this->Controller->Prg->isSearch);
 
 		$expected = array(
-			'Post' => array(
-				'category_id' => ''
-			)
+			'category_id' => ''
 		);
-		$this->assertEquals($expected['Post'], $this->Controller->Prg->parsedParams());
-	}
-
-/**
- * Test presetForm() with empty value and
- *
- * @return void
- */
-	public function testPresetFormWithEmptyValueAndIsSearch() {
-		$this->Controller->presetVars = array(
-			array(
-				'field' => 'category_id',
-				'type' => 'value',
-				'allowEmpty' => true,
-				'emptyValue' => '0',
-			),
-			array(
-				'field' => 'checkbox',
-				'type' => 'checkbox'
-			),
-		);
-		$this->Controller->passedArgs = array(
-			'category_id' => '',
-			'checkbox' => $this->_urlEncode('test|test2|test3'),
-		);
-		$this->Controller->beforeFilter();
-
-		$this->Controller->Prg->encode = true;
-		$this->Controller->Prg->presetForm(array('model' => 'Post'));
-		$expected = array(
-			'Post' => array(
-				'category_id' => '0',
-				'checkbox' => array(
-					0 => 'test',
-					1 => 'test2',
-					2 => 'test3'
-				)
-			)
-		);
-		$this->assertEquals($expected, $this->Controller->request->data);
-		$this->assertTrue($this->Controller->Prg->isSearch);
-
-		$expected = array(
-			'Post' => array(
-				'category_id' => '',
-				'checkbox' => array(
-					0 => 'test',
-					1 => 'test2',
-					2 => 'test3'
-				)
-			)
-		);
-		$this->assertEquals($expected['Post'], $this->Controller->Prg->parsedParams());
+		$this->assertEquals($expected, $this->Controller->Prg->parsedParams());
 	}
 
 }
