@@ -13,6 +13,7 @@ namespace Search\Model\Behavior;
 use Cake\ORM\Behavior;
 use Cake\ORM\Table;
 use Cake\Core\Configure;
+use Cake\Utility\Hash;
 
 /**
  * Searchable behavior
@@ -168,22 +169,6 @@ class SearchableBehavior extends Behavior {
 		$query = $this->_table->buildQuery($type, $query);
 		$this->findQueryType = null;
 		return $this->_queryGet($this->_table, $query);
-	}
-
-/**
- * Clear all associations
- *
- * 
- * @param boolean $reset
- * @return void
- */
-	public function unbindAllModels($reset = false) {
-		$assocs = array('belongsTo', 'hasOne', 'hasMany', 'hasAndBelongsToMany');
-		$unbind = array();
-		foreach ($assocs as $assoc) {
-			$unbind[$assoc] = array_keys($this->_table->{$assoc});
-		}
-		$this->_table->unbindModel($unbind, $reset);
 	}
 
 /**
@@ -375,9 +360,10 @@ class SearchableBehavior extends Behavior {
 			if (is_array($fieldValue) || !is_array($fieldValue) && (string)$fieldValue !== '') {
 				$cond[$fieldName] = $fieldValue;
 			} elseif (isset($data[$field['name']]) && !empty($field['allowEmpty'])) {
-				$schema = $this->_table->schema($field['name']);
-				if (isset($schema) && ($schema['default'] !== null || !empty($schema['null']))) {
-					$cond[$fieldName] = $schema['default'];
+				$schema = $this->_table->schema();
+				$columnSchema = $schema->column($field['name']);
+				if (isset($columnSchema) && ($columnSchema['default'] !== null || !empty($columnSchema['null']))) {
+					$cond[$fieldName] = $columnSchema['default'];
 				} elseif (!empty($fieldValue)) {
 					$cond[$fieldName] = $fieldValue;
 				} else {

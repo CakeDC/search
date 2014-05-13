@@ -37,8 +37,7 @@ class TaggedFixture extends TestFixture {
 		'language' => ['type' => 'string', 'null' => true, 'default' => null, 'length' => 6],
 		'created' => ['type' => 'datetime', 'null' => true, 'default' => null],
 		'modified' => ['type' => 'datetime', 'null' => true, 'default' => null],
-		'_indexes' => ['INDEX_TAGGED' => ['unique' => 0, 'columns' => 'model'], 'INDEX_LANGUAGE' => ['unique' => 0, 'columns' => 'language']],
-		'_constraints' => ['primary' => ['type' => 'primary', 'columns' => ['id']], 'PRIMARY' => ['type' => 'unique', 'columns' => 'id'], 'UNIQUE_TAGGING' => ['type' => 'unique', 'columns' => ['model', 'foreign_key', 'tag_id', 'language']]]
+		'_constraints' => ['primary' => ['type' => 'primary', 'columns' => ['id']], 'UNIQUE_TAGGING' => ['type' => 'unique', 'columns' => ['model', 'foreign_key', 'tag_id', 'language']]]
 	);
 
 /**
@@ -68,7 +67,7 @@ class TaggedFixture extends TestFixture {
 		array(
 			'id' => '493dac81-1b78-4fa1-a761-43ef4a35e6b2',
 			'foreign_key' => 2,
-			'tag_id' => '49357f3f-17a0-4c42-af78-a85d4a35e6b6', // CakeDC
+			'tag_id' => 2, // CakeDC
 			'model' => 'Article',
 			'language' => 'eng',
 			'created' => '2008-12-02 12:32:31 ',

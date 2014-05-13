@@ -65,8 +65,8 @@ class TagFixture extends TestFixture {
 		array(
 			'id' => 3,
 			'identifier' => null,
-			'name' => 'CakeDC',
-			'keyname' => 'cakedc',
+			'name' => 'CakeDC2',
+			'keyname' => 'cakedc2',
 			'weight' => 2,
 			'created' => '2008-06-01 18:18:15',
 			'modified' => '2008-06-01 18:18:15',
