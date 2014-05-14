@@ -172,7 +172,7 @@ class SearchableBehaviorTest extends TestCase {
 /**
  * Article test model
  *
- * @var
+ * @var ArticlesTable
  */
 	public $Articles;
 
@@ -225,8 +225,8 @@ class SearchableBehaviorTest extends TestCase {
 		$expected = array('any' => '*', 'one' => '?');
 		$this->assertSame($expected, $result);
 
-//		$this->Articles->Behaviors->Searchable->settings['Article']['wildcardAny'] = false;
-//		$this->Articles->Behaviors->Searchable->settings['Article']['wildcardOne'] = false;
+		$this->Articles->Behaviors->Searchable->settings['Article']['wildcardAny'] = false;
+		$this->Articles->Behaviors->Searchable->settings['Article']['wildcardOne'] = false;
 		$result = $this->Articles->getWildcards();
 		$expected = array('any' => false, 'one' => false);
 		$this->assertSame($expected, $result);
