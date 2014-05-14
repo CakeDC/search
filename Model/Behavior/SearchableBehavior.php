@@ -11,9 +11,11 @@
 namespace Search\Model\Behavior;
 
 use Cake\ORM\Behavior;
+use Cake\ORM\Query;
 use Cake\ORM\Table;
 use Cake\Core\Configure;
 use Cake\Utility\Hash;
+use Cake\Utility\String;
 
 /**
  * Searchable behavior
@@ -110,9 +112,9 @@ class SearchableBehavior extends Behavior {
  * @param array $data Criteria of key->value pairs from post/named parameters
  * @return array Array of conditions that express the conditions needed for the search
  */
-	public function parseCriteria($data) {
+	public function parseQuery($data) {
 		$this->setupFilterArgs();
-		$conditions = array();
+		$query = $this->_table->find('all');
 
 		foreach ($this->_table->filterArgs as $field) {
 			// If this field was not passed and a default value exists, use that instead.
@@ -121,18 +123,16 @@ class SearchableBehavior extends Behavior {
 			}
 
 			if (in_array($field['type'], array('like'))) {
-				$this->_addCondLike($conditions, $data, $field);
+				$this->_addCondLike($query, $data, $field);
 			} elseif (in_array($field['type'], array('value', 'lookup'))) {
-				$this->_addCondValue($conditions, $data, $field);
-			} elseif ($field['type'] === 'expression') {
-				$this->_addCondExpression($conditions, $data, $field);
+				$this->_addCondValue($query, $data, $field);
 			} elseif ($field['type'] === 'query') {
-				$this->_addCondQuery($conditions, $data, $field);
+				$this->_addCondQuery($query, $data, $field);
 			} elseif ($field['type'] === 'subquery') {
-				$this->_addCondSubquery($conditions, $data, $field);
+				$this->_addCondSubquery($query, $data, $field);
 			}
 		}
-		return $conditions;
+		return $query;
 	}
 
 /**
@@ -152,23 +152,6 @@ class SearchableBehavior extends Behavior {
 			}
 		}
 		return $result;
-	}
-
-/**
- * Generates a query string using the same API Model::find() uses, calling the beforeFind process for the model
- *
- * 
- * @param string $type Type of find operation (all / first / count / neighbors / list / threaded)
- * @param array $query Option fields (conditions / fields / joins / limit / offset / order / page / group / callbacks)
- * @return array Array of records
- * @link http://book.cakephp.org/view/1018/find
- */
-	public function getQuery($type = 'first', $query = array()) {
-		$this->_table->findQueryType = $type;
-		$this->_table->id = $this->_table->getID();
-		$query = $this->_table->buildQuery($type, $query);
-		$this->findQueryType = null;
-		return $this->_queryGet($this->_table, $query);
 	}
 
 /**
@@ -247,13 +230,13 @@ class SearchableBehavior extends Behavior {
  * @param array $field Field definition information
  * @return array Conditions
  */
-	protected function _addCondLike(&$conditions, $data, $field) {
+	protected function _addCondLike(Query $query, $data, $field) {
 		if (!is_array($this->_config['like'])) {
 			$this->_config['like'] = array('before' => $this->_config['like'], 'after' => $this->_config['like']);
 		}
 		$field = array_merge($this->_config['like'], $field);
 		if (empty($data[$field['name']])) {
-			return $conditions;
+			return $query;
 		}
 		$fieldNames = (array)$field['field'];
 
@@ -296,15 +279,13 @@ class SearchableBehavior extends Behavior {
 			}
 		}
 		if (count($cond) > 1) {
-			if (isset($conditions['OR'])) {
-				$conditions[]['OR'] = $cond;
-			} else {
-				$conditions['OR'] = $cond;
-			}
-		} else {
-			$conditions = array_merge($conditions, $cond);
+			$cond = array(
+				'or' => $cond
+			);
 		}
-		return $conditions;
+		$query->where($cond);
+
+		return $query;
 	}
 
 /**
@@ -336,12 +317,12 @@ class SearchableBehavior extends Behavior {
  * Add Conditions based on exact comparison
  *
  *  Reference to the model
- * @param array $conditions existing Conditions collected for the model
+ * @param \Cake\Orm\Query $query existing Conditions collected for the model
  * @param array $data Array of data used in search query
  * @param array $field Field definition information
  * @return array of conditions
  */
-	protected function _addCondValue(&$conditions, $data, $field) {
+	protected function _addCondValue(Query $query, $data, $field) {
 		$fieldNames = (array)$field['field'];
 		$fieldValue = isset($data[$field['name']]) ? $data[$field['name']] : null;
 
@@ -360,10 +341,9 @@ class SearchableBehavior extends Behavior {
 			if (is_array($fieldValue) || !is_array($fieldValue) && (string)$fieldValue !== '') {
 				$cond[$fieldName] = $fieldValue;
 			} elseif (isset($data[$field['name']]) && !empty($field['allowEmpty'])) {
-				$schema = $this->_table->schema();
-				$columnSchema = $schema->column($field['name']);
-				if (isset($columnSchema) && ($columnSchema['default'] !== null || !empty($columnSchema['null']))) {
-					$cond[$fieldName] = $columnSchema['default'];
+				$schema = $this->_table->schema()->column($field['name']);
+				if (isset($schema) && ($schema['default'] !== null || !empty($schema['null']))) {
+					$cond[$fieldName] = $schema['default'];
 				} elseif (!empty($fieldValue)) {
 					$cond[$fieldName] = $fieldValue;
 				} else {
@@ -372,38 +352,13 @@ class SearchableBehavior extends Behavior {
 			}
 		}
 		if (count($cond) > 1) {
-			if (isset($conditions['OR'])) {
-				$conditions[]['OR'] = $cond;
-			} else {
-				$conditions['OR'] = $cond;
-			}
-		} else {
-			$conditions = array_merge($conditions, $cond);
+			$cond = array(
+				'or' => $cond
+			);
 		}
-		return $conditions;
-	}
+		$query->where($cond);
 
-/**
- * Add Conditions based expressions to search conditions.
- *
- *   Instance of AppModel
- * @param array $conditions Existing conditions.
- * @param array $data Data for a field.
- * @param array $field Info for field.
- * @return array of conditions modified by this method
- */
-	protected function _addCondExpression(&$conditions, $data, $field) {
-		$fieldName = $field['field'];
-
-		if ((method_exists($this->_table, $field['method']) || $this->_checkBehaviorMethods($this->_table, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && (string)$data[$field['name']] !== ''))) {
-			$fieldValues = $this->_table->{$field['method']}($data, $field);
-			if (!empty($conditions[$fieldName]) && is_array($conditions[$fieldName])) {
-				$conditions[$fieldName] = array_unique(array_merge(array($conditions[$fieldName]), array($fieldValues)));
-			} else {
-				$conditions[$fieldName] = $fieldValues;
-			}
-		}
-		return $conditions;
+		return $query;
 	}
 
 /**
@@ -415,15 +370,11 @@ class SearchableBehavior extends Behavior {
  * @param array $field Info for field.
  * @return array of conditions modified by this method
  */
-	protected function _addCondQuery(&$conditions, $data, $field) {
-		if ((method_exists($this->_table, $field['method']) || $this->_checkBehaviorMethods($this->_table, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && (string)$data[$field['name']] !== ''))) {
-			$conditionsAdd = $this->_table->{$field['method']}($data, $field);
-			// if our conditions function returns something empty, nothing to merge in
-			if (!empty($conditionsAdd)) {
-				$conditions = Hash::merge($conditions, (array)$conditionsAdd);
-			}
+	protected function _addCondQuery(Query $query, $data, $field) {
+		if ((method_exists($this->_table, $field['method']) || $this->_checkBehaviorMethods($field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && (string)$data[$field['name']] !== ''))) {
+			$this->_table->{$field['method']}($query, $data, $field);
 		}
-		return $conditions;
+		return $query;
 	}
 
 /**
@@ -435,90 +386,18 @@ class SearchableBehavior extends Behavior {
  * @param array $field Info for field.
  * @return array of conditions modified by this method
  */
-	protected function _addCondSubquery(&$conditions, $data, $field) {
+	protected function _addCondSubquery($query, $data, $field) {
 		$fieldName = $field['field'];
 		if ((method_exists($this->_table, $field['method']) || $this->_checkBehaviorMethods($this->_table, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && (string)$data[$field['name']] !== ''))) {
 			$subquery = $this->_table->{$field['method']}($data, $field);
 			// if our subquery function returns something empty, nothing to merge in
 			if (!empty($subquery)) {
-				$conditions[] = $this->_table->getDataSource()->expression("$fieldName in ($subquery)");
+				$query->where(array(
+					$fieldName => $subquery
+				));
 			}
 		}
-		return $conditions;
-	}
-
-/**
- * Helper method for getQuery.
- * extension of dbo source method. Create association query.
- *
- * 
- * @param array $queryData
- * @return string
- */
-	protected function _queryGet($queryData = array()) {
-		/** @var DboSource $db  */
-		$db = $this->_table->getDataSource();
-		$queryData = $this->_scrubQueryData($queryData);
-		$recursive = null;
-		$byPass = false;
-		$null = null;
-		$linkedModels = array();
-
-		if (isset($queryData['recursive'])) {
-			$recursive = $queryData['recursive'];
-		}
-
-		if ($recursive !== null) {
-			$this->_table->recursive = $recursive;
-		}
-
-		if (!empty($queryData['fields'])) {
-			$byPass = true;
-			$queryData['fields'] = $db->fields($this->_table, null, $queryData['fields']);
-		} else {
-			$queryData['fields'] = $db->fields($this->_table);
-		}
-
-		$_associations = $this->_table->associations();
-
-		if ($this->_table->recursive == -1) {
-			$_associations = array();
-		} elseif ($this->_table->recursive == 0) {
-			unset($_associations[2], $_associations[3]);
-		}
-
-		foreach ($_associations as $type) {
-			foreach ($this->_table->{$type} as $assoc => $assocData) {
-				$linkModel = $this->_table->{$assoc};
-				$external = isset($assocData['external']);
-
-				$linkModel->getDataSource();
-				if ($this->_table->useDbConfig === $linkModel->useDbConfig) {
-					if ($byPass) {
-						$assocData['fields'] = false;
-					}
-					if ($db->generateAssociationQuery($this->_table, $linkModel, $type, $assoc, $assocData, $queryData, $external, $null) === true) {
-						$linkedModels[$type . '/' . $assoc] = true;
-					}
-				}
-			}
-		}
-
-		return trim($db->generateAssociationQuery($this->_table, null, null, null, null, $queryData, false, $null));
-	}
-
-/**
- * Private helper method to remove query metadata in given data array.
- *
- * @param array $data
- * @return array
- */
-	protected function _scrubQueryData($data) {
-		static $base = null;
-		if ($base === null) {
-			$base = array_fill_keys(array('conditions', 'fields', 'joins', 'order', 'limit', 'offset', 'group'), array());
-		}
-		return (array)$data + $base;
+		return $query;
 	}
 
 /**
@@ -529,12 +408,12 @@ class SearchableBehavior extends Behavior {
  * @return boolean, true if method exists in attached and enabled behaviors
  */
 	protected function _checkBehaviorMethods($method) {
-		$behaviors = $this->_table->Behaviors->enabled();
+		$behaviors = $this->_table->behaviors();
 		$count = count($behaviors);
 		$found = false;
 		for ($i = 0; $i < $count; $i++) {
 			$name = $behaviors[$i];
-			$methods = get_class_methods($this->_table->Behaviors->{$name});
+			$methods = get_class_methods($this->_table->getBehavior($name));
 			$check = array_flip($methods);
 			$found = isset($check[$method]);
 			if ($found) {
