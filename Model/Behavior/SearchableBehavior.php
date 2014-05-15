@@ -408,12 +408,12 @@ class SearchableBehavior extends Behavior {
  * @return boolean, true if method exists in attached and enabled behaviors
  */
 	protected function _checkBehaviorMethods($method) {
-		$behaviors = $this->_table->behaviors();
+		$behaviors = $this->_table->behaviors()->loaded();
 		$count = count($behaviors);
 		$found = false;
 		for ($i = 0; $i < $count; $i++) {
 			$name = $behaviors[$i];
-			$methods = get_class_methods($this->_table->getBehavior($name));
+			$methods = get_class_methods($this->_table->behaviors()->{$name});
 			$check = array_flip($methods);
 			$found = isset($check[$method]);
 			if ($found) {

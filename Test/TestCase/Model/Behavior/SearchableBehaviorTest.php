@@ -194,14 +194,14 @@ class SearchableBehaviorTest extends TestCase {
 		$expected = array('any' => '*', 'one' => '?');
 		$this->assertSame($expected, $result);
 
-		$this->Articles->getBehavior('Searchable')->config('wildcardAny', false);
-		$this->Articles->getBehavior('Searchable')->config('wildcardOne', false);
+		$this->Articles->behaviors()->Searchable->config('wildcardAny', false);
+		$this->Articles->behaviors()->Searchable->config('wildcardOne', false);
 		$result = $this->Articles->getWildcards();
 		$expected = array('any' => false, 'one' => false);
 		$this->assertSame($expected, $result);
 
-		$this->Articles->getBehavior('Searchable')->config('wildcardAny', '%');
-		$this->Articles->getBehavior('Searchable')->config('wildcardOne', '_');
+		$this->Articles->behaviors()->Searchable->config('wildcardAny', '%');
+		$this->Articles->behaviors()->Searchable->config('wildcardOne', '_');
 		$result = $this->Articles->getWildcards();
 		$expected = array('any' => '%', 'one' => '_');
 		$this->assertSame($expected, $result);
@@ -314,13 +314,13 @@ class SearchableBehaviorTest extends TestCase {
 		$this->assertEquals($expected, $result);
 
 		// Working with like settings
-		$this->Articles->getBehavior('Searchable')->config('like.before', false);
+		$this->Articles->behaviors()->Searchable->config('like.before', false);
 		$result = $this->Articles->parseQuery($data);
 		$expected = array('Articles.title LIKE' => '\%First\_%');
 		$expected = $this->Articles->find('all')->where($expected);
 		$this->assertEquals($expected, $result);
 
-		$this->Articles->getBehavior('Searchable')->config('like.after', false);
+		$this->Articles->behaviors()->Searchable->config('like.after', false);
 		$result = $this->Articles->parseQuery($data);
 		$expected = array('Articles.title LIKE' => '\%First\_');
 		$expected = $this->Articles->find('all')->where($expected);
@@ -328,23 +328,23 @@ class SearchableBehaviorTest extends TestCase {
 
 		// Now custom like should be possible
 		$data = array('faketitle' => '*First?');
-		$this->Articles->getBehavior('Searchable')->config('like.after', false);
+		$this->Articles->behaviors()->Searchable->config('like.after', false);
 		$result = $this->Articles->parseQuery($data);
 		$expected = array('Articles.title LIKE' => '%First_');
 		$expected = $this->Articles->find('all')->where($expected);
 		$this->assertEquals($expected, $result);
 
 		$data = array('faketitle' => 'F?rst');
-		$this->Articles->getBehavior('Searchable')->config('like.before', true);
-		$this->Articles->getBehavior('Searchable')->config('like.after', true);
+		$this->Articles->behaviors()->Searchable->config('like.before', true);
+		$this->Articles->behaviors()->Searchable->config('like.after', true);
 		$result = $this->Articles->parseQuery($data);
 		$expected = array('Articles.title LIKE' => '%F_rst%');
 		$expected = $this->Articles->find('all')->where($expected);
 		$this->assertEquals($expected, $result);
 
 		$data = array('faketitle' => 'F*t');
-		$this->Articles->getBehavior('Searchable')->config('like.before', true);
-		$this->Articles->getBehavior('Searchable')->config('like.after', true);
+		$this->Articles->behaviors()->Searchable->config('like.before', true);
+		$this->Articles->behaviors()->Searchable->config('like.after', true);
 		$result = $this->Articles->parseQuery($data);
 		$expected = array('Articles.title LIKE' => '%F%t%');
 		$expected = $this->Articles->find('all')->where($expected);
@@ -352,10 +352,10 @@ class SearchableBehaviorTest extends TestCase {
 
 		// now we try the default wildcards % and _
 		$data = array('faketitle' => '*First?');
-		$this->Articles->getBehavior('Searchable')->config('like.before', false);
-		$this->Articles->getBehavior('Searchable')->config('like.after', false);
-		$this->Articles->getBehavior('Searchable')->config('wildcardAny', '%');
-		$this->Articles->getBehavior('Searchable')->config('wildcardOne', '_');
+		$this->Articles->behaviors()->Searchable->config('like.before', false);
+		$this->Articles->behaviors()->Searchable->config('like.after', false);
+		$this->Articles->behaviors()->Searchable->config('wildcardAny', '%');
+		$this->Articles->behaviors()->Searchable->config('wildcardOne', '_');
 		$result = $this->Articles->parseQuery($data);
 		$expected = array('Articles.title LIKE' => '*First?');
 		$expected = $this->Articles->find('all')->where($expected);
@@ -370,7 +370,7 @@ class SearchableBehaviorTest extends TestCase {
 
 		// Shortcut disable/enable like before/after
 		$data = array('faketitle' => '%First_');
-		$this->Articles->getBehavior('Searchable')->config('like', false);
+		$this->Articles->behaviors()->Searchable->config('like', false);
 		$result = $this->Articles->parseQuery($data);
 		$expected = array('Articles.title LIKE' => '%First_');
 		$expected = $this->Articles->find('all')->where($expected);
@@ -382,7 +382,7 @@ class SearchableBehaviorTest extends TestCase {
 		);
 
 		$data = array('faketitle' => 'First');
-		$this->Articles->getBehavior('Searchable')->config('like', true);
+		$this->Articles->behaviors()->Searchable->config('like', true);
 		$result = $this->Articles->parseQuery($data);
 		$expected = array(
 			'OR' => array(
