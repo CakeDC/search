@@ -51,7 +51,7 @@ class PrgComponent extends Component {
 	public $isSearch = false;
 
 /**
- * @var Controller
+ * @var \Cake\Controller\Controller
  */
 	public $controller;
 
@@ -192,13 +192,12 @@ class PrgComponent extends Component {
 			}
 		}
 
-		$this->controller->request->data = $data;
-		$this->_parsedParams = $parsedParams;
-		// deprecated, don't use controller's parsedData or passedArgs anymore.
-		$this->controller->parsedData = $this->_parsedParams;
-		foreach ($this->controller->parsedData as $key => $value) {
-			$this->controller->passedArgs[$key] = $value;
+		if ($formName) {
+			$this->controller->request->data[$formName] = $data;
+		} else {
+			$this->controller->request->data = $data;
 		}
+		$this->_parsedParams = $parsedParams;
 		$this->controller->set('isSearch', $this->isSearch);
 	}
 
@@ -285,12 +284,22 @@ class PrgComponent extends Component {
 			$tableName = $this->controller->modelClass;
 		}
 
+		if (empty($formName)) {
+			$formName = $tableName;
+		}
+
 		if (empty($action)) {
 			$action = $this->controller->action;
 		}
 
+		if (isset($this->controller->request->data[$formName])) {
+			$searchParams = $this->controller->request->data[$formName];
+		} else {
+			$searchParams = $this->controller->request->data;
+		}
+
 		if (!empty($this->controller->request->data)) {
-			$searchEntity = $this->controller->{$tableName}->newEntity($this->controller->request->data);
+			$searchEntity = $this->controller->{$tableName}->newEntity($searchParams);
 			$valid = true;
 			if ($tableMethod !== false) {
 				$valid = $this->controller->{$tableName}->{$tableMethod}($searchEntity);
@@ -302,7 +311,6 @@ class PrgComponent extends Component {
 					$params = array_merge($this->controller->request->params['pass'], $params);
 				}
 
-				$searchParams = $this->controller->request->data;
 				$this->serializeParams($searchParams);
 
 				$searchParams = array_merge($this->controller->request->query, $searchParams);
@@ -329,7 +337,7 @@ class PrgComponent extends Component {
 				$this->controller->Session->setFlash(__d('search', 'Please correct the errors below.'));
 			}
 		} elseif (!empty($this->controller->request->query)) {
-			$this->presetForm(array('table' => $tableName));
+			$this->presetForm(array('table' => $tableName, 'formName' => $formName));
 		}
 	}
 
