@@ -1,7 +1,6 @@
 language: php
 
 php:
-  - 5.3
   - 5.4
   - 5.5
 
@@ -9,40 +8,34 @@ env:
   global:
     - PLUGIN_NAME=Search
     - DB=mysql
-    - REQUIRE="phpunit/phpunit:3.7.31"
+    - DEFAULT=1
 
   matrix:
-    - DB=mysql CAKE_VERSION=master
+     - DB=mysql db_class='Cake\Database\Driver\Mysql' db_dsn='mysql:host=0.0.0.0;dbname=cakephp_test' db_database='cakephp_test' db_login='travis' db_password=''
 
 matrix:
   include:
-    - php: 5.3
-      env:
-        - CAKE_VERSION=master
-        - COVERALLS=1
     - php: 5.4
       env:
-        - CAKE_VERSION=master
-        - COVERALLS=1
-    - php: 5.5
-      env:
-        - CAKE_VERSION=master
-        - COVERALLS=1
+        - PHPCS=1
+        - DEFAULT=0
 
 before_script:
-  - git clone https://github.com/burzum/travis.git --depth 1 ../travis
-  - ../travis/before_script.sh
-  - if [ "$PHPCS" != 1 ]; then
-            echo "
-                require_once APP . DS . 'vendor' . DS . 'phpunit' . DS . 'phpunit' . DS . 'PHPUnit' . DS . 'Autoload.php';
-            " >> ../cakephp/app/Config/bootstrap.php;
-    fi
+  - composer self-update
+  - composer install --prefer-source --no-interaction --dev
+
+  - sh -c "if [ '$DB' = 'mysql' ]; then mysql -e 'CREATE DATABASE cakephp_test;'; fi"
+
+  - sh -c "if [ '$PHPCS' = '1' ]; then pear channel-discover pear.cakephp.org; fi"
+  - sh -c "if [ '$PHPCS' = '1' ]; then pear install --alldeps cakephp/CakePHP_CodeSniffer; fi"
+
+  - phpenv rehash
+  - set +H
+  - cp phpunit.xml.dist phpunit.xml
 
 script:
-  - ../travis/script.sh
-
-after_success:
-  - ../travis/after_success.sh
+  - sh -c "if [ '$DEFAULT' = '1' ]; then phpunit --stderr; fi"
+  - sh -c "if [ '$PHPCS' = '1' ]; then phpcs -p --extensions=php --standard=CakePHP --ignore=vendor --ignore=Test --ignore=docs . ; fi"
 
 notifications:
   email: false
