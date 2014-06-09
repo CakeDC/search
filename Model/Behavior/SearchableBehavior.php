@@ -46,8 +46,9 @@ class SearchableBehavior extends Behavior {
 /**
  * Configuration of model
  *
- * 
+ * @param Table $table
  * @param array $config
+ *
  * @return void
  */
 	public function __construct(Table $table, array $config = []) {
@@ -61,7 +62,7 @@ class SearchableBehavior extends Behavior {
  *
  * @param \Cake\ORM\Entity  $entity
  *
- * @return boolean always true
+ * @return bool always true
  */
 	public function validateSearch(\Cake\ORM\Entity $entity) {
 		$keys = $entity->visibleProperties();
@@ -79,8 +80,7 @@ class SearchableBehavior extends Behavior {
  * Model::getFilterArgs if present to set up the filterArgs with proper model
  * aliases.
  *
- * 
- * @return boolean|array
+ * @return bool|array
  */
 	public function setupFilterArgs() {
 		if (method_exists($this->_table, 'getFilterArgs')) {
@@ -108,8 +108,8 @@ class SearchableBehavior extends Behavior {
  * parses the GET data and returns the conditions for the find('all')/paginate
  * we are just going to test if the params are legit
  *
- * 
  * @param array $data Criteria of key->value pairs from post/named parameters
+ *
  * @return array Array of conditions that express the conditions needed for the search
  */
 	public function parseQuery($data) {
@@ -138,8 +138,8 @@ class SearchableBehavior extends Behavior {
 /**
  * filter retrieving variables only that present in  Model::filterArgs
  *
- * 
  * @param array $vars
+ *
  * @return array, filtered args
  */
 	public function passedArgs($vars) {
@@ -158,10 +158,10 @@ class SearchableBehavior extends Behavior {
  * For custom queries inside the model
  * example "makePhoneCondition": $cond = array('OR' => array_merge($this->condLike('cell_number', $filter), $this->condLike('landline_number', $filter, array('before' => false))));
  *
- * 
- * @param $name
- * @param $data
+ * @param string $name
+ * @param array $data
  * @param array $field
+ *
  * @return array of conditions
  */
 	public function condLike($name, $data, $field = array()) {
@@ -180,9 +180,9 @@ class SearchableBehavior extends Behavior {
  * Replace substitutions with original wildcards
  * but first, escape the original wildcards in the text to use them as normal search text
  *
- * 
- * @param $data
+ * @param array $data
  * @param array $options
+ *
  * @return string queryLikeString
  */
 	public function formatLike($data, $options = array()) {
@@ -212,8 +212,8 @@ class SearchableBehavior extends Behavior {
 /**
  * Return the current chars for querying LIKE statements on this model
  *
- *  Reference to the model
  * @param array $options
+ *
  * @return array, [one=>..., any=>...]
  */
 	public function getWildcards($options = array()) {
@@ -224,10 +224,10 @@ class SearchableBehavior extends Behavior {
 /**
  * Add Conditions based on fuzzy comparison
  *
- *  Reference to the model
- * @param array $conditions existing Conditions collected for the model
+ * @param query $query existing query
  * @param array $data Array of data used in search query
  * @param array $field Field definition information
+ *
  * @return array Conditions
  */
 	protected function _addCondLike(Query $query, $data, $field) {
@@ -295,6 +295,7 @@ class SearchableBehavior extends Behavior {
  * @param mixed $value
  * @param array $field
  * @param string $fieldName
+ *
  * @return array Conditions
  */
 	protected function _connectedLike($value, $field, $fieldName) {
@@ -316,10 +317,10 @@ class SearchableBehavior extends Behavior {
 /**
  * Add Conditions based on exact comparison
  *
- *  Reference to the model
- * @param \Cake\Orm\Query $query existing Conditions collected for the model
+ * @param Query $query existing Conditions collected for the model
  * @param array $data Array of data used in search query
  * @param array $field Field definition information
+ *
  * @return array of conditions
  */
 	protected function _addCondValue(Query $query, $data, $field) {
@@ -364,10 +365,10 @@ class SearchableBehavior extends Behavior {
 /**
  * Add Conditions based query to search conditions.
  *
- *   Instance of AppModel
- * @param array $conditions Existing conditions.
+ * @param Query $query Query object.
  * @param array $data Data for a field.
  * @param array $field Info for field.
+ *
  * @return array of conditions modified by this method
  */
 	protected function _addCondQuery(Query $query, $data, $field) {
@@ -380,13 +381,13 @@ class SearchableBehavior extends Behavior {
 /**
  * Add Conditions based subquery to search conditions.
  *
- *   Instance of AppModel
- * @param array $conditions Existing conditions.
+ * @param Query $query Query object.
  * @param array $data Data for a field.
  * @param array $field Info for field.
+ *
  * @return array of conditions modified by this method
  */
-	protected function _addCondSubquery($query, $data, $field) {
+	protected function _addCondSubquery(Query $query, $data, $field) {
 		$fieldName = $field['field'];
 		if ((method_exists($this->_table, $field['method']) || $this->_checkBehaviorMethods($this->_table, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && (string)$data[$field['name']] !== ''))) {
 			$subquery = $this->_table->{$field['method']}($data, $field);
@@ -402,10 +403,10 @@ class SearchableBehavior extends Behavior {
 
 /**
  * Check if model have some method in attached behaviors
- *
  * 
  * @param string $method
- * @return boolean, true if method exists in attached and enabled behaviors
+ *
+ * @return bool, true if method exists in attached and enabled behaviors
  */
 	protected function _checkBehaviorMethods($method) {
 		$behaviors = $this->_table->behaviors()->loaded();

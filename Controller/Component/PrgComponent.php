@@ -306,7 +306,7 @@ class PrgComponent extends Component {
 			}
 
 			if ($valid) {
-				$params = !empty($this->controller->request->params['query']) ? $this->controller->request->params['query'] : [];
+				$params = $this->controller->request->query;
 				if ($keepPassed) {
 					$params = array_merge($this->controller->request->params['pass'], $params);
 				}
