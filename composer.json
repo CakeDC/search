@@ -22,5 +22,10 @@
 	},
 	"extra": {
 		"installer-name": "Search"
+	},
+  	"autoload": {
+		"psr-4": {
+			"Search\\": "./"
+		}
 	}
 }
