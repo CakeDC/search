@@ -67,7 +67,8 @@ class SearchableBehavior extends Behavior {
 	public function validateSearch(\Cake\ORM\Entity $entity) {
 		$keys = $entity->visibleProperties();
 		foreach ($keys as $key) {
-			if (empty($entity->get($key))) {
+			$value = $entity->get($key);
+			if (empty($value)) {
 				$entity->unsetProperty($key);
 			}
 		}
