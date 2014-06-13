@@ -11,7 +11,7 @@ env:
     - DEFAULT=1
 
   matrix:
-     - DB=mysql db_class='Cake\Database\Driver\Mysql' db_dsn='mysql:host=0.0.0.0;dbname=cakephp_test' db_database='cakephp_test' db_login='travis' db_password=''
+     - DB=mysql db_class='Cake\Database\Driver\Mysql' db_dsn='mysql:host=127.0.0.1;dbname=cakephp_test' db_database='cakephp_test' db_login='travis' db_password=''
 
 matrix:
   include:
@@ -21,6 +21,7 @@ matrix:
         - DEFAULT=0
 
 before_script:
+  - mysql -e 'create database cakephp_test;'
   - composer self-update
   - composer install --prefer-source --no-interaction --dev
 

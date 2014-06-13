@@ -37,7 +37,7 @@ class TagFixture extends TestFixture {
 		'weight' => ['type' => 'integer', 'null' => false, 'default' => 0, 'length' => 2],
 		'created' => ['type' => 'datetime', 'null' => true, 'default' => null],
 		'modified' => ['type' => 'datetime', 'null' => true, 'default' => null],
-		'_constraints' => ['primary' => ['type' => 'primary', 'columns' => ['id']], 'PRIMARY' => ['type' => 'unique', 'columns' => 'id'], 'UNIQUE_TAG' => ['type' => 'unique', 'columns' => ['identifier', 'keyname']]]
+		'_constraints' => ['primary' => ['type' => 'primary', 'columns' => ['id']], 'UNIQUE_TAG' => ['type' => 'unique', 'columns' => ['identifier', 'keyname']]]
 	);
 
 /**
