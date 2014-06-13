@@ -21,7 +21,6 @@ matrix:
         - DEFAULT=0
 
 before_script:
-  - mysql -e 'create database cakephp_test;'
   - composer self-update
   - composer install --prefer-source --no-interaction --dev
 
