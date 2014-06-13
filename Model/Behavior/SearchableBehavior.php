@@ -10,10 +10,10 @@
  */
 namespace Search\Model\Behavior;
 
+use Cake\Core\Configure;
 use Cake\ORM\Behavior;
 use Cake\ORM\Query;
 use Cake\ORM\Table;
-use Cake\Core\Configure;
 use Cake\Utility\Hash;
 use Cake\Utility\String;
 
@@ -46,8 +46,8 @@ class SearchableBehavior extends Behavior {
 /**
  * Configuration of model
  *
- * @param Table $table
- * @param array $config
+ * @param Table $table Table that the behavior is attached too
+ * @param array $config Configuration details
  *
  * @return void
  */
@@ -60,7 +60,7 @@ class SearchableBehavior extends Behavior {
 /**
  * Validate search
  *
- * @param \Cake\ORM\Entity  $entity
+ * @param \Cake\ORM\Entity  $entity Entity to validate
  *
  * @return bool always true
  */
@@ -139,7 +139,7 @@ class SearchableBehavior extends Behavior {
 /**
  * filter retrieving variables only that present in  Model::filterArgs
  *
- * @param array $vars
+ * @param array $vars variables to filter
  *
  * @return array, filtered args
  */
@@ -159,9 +159,9 @@ class SearchableBehavior extends Behavior {
  * For custom queries inside the model
  * example "makePhoneCondition": $cond = array('OR' => array_merge($this->condLike('cell_number', $filter), $this->condLike('landline_number', $filter, array('before' => false))));
  *
- * @param string $name
- * @param array $data
- * @param array $field
+ * @param string $name Name of field
+ * @param array $data Data to search with
+ * @param array $field Field configuration details
  *
  * @return array of conditions
  */
@@ -181,8 +181,8 @@ class SearchableBehavior extends Behavior {
  * Replace substitutions with original wildcards
  * but first, escape the original wildcards in the text to use them as normal search text
  *
- * @param array $data
- * @param array $options
+ * @param array  $data  Data to search with
+ * @param array  $field Field configuration details
  *
  * @return string queryLikeString
  */
@@ -213,7 +213,7 @@ class SearchableBehavior extends Behavior {
 /**
  * Return the current chars for querying LIKE statements on this model
  *
- * @param array $options
+ * @param array $options Wildcard options
  *
  * @return array, [one=>..., any=>...]
  */
@@ -293,9 +293,9 @@ class SearchableBehavior extends Behavior {
  * Form AND/OR query array using String::tokenize to separate
  * search terms by or/and connectors.
  *
- * @param mixed $value
- * @param array $field
- * @param string $fieldName
+ * @param mixed $value Value to search
+ * @param array $field Field information
+ * @param string $fieldName Field name to search
  *
  * @return array Conditions
  */
@@ -405,7 +405,7 @@ class SearchableBehavior extends Behavior {
 /**
  * Check if model have some method in attached behaviors
  * 
- * @param string $method
+ * @param string $method Method to check for
  *
  * @return bool, true if method exists in attached and enabled behaviors
  */
