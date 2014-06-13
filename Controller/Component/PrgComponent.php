@@ -195,11 +195,11 @@ class PrgComponent extends Component {
 
 		if ($formName) {
 			$this->controller->request->data[$formName] = $data;
-			$this->_parsedParams[$formName] = $parsedParams;
 		} else {
 			$this->controller->request->data = $data;
-			$this->_parsedParams = $parsedParams;
 		}
+
+		$this->_parsedParams = $parsedParams;
 		$this->controller->set('isSearch', $this->isSearch);
 	}
 
@@ -290,13 +290,13 @@ class PrgComponent extends Component {
 			$action = $this->controller->action;
 		}
 
-		if (isset($this->controller->request->data[$tableName])) {
+		if (!empty($formName) && isset($this->controller->request->data[$formName])) {
+			$searchParams = $this->controller->request->data[$formName];
+		} elseif (isset($this->controller->request->data[$tableName])) {
 			$searchParams = $this->controller->request->data[$tableName];
 			if (empty($formName)) {
 				$formName = $tableName;
 			}
-		} elseif (!empty($formName) && isset($this->controller->request->data[$formName])) {
-			$searchParams = $this->controller->request->data[$formName];
 		} else {
 			$searchParams = $this->controller->request->data;
 		}

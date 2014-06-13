@@ -629,7 +629,7 @@ class PrgComponentTest extends TestCase {
 
 		$this->assertTrue($this->Controller->Prg->isSearch);
 		$expected = array('PostForm' => array('title' => 'test'));
-		$this->assertEquals($expected, $this->Controller->Prg->parsedParams());
+		$this->assertEquals($expected['PostForm'], $this->Controller->Prg->parsedParams());
 		$this->assertEquals($expected, $this->Controller->request->data);
 	}
 
