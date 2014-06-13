@@ -78,13 +78,15 @@ class PrgComponent extends Component {
 		),
 		'presetForm' => array(
 			'table' => null,
+			'formName' => null,
 		)
 	);
 
 /**
  * Called before the Controller::beforeFilter().
  *
- * @param Controller $controller Controller with components to initialize
+ * @param Event $event Event object
+ *
  * @return void
  */
 	public function initialize(Event $event) {
@@ -146,7 +148,8 @@ class PrgComponent extends Component {
  * 1 uses field, model, formField, and modelField
  * 2, 3 need only field parameter
  *
- * @param array $options
+ * @param array $options Preset form options
+ *
  * @return void
  */
 	public function presetForm($options) {
@@ -197,6 +200,7 @@ class PrgComponent extends Component {
 		} else {
 			$this->controller->request->data = $data;
 		}
+
 		$this->_parsedParams = $parsedParams;
 		$this->controller->set('isSearch', $this->isSearch);
 	}
@@ -213,7 +217,8 @@ class PrgComponent extends Component {
 /**
  * Restores form params for checkboxes and other url encoded params
  *
- * @param array
+ * @param array &$data Data we are serializing
+ *
  * @return array
  */
 	public function serializeParams(array &$data) {
@@ -239,8 +244,9 @@ class PrgComponent extends Component {
  *
  * Removes key/values from $array based on $exclude
  *
- * @param array Array of data to be filtered
- * @param array Array of keys to exclude from other $array
+ * @param array $array Array of data to be filtered
+ * @param array $exclude Array of keys to exclude from other $array
+ *
  * @return array
  */
 	public function exclude(array $array, array $exclude) {
@@ -263,14 +269,15 @@ class PrgComponent extends Component {
  * - Issuing redirect(), and connecting named parameters before redirect
  * - Setting named parameter form data to view
  *
- * @param string $modelName - Name of the model class being used for the prg form
+ * @param string $tableName - Name of the model class being used for the prg form
  * @param array $options Optional parameters:
  *  - string formName - name of the form involved in the prg
  *  - string action - The action to redirect to. Defaults to the current action
- *  - mixed modelMethod - If not false a string that is the model method that will be used to process the data
+ *  - mixed tableMethod - If not false a string that is the table method that will be used to process the data
  *  - array allowedParams - An array of additional top level route params that should be included in the params processed
  *  - array excludedParams - An array of named/query params that should be excluded from the redirect url
  *  - string paramType - 'named' if you want to used named params or 'querystring' is you want to use query string
+ *
  * @return void
  */
 	public function commonProcess($tableName = null, array $options = array()) {
@@ -284,21 +291,22 @@ class PrgComponent extends Component {
 			$tableName = $this->controller->modelClass;
 		}
 
-		if (empty($formName)) {
-			$formName = $tableName;
-		}
-
 		if (empty($action)) {
 			$action = $this->controller->action;
 		}
 
-		if (isset($this->controller->request->data[$formName])) {
+		if (!empty($formName) && isset($this->controller->request->data[$formName])) {
 			$searchParams = $this->controller->request->data[$formName];
+		} elseif (isset($this->controller->request->data[$tableName])) {
+			$searchParams = $this->controller->request->data[$tableName];
+			if (empty($formName)) {
+				$formName = $tableName;
+			}
 		} else {
 			$searchParams = $this->controller->request->data;
 		}
 
-		if (!empty($this->controller->request->data)) {
+		if (!empty($searchParams)) {
 			$searchEntity = $this->controller->{$tableName}->newEntity($searchParams);
 			$valid = true;
 			if ($tableMethod !== false) {
@@ -345,6 +353,7 @@ class PrgComponent extends Component {
  * Filter params based on emptyValue.
  *
  * @param array $params Params
+ *
  * @return array Params
  */
 	protected function _filter(array $params) {
@@ -367,8 +376,9 @@ class PrgComponent extends Component {
 /**
  * Parse the configs from the Model (to keep things dry)
  *
- * @param array $arg
- * @param mixed $key
+ * @param array $arg arguments
+ * @param mixed $key Key to use
+ *
  * @return array
  */
 	protected function _parseFromModel(array $arg, $key = null) {

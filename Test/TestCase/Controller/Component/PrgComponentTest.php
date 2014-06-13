@@ -108,7 +108,7 @@ class PrgComponentTest extends TestCase {
 	public $fixtures = array('plugin.search.post');
 
 /**
- * @var \Search\Test\TestCase\Controller\Component\PostTestController
+ * @var PostTestController
  */
 	public $Controller;
 
@@ -393,6 +393,24 @@ class PrgComponentTest extends TestCase {
 			'action' => 'search'
 		);
 		$this->assertEquals($expected, $this->Controller->redirectUrl);
+
+		$this->Controller->request->data = array(
+			'PostForm' => array(
+				'title' => 'test'
+			)
+		);
+		$this->Controller->Posts->filterArgs = array(
+			array('name' => 'title', 'type' => 'value')
+		);
+		$this->Controller->Prg->commonProcess('Posts', array(
+			'formName' => 'PostForm'
+		));
+		$expected = array(
+			'?' => array('title' => 'test'),
+			'action' => 'search'
+		);
+		$this->assertEquals($expected, $this->Controller->redirectUrl);
+
 	}
 
 /**
@@ -441,7 +459,8 @@ class PrgComponentTest extends TestCase {
 			)
 		);
 		$expected = array(
-			'?' => array('title' => 'test', 'lang' => 'en'),
+			'lang' => 'en',
+			'?' => array('lang' => 'en', 'title' => 'test'),
 			'action' => 'search'
 		);
 		$this->assertEquals($expected, $this->Controller->redirectUrl);
@@ -473,13 +492,17 @@ class PrgComponentTest extends TestCase {
 			)
 		);
 		$expected = array(
+			'page' => 2,
+			'sort' => 'name',
+			'direction' => 'asc',
+			'lang' => 'en',
 			'?' => array(
 				'sort' => 'name',
 				'direction' => 'asc',
+				'lang' => 'en',
 				'title' => 'test',
 				'foo' => '',
 				'bar' => '',
-				'lang' => 'en'
 			),
 			'action' => 'search',
 		);
@@ -512,9 +535,10 @@ class PrgComponentTest extends TestCase {
 			)
 		);
 		$expected = array(
+			'lang' => 'en',
 			'?' => array(
-				'title' => 'test',
 				'lang' => 'en',
+				'title' => 'test',
 			),
 			'action' => 'search'
 		);
@@ -547,9 +571,10 @@ class PrgComponentTest extends TestCase {
 			)
 		);
 		$expected = array(
+			'lang' => 'en',
 			'?' => array(
-				'title' => 'test/slashes?!',
 				'lang' => 'en',
+				'title' => 'test/slashes?!',
 			),
 			'action' => 'search',
 		);
@@ -580,6 +605,31 @@ class PrgComponentTest extends TestCase {
 		$this->assertTrue($this->Controller->Prg->isSearch);
 		$expected = array('title' => 'test');
 		$this->assertEquals($expected, $this->Controller->Prg->parsedParams());
+		$this->assertEquals($expected, $this->Controller->request->data);
+	}
+
+/**
+ * Test commonProcess() with GET and a formName
+ *
+ * @return void
+ */
+	public function testCommonProcessGetWithFormName() {
+		$this->Controller->action = 'search';
+		$this->Controller->presetVars = array(
+			array('field' => 'title', 'type' => 'value')
+		);
+		$this->Controller->request->data = array();
+		$this->Controller->Posts->filterArgs = array(
+			array('name' => 'title', 'type' => 'value')
+		);
+		$this->Controller->request->query = array('title' => 'test');
+		$this->Controller->Prg->commonProcess('Posts', [
+			'formName' => 'PostForm'
+		]);
+
+		$this->assertTrue($this->Controller->Prg->isSearch);
+		$expected = array('PostForm' => array('title' => 'test'));
+		$this->assertEquals($expected['PostForm'], $this->Controller->Prg->parsedParams());
 		$this->assertEquals($expected, $this->Controller->request->data);
 	}
 
