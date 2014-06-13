@@ -60,7 +60,7 @@ class SearchableBehavior extends Behavior {
 /**
  * Validate search
  *
- * @param \Cake\ORM\Entity  $entity Entity to validate
+ * @param \Cake\ORM\Entity $entity Entity to validate
  *
  * @return bool always true
  */
@@ -181,8 +181,8 @@ class SearchableBehavior extends Behavior {
  * Replace substitutions with original wildcards
  * but first, escape the original wildcards in the text to use them as normal search text
  *
- * @param array  $data  Data to search with
- * @param array  $field Field configuration details
+ * @param array $data  Data to search with
+ * @param array $options Options array (WildcardAny and WildcardOne)
  *
  * @return string queryLikeString
  */
