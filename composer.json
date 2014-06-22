@@ -21,10 +21,20 @@
 		"source": "https://github.com/CakeDC/search"
 	},
 	"require": {
-		"php": ">=5.3.0",
+		"php": ">=5.4.19",
 		"composer/installers": "*"
+	},
+	"require-dev": {
+		"cakephp/cakephp": "3.0.*-dev",
+		"cakephp/app": "dev-master",
+		"phpunit/phpunit": "~3.7.33"
 	},
 	"extra": {
 		"installer-name": "Search"
+	},
+  	"autoload": {
+		"psr-4": {
+			"Search\\": "./"
+		}
 	}
 }
