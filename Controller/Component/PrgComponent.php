@@ -81,7 +81,7 @@ class PrgComponent extends Component {
  * @param ComponentCollection $collection
  * @param array $settings
  */
-	public function __construct(ComponentCollection $collection, $settings) {
+	public function __construct(ComponentCollection $collection, $settings = array()) {
 		$this->_defaults = Hash::merge($this->_defaults, array(
 			'commonProcess' => (array)Configure::read('Search.Prg.commonProcess'),
 			'presetForm' => (array)Configure::read('Search.Prg.presetForm'),
