@@ -98,7 +98,7 @@ class SearchableBehavior extends ModelBehavior {
 
 			if (in_array($field['type'], array('like'))) {
 				$this->_addCondLike($Model, $conditions, $data, $field, 'LIKE');
-			if (in_array($field['type'], array('ilike'))) {
+			} elseif (in_array($field['type'], array('ilike'))) {
 				$this->_addCondLike($Model, $conditions, $data, $field, 'ILIKE');
 			} elseif (in_array($field['type'], array('value', 'lookup'))) {
 				$this->_addCondValue($Model, $conditions, $data, $field);
