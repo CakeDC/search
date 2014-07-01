@@ -42,8 +42,8 @@ class SearchableBehavior extends ModelBehavior {
  * @return void
  */
 	public function setup(Model $Model, $config = array()) {
-		$this->_defaults = array_merge($this->_defaults, (array)Configure::read('Search.Searchable'));
-		$this->settings[$Model->alias] = array_merge($this->_defaults, $config);
+		$this->_defaults = (array)Configure::read('Search.Searchable') + $this->_defaults;
+		$this->settings[$Model->alias] = $config + $this->_defaults;
 	}
 
 /**
