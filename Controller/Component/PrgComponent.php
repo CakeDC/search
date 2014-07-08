@@ -207,14 +207,16 @@ class PrgComponent extends Component {
 			}
 
 			if ($field['type'] === 'lookup') {
-				$searchModel = $field['model'];
-				$this->controller->loadModel($searchModel);
-				$this->controller->{$searchModel}->recursive = -1;
-				$result = $this->controller->{$searchModel}->findById($args[$field['field']]);
-				$parsedParams[$field['field']] = $args[$field['field']];
-				$parsedParams[$field['formField']] = $result[$searchModel][$field['modelField']];
-				$data[$model][$field['field']] = $args[$field['field']];
-				$data[$model][$field['formField']] = $result[$searchModel][$field['modelField']];
+				if (!empty($args[$field['field']])) {
+					$searchModel = $field['model'];
+					$this->controller->loadModel($searchModel);
+					$this->controller->{$searchModel}->recursive = -1;
+					$result = $this->controller->{$searchModel}->findById($args[$field['field']]);
+					$parsedParams[$field['field']] = $args[$field['field']];
+					$parsedParams[$field['formField']] = $result[$searchModel][$field['modelField']];
+					$data[$model][$field['field']] = $args[$field['field']];
+					$data[$model][$field['formField']] = $result[$searchModel][$field['modelField']];
+				}
 
 			} elseif ($field['type'] === 'checkbox') {
 				$values = explode('|', $args[$field['field']]);
