@@ -81,7 +81,7 @@ class PrgComponent extends Component {
  * @param ComponentCollection $collection
  * @param array $settings
  */
-	public function __construct(ComponentCollection $collection, $settings) {
+	public function __construct(ComponentCollection $collection, $settings = array()) {
 		$this->_defaults = Hash::merge($this->_defaults, array(
 			'commonProcess' => (array)Configure::read('Search.Prg.commonProcess'),
 			'presetForm' => (array)Configure::read('Search.Prg.presetForm'),
@@ -128,8 +128,8 @@ class PrgComponent extends Component {
 		}
 
 		$model = $this->controller->modelClass;
-		if (!empty($settings['model'])) {
-			$model = $settings['model'];
+		if (!empty($this->_defaults['presetForm']['model'])) {
+			$model = $this->_defaults['presetForm']['model'];
 		}
 
 		if ($this->controller->presetVars === true) {
@@ -207,14 +207,16 @@ class PrgComponent extends Component {
 			}
 
 			if ($field['type'] === 'lookup') {
-				$searchModel = $field['model'];
-				$this->controller->loadModel($searchModel);
-				$this->controller->{$searchModel}->recursive = -1;
-				$result = $this->controller->{$searchModel}->findById($args[$field['field']]);
-				$parsedParams[$field['field']] = $args[$field['field']];
-				$parsedParams[$field['formField']] = $result[$searchModel][$field['modelField']];
-				$data[$model][$field['field']] = $args[$field['field']];
-				$data[$model][$field['formField']] = $result[$searchModel][$field['modelField']];
+				if (!empty($args[$field['field']])) {
+					$searchModel = $field['model'];
+					$this->controller->loadModel($searchModel);
+					$this->controller->{$searchModel}->recursive = -1;
+					$result = $this->controller->{$searchModel}->findById($args[$field['field']]);
+					$parsedParams[$field['field']] = $args[$field['field']];
+					$parsedParams[$field['formField']] = $result[$searchModel][$field['modelField']];
+					$data[$model][$field['field']] = $args[$field['field']];
+					$data[$model][$field['formField']] = $result[$searchModel][$field['modelField']];
+				}
 
 			} elseif ($field['type'] === 'checkbox') {
 				$values = explode('|', $args[$field['field']]);
@@ -465,7 +467,7 @@ class PrgComponent extends Component {
 		if (isset($arg['presetType'])) {
 			$arg['type'] = $arg['presetType'];
 			unset($arg['presetType']);
-		} elseif (!isset($arg['type']) || in_array($arg['type'], array('expression', 'query', 'subquery', 'like', 'type'))) {
+		} elseif (!isset($arg['type']) || in_array($arg['type'], array('expression', 'query', 'subquery', 'like', 'type', 'ilike'))) {
 			$arg['type'] = 'value';
 		}
 
