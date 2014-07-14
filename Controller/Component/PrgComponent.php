@@ -273,15 +273,17 @@ class PrgComponent extends Component {
 				$data[$field['field']] = $values;
 			}
 
-			if ($this->_defaults['commonProcess']['paramType'] === 'named' && ($this->encode || !empty($field['encode']))) {
-				$fieldContent = $data[$field['field']];
-				$tmp = base64_encode($fieldContent);
-				// replace chars base64 uses that would mess up the url
-				$tmp = str_replace(array('/', '='), array('-', '_'), $tmp);
-				$data[$field['field']] = $tmp;
-			}
-			if (!empty($field['empty']) && isset($data[$field['field']]) && $data[$field['field']] === '') {
-				unset($data[$field['field']]);
+			if ( isset($field['field']) && isset( $data[$field['field']] ) ) {
+				if ($this->_defaults['commonProcess']['paramType'] === 'named' && ($this->encode || !empty($field['encode']))) {
+					$fieldContent = $data[$field['field']];
+					$tmp = base64_encode($fieldContent);
+					// replace chars base64 uses that would mess up the url
+					$tmp = str_replace(array('/', '='), array('-', '_'), $tmp);
+					$data[$field['field']] = $tmp;
+				}
+				if (!empty($field['empty']) && $data[$field['field']] === '') {
+					unset($data[$field['field']]);
+				}
 			}
 		}
 		return $data;
