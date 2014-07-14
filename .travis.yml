@@ -13,7 +13,7 @@ env:
 
   matrix:
     - DB=mysql CAKE_VERSION=master
-    - DB=psql CAKE_VERSION=master
+    - DB=pgsql CAKE_VERSION=master
 
 matrix:
   include:
