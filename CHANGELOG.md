@@ -8,7 +8,6 @@ Release 2.4.1
  * [9fd58af](https://github.com/cakedc/search/commit/9fd58af) Updating .travis
  * [1d4d78c](https://github.com/cakedc/search/commit/1d4d78c) Updating PostFixture.php
  * [66d45c3](https://github.com/cakedc/search/commit/66d45c3) Updating the ArticleFixture.php
- * [ad94745](https://github.com/cakedc/search/commit/ad94745) improve merging of strict key based options
 
 Release 2.4.0
 -------------
