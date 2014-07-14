@@ -1,6 +1,18 @@
 Changelog
 =========
 
+Release 2.4.0
+-------------
+
+ * [ad94745](https://github.com/cakedc/search/commit/ad94745) improve merging of strict key based options
+ * [251d233](https://github.com/cakedc/search/commit/251d233) Changing $this->_defaults['model'] to $this->_defaults['presetForm']['model']
+ * [bd9a129](https://github.com/cakedc/search/commit/bd9a129) Add missing bracket
+ * [e91e48a](https://github.com/cakedc/search/commit/e91e48a) Add support for ilike to SearchableBehavior
+ * [b122dc7](https://github.com/cakedc/search/commit/b122dc7) Add case-insensitive support for Postgres
+ * [6689123](https://github.com/cakedc/search/commit/6689123) Making the 2nd arg of the PrgComponent constructor optional as it should be
+ * [27abbf1](https://github.com/cakedc/search/commit/27abbf1) Refs https://github.com/CakeDC/search/pull/144 fixing the undefined var $settings, changing it to $this->_defaults
+ * [a3c4c3c](https://github.com/cakedc/search/commit/a3c4c3c) Avoid Undefined index error due to empty criteria of "type = lookup"
+
 Release 2.3.0
 -------------
 
