@@ -499,6 +499,52 @@ class SearchableBehaviorTest extends CakeTestCase {
 	}
 
 /**
+ * Test that delimiters work
+ *
+ * @return void
+ */
+	public function testLikeConditionWithDelimiters() {
+		$this->Article->filterArgs = array(
+			'title' => array('type' => 'like')
+		);
+		$this->Article->Behaviors->load('Search.Searchable');
+
+		$data = array(
+			'title' => '$First?Second*More$'
+		);
+		$result = $this->Article->parseCriteria($data);
+		$this->assertEquals(array('Article.title LIKE' => 'First_Second%More'), $result);
+
+		$data = array(
+			'title' => 'First?Second*More$'
+		);
+		$result = $this->Article->parseCriteria($data);
+		$this->assertEquals(array('Article.title LIKE' => '%First_Second%More'), $result);
+
+		// Disable delimiters
+		$this->Article->filterArgs = array(
+			'title' => array('type' => 'like', 'delimiters' => false)
+		);
+		$data = array(
+			'title' => '$First?Second*More$'
+		);
+		$result = $this->Article->parseCriteria($data);
+		$this->assertEquals(array('Article.title LIKE' => '%$First_Second%More$%'), $result);
+
+		// If before or after are false, the delimiter is useless and thus ignored
+		$this->Article->filterArgs = array(
+			'title' => array('type' => 'like', 'before' => false, 'after' => false, 'delimiters' => true)
+		);
+		$this->Article->Behaviors->load('Search.Searchable');
+
+		$data = array(
+			'title' => '*$First?Second*More$'
+		);
+		$result = $this->Article->parseCriteria($data);
+		$this->assertEquals(array('Article.title LIKE' => '%$First_Second%More$'), $result);
+	}
+
+/**
  * Test 'subquery' filter type
  *
  * @return void
