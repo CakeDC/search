@@ -37,6 +37,7 @@ class Article extends AppModel {
 		),
 		'search' => array(
 			'type' => 'like',
+			'delimiters' => false,
 			'field' => 'Article.description'
 		),
 		'range' => array(
@@ -371,3 +372,25 @@ public $presetVars = array(
 
 Search example with wildcards in the view for field `search` 20??BE* => matches 2011BES and 2012BETR etc.
 
+
+Wildcards and delimiters
+----------------
+By default, any search with `'type' => 'like'` uses wildcards. In some cases this can fetch too many results, though.
+Especially with shorter search terms.
+
+You can use the delimiter `$` to remove the wildcards at the beginning or the end for certain searches.
+It can only be added to the beginning or the end - or both.
+So a search for `$foo` matches `foobar` but not `barfoo`.
+
+If delimiters should not be allowed, this can be deactivated either globally throug Behavior settings or per field.
+
+The filterArgs property in your model to disable it for a single field:
+
+```php
+public $filterArgs = array(
+	'search' => array(
+		'type' => 'like',
+		'delimiters' => false
+	)
+);
+```
