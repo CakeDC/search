@@ -332,11 +332,11 @@ class SearchableBehavior extends ModelBehavior {
 			}
 
 			if (!empty($field['delimiters'])) {
-				if (substr($value, 0, 1) === $options['strDelimiter']) {
+				if ($field['before'] && substr($value, 0, 1) === $options['strDelimiter']) {
 					$value = substr($value, 1);
 					$field['before'] = '';
 				}
-				if (substr($value, -1, 1) === $options['strDelimiter']) {
+				if ($field['after'] && substr($value, -1, 1) === $options['strDelimiter']) {
 					$value = substr($value, 0, -1);
 					$field['after'] = '';
 				}
