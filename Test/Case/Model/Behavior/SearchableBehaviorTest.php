@@ -531,6 +531,18 @@ class SearchableBehaviorTest extends CakeTestCase {
 		$result = $this->Article->parseCriteria($data);
 		$this->assertEquals(array('Article.title LIKE' => '%$First_Second%More$%'), $result);
 
+		// Let's use a custom delimiter
+		$this->Article->filterArgs = array(
+			'title' => array('type' => 'like')
+		);
+		$options = array('stringDelimiter' => '|');
+		$this->Article->Behaviors->load('Search.Searchable', $options);
+		$data = array(
+			'title' => '|First?Second*More'
+		);
+		$result = $this->Article->parseCriteria($data);
+		$this->assertEquals(array('Article.title LIKE' => 'First_Second%More%'), $result);
+
 		// If before or after are false, the delimiter is useless and thus ignored
 		$this->Article->filterArgs = array(
 			'title' => array('type' => 'like', 'before' => false, 'after' => false, 'delimiters' => true)

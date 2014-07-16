@@ -23,7 +23,7 @@ class SearchableBehavior extends ModelBehavior {
  * Default settings
  * - wildcardAny: the character used instead of % (% is a normal character then)
  * - wildcardOne: the character used instead of _ (_ is a normal character then)
- * - strDelimiters: the character used in LIKE statements to set beginning or end (suppress % wildcard)
+ * - stringDelimiter: the character used in LIKE statements to set beginning or end (suppress % wildcard)
  * - like: auto add % wildcard to beginning, end or both (both false => user can enter wildcards himself)
  * - ilike: auto add % wildcard to beginning, end or both (both false => user can enter wildcards himself)
  * - connectorAnd: the character between search terms to specify an "and" relationship (binds stronger than or, similar to * and + in math)
@@ -34,7 +34,7 @@ class SearchableBehavior extends ModelBehavior {
 	protected $_defaults = array(
 		'wildcardAny' => '*', // On windows/unix/mac/google/... thats the default one
 		'wildcardOne' => '?', // On windows/unix/mac thats the default one
-		'strDelimiter' => '$', // Ending delimiter from regex syntax serves for beginning and end
+		'stringDelimiter' => '$', // Ending delimiter from regex syntax serves for beginning and end
 		'like' => array('before' => true, 'after' => true, 'delimiters' => true),
 		'ilike' => array('before' => true, 'after' => true, 'delimiters' => true),
 		'connectorAnd' => null,
@@ -332,11 +332,11 @@ class SearchableBehavior extends ModelBehavior {
 			}
 
 			if (!empty($field['delimiters'])) {
-				if ($field['before'] && substr($value, 0, 1) === $options['strDelimiter']) {
+				if ($field['before'] && substr($value, 0, 1) === $options['stringDelimiter']) {
 					$value = substr($value, 1);
 					$field['before'] = '';
 				}
-				if ($field['after'] && substr($value, -1, 1) === $options['strDelimiter']) {
+				if ($field['after'] && substr($value, -1, 1) === $options['stringDelimiter']) {
 					$value = substr($value, 0, -1);
 					$field['after'] = '';
 				}

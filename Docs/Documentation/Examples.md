@@ -305,7 +305,7 @@ Note: This only works if you use ```allowEmpty``` here. If you fail to do that i
 Default Values to Allow Search in Default Case
 ----------------------------------------------
 
-The filterArgs property in your model.
+The `filterArgs` property in your model.
 
 ```php
 public $filterArgs = array(
@@ -375,6 +375,7 @@ Search example with wildcards in the view for field `search` 20??BE* => matches 
 
 Wildcards and delimiters
 ------------------------
+
 By default, any search with `'type' => 'like'` uses wildcards. In some cases this can fetch too many results, though.
 Especially with shorter search terms.
 
@@ -385,7 +386,7 @@ So a search for `$foo` matches `foobar` but not `barfoo`.
 If delimiters should not be allowed, this can be deactivated either globally through behavior
 settings or per field in the model.
 
-The filterArgs property in your model to disable it for a single field:
+The `filterArgs` property in your model to disable it for a single field:
 
 ```php
 public $filterArgs = array(
