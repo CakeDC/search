@@ -3,7 +3,7 @@ Named Parameters vs Query String
 
 With the release of **2.5.0** of the **Search** plugin the default settings for the prg component have been changed to use `querystring` by default instead of `named`.
 
-To use querystrings **before 2.5.0** you have to use these configuration settings for the component.
+To use query trings **before 2.5.0** you have to use these configuration settings for the component.
 
 ```php
 public $components = array(
