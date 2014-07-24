@@ -32,6 +32,6 @@ Why Querstrings Instead of Named parameters?
 
 When you pass named parameters that contain special characters like `/` or `&` for example, they'll break the URL. You will have to manually encode and decode them all the time.
 
-The encoding of named parameters can break URLs. They always violate the [HTTP specification](http://tools.ietf.org/html/rfc3986#section-2.2) and they are CakePHP specific, no other application uses volatile parameters this way and are no real standard.
+The encoding of named parameters can break URLs. They always violate the [HTTP specification](http://tools.ietf.org/html/rfc3986#section-2.2) and they are CakePHP specific, no other application uses volatile parameters this way and they are no real standard.
 
 Named parameters are not any longer supported in CakePHP 3.0 as well.
