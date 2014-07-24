@@ -66,12 +66,12 @@ class PrgComponent extends Component {
 			'action' => null,
 			'modelMethod' => 'validateSearch',
 			'allowedParams' => array(),
-			'paramType' => 'named',
+			'paramType' => 'querystring',
 			'filterEmpty' => false
 		),
 		'presetForm' => array(
 			'model' => null,
-			'paramType' => 'named'
+			'paramType' => 'querystring'
 		)
 	);
 
