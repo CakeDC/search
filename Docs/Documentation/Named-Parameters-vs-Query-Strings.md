@@ -14,7 +14,7 @@ public $components = array(
 );
 ```
 
-If you just **upgraded to 2.5.0** or higher, and you're not already using query strings you'll have to set the configuration of the prg component in your app back to use named parameters. This is as well valid if you want to favor named parameters for some over query strings.
+If you just **upgraded to 2.5.0** or higher, and you're not already using query strings you'll have to set the configuration of the prg component in your app back to use named parameters. This is as well valid if you want to favor named parameters for some reason over query strings.
 
 ```php
 public $components = array(
@@ -25,8 +25,8 @@ public $components = array(
 );
 ```
 
-Why Querstrings Instead of Named parameters?
---------------------------------------------
+Why Quer Strings Instead of Named Parameters?
+---------------------------------------------
 
 [Query strings](http://en.wikipedia.org/wiki/Query_string) are the correct way of passing parameters in an URL while historically named parameters were always just a hack to get pretty URLs in CakePHP.
 
