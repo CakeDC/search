@@ -1,5 +1,5 @@
-Named Params vs Querystring
-===========================
+Named Parameters vs Query String
+================================
 
 With the release of **2.5.0** of the **Search** plugin the default settings for the prg component have been changed to use `querystring` by default instead of `named`.
 
