@@ -25,8 +25,8 @@ public $components = array(
 );
 ```
 
-Why Quer Strings Instead of Named Parameters?
----------------------------------------------
+Why Query Strings Instead of Named Parameters?
+----------------------------------------------
 
 [Query strings](http://en.wikipedia.org/wiki/Query_string) are the correct way of passing parameters in an URL while historically named parameters were always just a hack to get pretty URLs in CakePHP.
 
