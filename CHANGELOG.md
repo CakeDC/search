@@ -1,8 +1,19 @@
 Changelog
 =========
 
+Release 2.4.2
+-------------
+
+https://github.com/CakeDC/search/tree/2.4.2
+
+ * [2638972](https://github.com/cakedc/search/commit/2638972) Refs #157 Changing the plugins defaults from named parameters to query strings
+ * [fdac4c3](https://github.com/cakedc/search/commit/fdac4c3) CS Fix
+ * [8cdb841](https://github.com/cakedc/search/commit/8cdb841) Update Installation.md
+
 Release 2.4.1
 -------------
+
+https://github.com/CakeDC/search/tree/2.4.1
 
  * [23f24a6](https://github.com/cakedc/search/commit/23f24a6) Updating travis
  * [9fd58af](https://github.com/cakedc/search/commit/9fd58af) Updating .travis
@@ -11,6 +22,8 @@ Release 2.4.1
 
 Release 2.4.0
 -------------
+
+https://github.com/CakeDC/search/tree/2.4.0
 
  * [ad94745](https://github.com/cakedc/search/commit/ad94745) improve merging of strict key based options
  * [251d233](https://github.com/cakedc/search/commit/251d233) Changing $this->_defaults['model'] to $this->_defaults['presetForm']['model']
