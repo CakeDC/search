@@ -1,10 +1,10 @@
 Changelog
 =========
 
-Release 2.4.2
+Release 2.5.0
 -------------
 
-https://github.com/CakeDC/search/tree/2.4.2
+https://github.com/CakeDC/search/tree/2.5.0
 
  * [2638972](https://github.com/cakedc/search/commit/2638972) Refs #157 Changing the plugins defaults from named parameters to query strings
  * [fdac4c3](https://github.com/cakedc/search/commit/fdac4c3) CS Fix
