@@ -14,6 +14,7 @@ Documentation
 
 * [Overview](Documentation/Overview.md)
 * [Installation](Documentation/Installation.md)
+* [Named Parameters vs Query Strings](Documentation/Named-Parameters-vs-Query-Strings.md)
 * [Configuration](Documentation/Configuration.md)
 * [POST-Redirect-GET Pattern](Documentation/Post-Redirect-Get.md)
 * [Examples](Documentation/Examples.md)
