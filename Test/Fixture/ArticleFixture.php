@@ -26,8 +26,8 @@ class ArticleFixture extends CakeTestFixture {
 		'slug' => array('type' => 'string', 'null' => false),
 		'views' => array('type' => 'integer', 'null' => false),
 		'comments' => array('type' => 'integer', 'null' => false, 'default' => '0', 'length' => 10),
-		'created' => array('datetime','null' => true, 'default' => null),
-		'updated' => array('datetime','null' => true, 'default' => null)
+		'created' => array('datetime', 'null' => true, 'default' => null),
+		'updated' => array('datetime', 'null' => true, 'default' => null)
 	);
 
 /**

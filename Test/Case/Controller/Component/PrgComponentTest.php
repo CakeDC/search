@@ -45,7 +45,13 @@ class PostsTestController extends Controller {
  *
  * @var array
  */
-	public $components = array('Search.Prg', 'Session');
+	public $components = array(
+		'Search.Prg' => array(
+			'commonProcess' => array('paramType' => 'named'),
+			'presetForm' => array('paramType' => 'named')
+		),
+		'Session'
+	);
 
 /**
  * beforeFilter
@@ -57,7 +63,8 @@ class PostsTestController extends Controller {
 		$this->Prg->actions = array(
 			'search' => array(
 				'controller' => 'Posts',
-				'action' => 'result')
+				'action' => 'result'
+			)
 		);
 	}
 
