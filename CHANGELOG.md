@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Release 2.5.1
+-------------
+
+https://github.com/CakeDC/search/tree/2.5.1
+
+ * [8aba388](https://github.com/cakedc/search/commit/8aba388) Update Overview.md
+
 Release 2.5.0
 -------------
 
