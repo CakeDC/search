@@ -17,7 +17,7 @@ public $components = array('Search.Prg' => array(
 	// options for preset form method
 	'presetForm' => array(
 		// 'paramType' can be 'named' or 'querystring'
-		'paramType' => 'named'
+		'paramType' => 'named',
 		// 'model' can be 'null' or a default model name
 		'model' => null
 	),
