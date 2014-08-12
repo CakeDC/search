@@ -3,7 +3,7 @@ Installation
 
 The plugin should be installed using Composer.
 
-Use the inline required for composer:
+Use the inline `require` for composer:
 ```
 composer require cakedc/search:3.0.*-dev
 ```
