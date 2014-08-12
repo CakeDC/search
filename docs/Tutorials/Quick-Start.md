@@ -6,6 +6,8 @@ This quick start guide will help you get ready to use the **Search** plugin with
 Add the [Prg](../../Controller/Component/PrgComponent.php) component to the controller and call the component methods to process POST and GET. You can debug the paginator settings to see what the component does there, for example:
 
 ```php
+namespace App\Controller;
+
 class UsersController extends AppController {
 
 	public $components = array(
@@ -14,20 +16,19 @@ class UsersController extends AppController {
 
 	public function index() {
 		$this->Prg->commonProcess();
-		$this->Paginator->settings['conditions'] = $this->User->parseCriteria($this->Prg->parsedParams());
-		$this->set('users', $this->Paginator->paginate());
+		$this->set('users', $this->paginate($this->Users->find('searchable', $this->Prg->parsedParams())));
 	}
 }
 ```
 
-For the previous example, in your User model, attach the [Searchable](../../Model/Behavior/SearchableBehavior.php) behavior and configure the ```$filterArgs``` property for the fields you want to make searchable.
+For the previous example, in your User table, attach the [Searchable](../../Model/Behavior/SearchableBehavior.php) behavior and configure the ```$filterArgs``` property for the fields you want to make searchable.
 
 ```php
-class User extends AppModel {
+namespace App\Model\Table;
 
-	public $actsAs = array(
-		'Search.Searchable'
-	);
+use Cake\ORM\Table;
+
+class UsersTable extends Table {
 
 	public $filterArgs = array(
 		'username' => array(
@@ -43,6 +44,10 @@ class User extends AppModel {
 		)
 	);
 
+	public function initialize(array $config = []) {
+		$this->addBehavior('Search.Searchable');
+	}
+
 }
 ```
 
@@ -50,11 +55,11 @@ There is no need to make any additional changes in your view, only make sure tha
 
 ```php
 <?php
-	echo $this->Form->create();
+	echo $this->Form->create(null);
 	echo $this->Form->input('username');
 	echo $this->Form->input('email');
 	echo $this->Form->input('active', array(
-		'type' => 'checkox'
+		'type' => 'checkbox'
 	));
 	echo $this->Form->submit(__('Submit'));
 	echo $this->Form->end();

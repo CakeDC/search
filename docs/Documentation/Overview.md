@@ -16,20 +16,18 @@ You can attach the component to your controller. Here is an example using defaul
 public $components = array('Search.Prg' => array(
 	// options for preset form method
 	'presetForm' => array(
-		// 'paramType' can be 'named' or 'querystring'
-		'paramType' => 'named'
-		// 'model' can be 'null' or a default model name
-		'model' => null
+		// 'table' can be 'null' or a default table name
+		'table' => null,
+		// 'formName' can be 'null' or a default form name
+		'formName' => null
 	),
 	// options for commonProcess method
 	'commonProcess' => array(
 		'formName' => null,
 		'keepPassed' => true,
 		'action' => null,
-		'modelMethod' => 'validateSearch',
+		'tableMethod' => 'validateSearch',
 		'allowedParams' => array(),
-		// 'paramType' can be 'named' or 'querystring'
-		'paramType' => 'named',
 		'filterEmpty' => false
 	)
 ));
@@ -38,8 +36,8 @@ public $components = array('Search.Prg' => array(
 PrgComponent::presetForm Options
 --------------------------------
 
-* **paramType:** ```named``` or ```querystring```, by default ```named```.
-* **model:** Model name or null, by default ```null```.
+* **table:** Table name or null, by default ```null```.
+* **formName:** Form name or null, by default ```null```.
 
 PrgComponent::commonProcess Options
 -----------------------------------
@@ -48,7 +46,7 @@ The ```commonProcess()``` method defined in the Prg component allows you to inje
 
 Additional options parameters.
 
-* **form:** Search form name.
+* **formName:** Search form name.
 * **keepPassed:** Parameter that describes if you need to merge ```passedArgs``` to the url where you will be redirected to after post.
 * **action:** Sometimes you want to have different actions for post and get. In this case you can define get action using this parameter.
-* **modelMethod:** Method used to filter named parameters, passed from the form. By default it is validateSearch, and it defined in Searchable behavior.
+* **tableMethod:** Method used to filter named parameters, passed from the form. By default it is validateSearch, and it defined in Searchable behavior.
