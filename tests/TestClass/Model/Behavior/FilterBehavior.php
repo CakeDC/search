@@ -32,7 +32,7 @@ class FilterBehavior extends Behavior {
 		if (!in_array($filter, array('views', 'comments'))) {
 			return array();
 		}
-
+		
 		switch ($filter) {
 			case 'views':
 				$cond = $query->repository()->alias() . '.views > 10';
