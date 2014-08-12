@@ -4,7 +4,7 @@ Overview
 PRG Component Features
 ----------------------
 
-The [Prg Component](../../Controller/Component/PrgComponent.php) implements the PRG pattern so you can use it separately from search tasks when you need it.
+The [Prg Component](../../src/Controller/Component/PrgComponent.php) implements the PRG pattern so you can use it separately from search tasks when you need it.
 
 The component maintains passed and named parameters or query string variables that come as POST parameters and transform it to the named during redirect, and sets Controller::data back if the GET method was used during component call.
 

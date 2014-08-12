@@ -3,7 +3,7 @@ Quick Start
 
 This quick start guide will help you get ready to use the **Search** plugin with your application.
 
-Add the [Prg](../../Controller/Component/PrgComponent.php) component to the controller and call the component methods to process POST and GET. You can debug the paginator settings to see what the component does there, for example:
+Add the [Prg](../../src/Controller/Component/PrgComponent.php) component to the controller and call the component methods to process POST and GET. You can debug the paginator settings to see what the component does there, for example:
 
 ```php
 namespace App\Controller;
@@ -21,7 +21,7 @@ class UsersController extends AppController {
 }
 ```
 
-For the previous example, in your User table, attach the [Searchable](../../Model/Behavior/SearchableBehavior.php) behavior and configure the ```$filterArgs``` property for the fields you want to make searchable.
+For the previous example, in your User table, attach the [Searchable](../../src/Model/Behavior/SearchableBehavior.php) behavior and configure the ```$filterArgs``` property for the fields you want to make searchable.
 
 ```php
 namespace App\Model\Table;
