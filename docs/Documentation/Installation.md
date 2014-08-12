@@ -5,7 +5,7 @@ The plugin should be installed using Composer.
 
 Use the inline required for composer:
 ```
-composer required cakedc/search:3.0.*-dev
+composer require cakedc/search:3.0.*-dev
 ```
 
 or add this to your composer.json configuration:
