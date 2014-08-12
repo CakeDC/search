@@ -11,7 +11,6 @@
 namespace Search\Test\TestCase\Model\Behavior;
 
 use Cake\Datasource\ConnectionManager;
-use Cake\ORM\Behavior;
 use Cake\ORM\Query;
 use Cake\ORM\Table;
 use Cake\TestSuite\TestCase;
@@ -55,25 +54,6 @@ class ArticlesTable extends Table {
 	}
 
 /**
- * Find by tags
- *
- * @param array $data
- * @return array
- */
-	public function findByTags($data = []) {
-		$query = $this->Tagged->find('all');
-		$conditions = [];
-		if (!empty($data['tags'])) {
-			$conditions = ['Tags.name' => $data['tags']];
-		}
-		$query
-			->where($conditions)
-			->select('foreign_key')
-			->contain('Tags');
-		return $query;
-	}
-
-/**
  * Makes an array of range numbers that matches the ones on the interface.
  *
  * @param $data
@@ -109,7 +89,7 @@ class ArticlesTable extends Table {
  * @param array $data
  * @return array
  */
-	public function orConditions(Query $query, $data = []) {
+	public function findOrConditions(Query $query, $data = []) {
 		$filter = $data['filter'];
 		$cond = [
 			'OR' => [
@@ -120,7 +100,7 @@ class ArticlesTable extends Table {
 		return $query;
 	}
 
-	public function or2Conditions(Query $query, $data = []) {
+	public function findOr2Conditions(Query $query, $data = []) {
 		$filter = $data['filter2'];
 		$cond = [
 			'OR' => [
@@ -217,61 +197,61 @@ class SearchableBehaviorTest extends TestCase {
 		$this->Articles->filterArgs = [
 			['name' => 'slug', 'type' => 'value']];
 		$data = [];
-		$result = $this->Articles->parseQuery($data);
-		$expected = $this->Articles->find('all')->where([]);
-		$this->assertEquals($expected, $result);
+		$result = $this->Articles->find('searchable', $data);
+		$expected = $this->Articles->find('all');
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		$data = ['slug' => 'first_article'];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = $this->Articles->find('all')->where(['Articles.slug' => 'first_article']);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		$this->Articles->filterArgs = [
 			['name' => 'fakeslug', 'type' => 'value', 'field' => 'Article2.slug']];
 		$data = ['fakeslug' => 'first_article'];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = $this->Articles->find('all')->where(['Article2.slug' => 'first_article']);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		// Testing http://github.com/CakeDC/Search/issues#issue/3
 		$this->Articles->filterArgs = [
 			['name' => 'views', 'type' => 'value']];
 		$data = ['views' => '0'];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = $this->Articles->find('all')->where(['Articles.views' => 0]);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		$this->Articles->filterArgs = [
 			['name' => 'views', 'type' => 'value']];
 		$data = ['views' => 0];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = $this->Articles->find('all')->where(['Articles.views' => 0]);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		$this->Articles->filterArgs = [
 			['name' => 'views', 'type' => 'value']];
 		$data = ['views' => ''];
-		$result = $this->Articles->parseQuery($data);
-		$expected = $this->Articles->find('all')->where([]);
-		$this->assertEquals($expected, $result);
+		$result = $this->Articles->find('searchable', $data);
+		$expected = $this->Articles->find('all');
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		// Multiple fields + cross model searches
 		$this->Articles->filterArgs = [
 			'faketitle' => ['type' => 'value', 'field' => ['title', 'User.name']]
 		];
 		$data = ['faketitle' => 'First'];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = $this->Articles->find('all')->where(['OR' => ['Articles.title' => 'First', 'User.name' => 'First']]);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		// Multiple select dropdown
 		$this->Articles->filterArgs = [
 			'fakesource' => ['type' => 'value']
 		];
 		$data = ['fakesource' => [5, 9]];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = $this->Articles->find('all')->where(['Articles.fakesource' => [5, 9]]);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 	}
 
 /**
@@ -284,71 +264,71 @@ class SearchableBehaviorTest extends TestCase {
 			['name' => 'title', 'type' => 'like']];
 
 		$data = [];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = $this->Articles->find('all');
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		$data = ['title' => 'First'];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = ['Articles.title LIKE' => '%First%'];
 		$expected = $this->Articles->find('all')->where($expected);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		$this->Articles->filterArgs = [
 			['name' => 'faketitle', 'type' => 'like', 'field' => 'Articles.title']];
 
 		$data = ['faketitle' => 'First'];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = ['Articles.title LIKE' => '%First%'];
 		$expected = $this->Articles->find('all')->where($expected);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		// Wildcards should be treated as normal text
 		$this->Articles->filterArgs = [
 			['name' => 'faketitle', 'type' => 'like', 'field' => 'Articles.title']
 		];
 		$data = ['faketitle' => '%First_'];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = ['Articles.title LIKE' => '%\%First\_%'];
 		$expected = $this->Articles->find('all')->where($expected);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		// Working with like settings
 		$this->Articles->behaviors()->Searchable->config('like.before', false);
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = ['Articles.title LIKE' => '\%First\_%'];
 		$expected = $this->Articles->find('all')->where($expected);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		$this->Articles->behaviors()->Searchable->config('like.after', false);
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = ['Articles.title LIKE' => '\%First\_'];
 		$expected = $this->Articles->find('all')->where($expected);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		// Now custom like should be possible
 		$data = ['faketitle' => '*First?'];
 		$this->Articles->behaviors()->Searchable->config('like.after', false);
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = ['Articles.title LIKE' => '%First_'];
 		$expected = $this->Articles->find('all')->where($expected);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		$data = ['faketitle' => 'F?rst'];
 		$this->Articles->behaviors()->Searchable->config('like.before', true);
 		$this->Articles->behaviors()->Searchable->config('like.after', true);
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = ['Articles.title LIKE' => '%F_rst%'];
 		$expected = $this->Articles->find('all')->where($expected);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		$data = ['faketitle' => 'F*t'];
 		$this->Articles->behaviors()->Searchable->config('like.before', true);
 		$this->Articles->behaviors()->Searchable->config('like.after', true);
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = ['Articles.title LIKE' => '%F%t%'];
 		$expected = $this->Articles->find('all')->where($expected);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		// now we try the default wildcards % and _
 		$data = ['faketitle' => '*First?'];
@@ -356,25 +336,25 @@ class SearchableBehaviorTest extends TestCase {
 		$this->Articles->behaviors()->Searchable->config('like.after', false);
 		$this->Articles->behaviors()->Searchable->config('wildcardAny', '%');
 		$this->Articles->behaviors()->Searchable->config('wildcardOne', '_');
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = ['Articles.title LIKE' => '*First?'];
 		$expected = $this->Articles->find('all')->where($expected);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		// Now it is possible and makes sense to allow wildcards in between (custom wildcard use case)
 		$data = ['faketitle' => '%Fi_st_'];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = ['Articles.title LIKE' => '%Fi_st_'];
 		$expected = $this->Articles->find('all')->where($expected);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		// Shortcut disable/enable like before/after
 		$data = ['faketitle' => '%First_'];
 		$this->Articles->behaviors()->Searchable->config('like', false);
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = ['Articles.title LIKE' => '%First_'];
 		$expected = $this->Articles->find('all')->where($expected);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		// Multiple OR fields per field
 		$this->Articles->filterArgs = [
@@ -383,7 +363,7 @@ class SearchableBehaviorTest extends TestCase {
 
 		$data = ['faketitle' => 'First'];
 		$this->Articles->behaviors()->Searchable->config('like', true);
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = [
 			'OR' => [
 				'Articles.title LIKE' => '%First%',
@@ -391,7 +371,7 @@ class SearchableBehaviorTest extends TestCase {
 			]
 		];
 		$expected = $this->Articles->find('all')->where($expected);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		// Set before => false dynamically
 		$this->Articles->filterArgs = [
@@ -402,7 +382,7 @@ class SearchableBehaviorTest extends TestCase {
 			]
 		];
 		$data = ['faketitle' => 'First'];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = [
 			'OR' => [
 				'Articles.title LIKE' => 'First%',
@@ -410,7 +390,7 @@ class SearchableBehaviorTest extends TestCase {
 			]
 		];
 		$expected = $this->Articles->find('all')->where($expected);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		// Manually define the before/after type
 		$this->Articles->filterArgs = [
@@ -418,10 +398,10 @@ class SearchableBehaviorTest extends TestCase {
 				'before' => '_', 'after' => '_']
 		];
 		$data = ['faketitle' => 'First'];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = ['Articles.title LIKE' => '_First_'];
 		$expected = $this->Articles->find('all')->where($expected);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		// Cross model searches + named keys (shorthand)
 		$this->Articles->belongsTo('Users');
@@ -430,10 +410,10 @@ class SearchableBehaviorTest extends TestCase {
 				'before' => false, 'after' => true]
 		];
 		$data = ['faketitle' => 'First'];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = ['OR' => ['Articles.title LIKE' => 'First%', 'Users.name LIKE' => 'First%']];
 		$expected = $this->Articles->find('all')->where($expected);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		// With already existing or conditions + named keys (shorthand)
 		$this->Articles->filterArgs = [
@@ -444,7 +424,7 @@ class SearchableBehaviorTest extends TestCase {
 		];
 
 		$data = ['faketitle' => 'First', 'otherfaketitle' => 'Second'];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = $this->Articles->find('all')
 			->where(['OR' => [
 				'Articles.title LIKE' => 'First%',
@@ -455,7 +435,7 @@ class SearchableBehaviorTest extends TestCase {
 					'Articles.descr LIKE' => 'Second%',
 					'Articles.comment LIKE' => 'Second%']
 			]);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		// Wildcards and and/or connectors
 		$this->Articles->removeBehavior('Searchable');
@@ -465,7 +445,7 @@ class SearchableBehaviorTest extends TestCase {
 				'connectorAnd' => '+', 'connectorOr' => ',', 'before' => true, 'after' => true]
 		];
 		$data = ['faketitle' => 'First%+Second%, Third%'];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = [
 			0 => [
 				'OR' => [
@@ -480,51 +460,7 @@ class SearchableBehaviorTest extends TestCase {
 			]
 		];
 		$expected = $this->Articles->find('all')->where($expected);
-		$this->assertEquals($expected, $result);
-	}
-
-/**
- * Test 'subquery' filter type
- *
- * @return void
- */
-	public function testSubQueryCondition() {
-		$this->Articles->filterArgs = [
-			['name' => 'tags', 'type' => 'subquery', 'method' => 'findByTags', 'field' => 'Articles.id']
-		];
-
-		$data = [];
-		$result = $this->Articles->parseQuery($data);
-		$expected = $this->Articles->find('all');
-		$this->assertEquals($expected, $result);
-
-		$data = ['tags' => 'Cake'];
-		$result = $this->Articles->parseQuery($data);
-		$expected = $this->Articles->find('all');
-		$subQuery = $this->Articles->findByTags($data);
-		$expected->where(['Articles.id' => $subQuery]);
-		$this->assertEquals($expected, $result);
-	}
-
-/**
- * Test 'subquery' filter type when 'allowEmpty' = true
- *
- * @return void
- */
-	public function testSubQueryEmptyCondition() {
-		$this->Articles->filterArgs = [
-			'tags' => ['type' => 'subquery', 'method' => 'findByTags',
-				'field' => 'Articles.id', 'allowEmpty' => true
-			]
-		];
-
-		$data = [];
-		$result = $this->Articles->parseQuery($data);
-		$expected = $this->Articles->find('all');
-		$subQuery = $this->Articles->findByTags($data);
-		$expected->where(['Articles.id' => $subQuery]);
-
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 	}
 
 /**
@@ -536,20 +472,20 @@ class SearchableBehaviorTest extends TestCase {
  */
 	public function testQueryOneOrConditions() {
 		$this->Articles->filterArgs = [
-			['name' => 'filter', 'type' => 'query', 'method' => 'orConditions']];
+			['name' => 'filter', 'type' => 'finder', 'finder' => 'orConditions']];
 
 		$data = [];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = $this->Articles->find('all');
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		$data = ['filter' => 'ticl'];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = ['OR' => [
 		'Articles.title LIKE' => '%ticl%',
 		'Articles.body LIKE' => '%ticl%']];
 		$expected = $this->Articles->find('all')->orWhere($expected);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 	}
 
 /**
@@ -561,16 +497,16 @@ class SearchableBehaviorTest extends TestCase {
  */
 	public function testQueryOrTwoOrConditions() {
 		$this->Articles->filterArgs = [
-			['name' => 'filter', 'type' => 'query', 'method' => 'orConditions'],
-			['name' => 'filter2', 'type' => 'query', 'method' => 'or2Conditions']];
+			['name' => 'filter', 'type' => 'finder', 'finder' => 'orConditions'],
+			['name' => 'filter2', 'type' => 'finder', 'finder' => 'or2Conditions']];
 
 		$data = [];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = $this->Articles->find('all');
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		$data = ['filter' => 'ticl', 'filter2' => 'test'];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = $this->Articles->find('all')
 			->orWhere([
 				'OR' => [
@@ -584,7 +520,7 @@ class SearchableBehaviorTest extends TestCase {
 					'Articles.field2 LIKE' => '%test%'
 				]
 			]);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 	}
 
 /**
@@ -599,18 +535,20 @@ class SearchableBehaviorTest extends TestCase {
 			'className' => 'Search\Test\TestClass\Model\Behavior\FilterBehavior'
 		]);
 		$this->Articles->filterArgs = [
-			['name' => 'filter', 'type' => 'query', 'method' => 'mostFilterConditions']];
+			['name' => 'filter', 'type' => 'finder', 'finder' => 'mostFilterConditions']
+		];
 
 		$data = [];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = $this->Articles->find('all');
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 
 		$data = ['filter' => 'views'];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = ['Articles.views > 10'];
 		$expected = $this->Articles->find('all')->where($expected);
-		$this->assertEquals($expected, $result);
+
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
 	}
 
 /**
@@ -624,28 +562,10 @@ class SearchableBehaviorTest extends TestCase {
 		];
 
 		$data = [];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = ['Articles.faketitle' => 100];
 		$expected = $this->Articles->find('all')->where($expected);
 		$this->assertEquals($expected, $result);
-	}
-
-/**
- * Test validateSearch()
- *
- * @return void
- */
-	public function testValidateSearch() {
-		$this->Articles->filterArgs = [];
-		$data = ['title' => 'Last Article'];
-		$entity = $this->Articles->newEntity($data);
-		$this->Articles->validateSearch($entity);
-		$this->assertEquals($data, $entity->toArray());
-
-		$data = ['title' => ''];
-		$entity = $this->Articles->newEntity($data);
-		$this->Articles->validateSearch($entity);
-		$this->assertEquals([], $entity->toArray());
 	}
 
 /**
@@ -702,9 +622,23 @@ class SearchableBehaviorTest extends TestCase {
 			'Articles.author' => '',
 			'Articles.created' => null,
 		];
-		$result = $this->Articles->parseQuery($data);
+		$result = $this->Articles->find('searchable', $data);
 		$expected = $this->Articles->find('all')->where($expected);
-		$this->assertEquals($expected, $result);
+		$this->assertEquals($this->_getWhere($expected), $this->_getWhere($result));
+	}
+
+/**
+ * Gets the 'where' part of a query
+ *
+ * @param Query $query Query to extract the part from
+ *
+ * @return mixed
+ */
+	protected function _getWhere(Query $query) {
+		$query->traverse(function ($part) use (&$where) {
+			$where = $part;
+		}, ['where']);
+		return $where;
 	}
 
 }
