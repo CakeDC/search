@@ -135,7 +135,8 @@ class PrgComponentTest extends TestCase {
 		$this->Controller->request->params = [
 			'named' => [],
 			'pass' => [],
-			'url' => []
+			'url' => [],
+			'action' => 'index'
 		];
 		$this->Controller->request->query = [];
 
