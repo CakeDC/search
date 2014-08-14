@@ -136,7 +136,7 @@ class PrgComponentTest extends TestCase {
 			'named' => [],
 			'pass' => [],
 			'url' => [],
-			'action' => 'index'
+			'action' => 'search'
 		];
 		$this->Controller->request->query = [];
 
