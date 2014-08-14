@@ -292,7 +292,7 @@ class PrgComponent extends Component {
 		}
 
 		if (empty($action)) {
-			$action = $this->controller->action;
+			$action = $this->controller->request->params['action'];
 		}
 
 		if (!empty($formName) && isset($this->controller->request->data[$formName])) {
