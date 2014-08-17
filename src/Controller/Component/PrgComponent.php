@@ -34,7 +34,7 @@ class PrgComponent extends Component {
  *
  * @var array actions
  */
-	public $actions = array();
+	public $actions = [];
 
 /**
  * Enables encoding on all presetVar fields
@@ -60,27 +60,27 @@ class PrgComponent extends Component {
  *
  * @var array
  */
-	protected $_parsedParams = array();
+	protected $_parsedParams = [];
 
 /**
  * Default options
  *
  * @var array
  */
-	protected $_defaultConfig = array(
-		'commonProcess' => array(
+	protected $_defaultConfig = [
+		'commonProcess' => [
 			'formName' => null,
 			'keepPassed' => true,
 			'action' => null,
 			'tableMethod' => 'validateSearch',
-			'allowedParams' => array(),
+			'allowedParams' => [],
 			'filterEmpty' => false
-		),
-		'presetForm' => array(
+		],
+		'presetForm' => [
 			'table' => null,
 			'formName' => null,
-		)
-	);
+		]
+	];
 
 /**
  * Called before the Controller::beforeFilter().
@@ -104,8 +104,8 @@ class PrgComponent extends Component {
 
 		if ($this->controller->presetVars === true) {
 			// auto-set the presetVars based on search definitions in model
-			$this->controller->presetVars = array();
-			$filterArgs = array();
+			$this->controller->presetVars = [];
+			$filterArgs = [];
 			if (!empty($this->controller->$table->filterArgs)) {
 				$filterArgs = $this->controller->$table->filterArgs;
 			}
@@ -121,7 +121,7 @@ class PrgComponent extends Component {
 				if (isset($this->controller->$table->filterArgs[$key])) {
 					$field = $this->_parseFromModel($this->controller->$table->filterArgs[$key], $key);
 				} else {
-					$field = array('type' => 'value');
+					$field = ['type' => 'value'];
 				}
 			}
 			if (!isset($field['field'])) {
@@ -154,14 +154,14 @@ class PrgComponent extends Component {
  */
 	public function presetForm($options) {
 		if (!is_array($options)) {
-			$options = array('table' => $options);
+			$options = ['table' => $options];
 		}
 		extract(Hash::merge($this->_config['presetForm'], $options));
 
 		$args = $this->controller->request->query;
 
-		$parsedParams = array();
-		$data = array();
+		$parsedParams = [];
+		$data = [];
 		foreach ($this->controller->presetVars as $field) {
 			if (!isset($args[$field['field']])) {
 				continue;
@@ -250,7 +250,7 @@ class PrgComponent extends Component {
  * @return array
  */
 	public function exclude(array $array, array $exclude) {
-		$data = array();
+		$data = [];
 		foreach ($array as $key => $value) {
 			if (is_numeric($key) || !in_array($key, $exclude)) {
 				$data[$key] = $value;
@@ -280,10 +280,10 @@ class PrgComponent extends Component {
  *
  * @return void
  */
-	public function commonProcess($tableName = null, array $options = array()) {
-		$defaults = array(
-			'excludedParams' => array('page'),
-		);
+	public function commonProcess($tableName = null, array $options = []) {
+		$defaults = [
+			'excludedParams' => ['page'],
+		];
 		$defaults = Hash::merge($defaults, $this->_config['commonProcess']);
 		extract(Hash::merge($defaults, $options));
 
@@ -292,7 +292,7 @@ class PrgComponent extends Component {
 		}
 
 		if (empty($action)) {
-			$action = $this->controller->action;
+			$action = $this->controller->request->params['action'];
 		}
 
 		if (!empty($formName) && isset($this->controller->request->data[$formName])) {
@@ -307,10 +307,9 @@ class PrgComponent extends Component {
 		}
 
 		if (!empty($searchParams)) {
-			$searchEntity = $this->controller->{$tableName}->newEntity($searchParams);
 			$valid = true;
 			if ($tableMethod !== false) {
-				$valid = $this->controller->{$tableName}->{$tableMethod}($searchEntity);
+				$valid = $this->controller->{$tableName}->{$tableMethod}($searchParams);
 			}
 
 			if ($valid) {
@@ -345,7 +344,7 @@ class PrgComponent extends Component {
 				$this->controller->Session->setFlash(__d('search', 'Please correct the errors below.'));
 			}
 		} elseif (!empty($this->controller->request->query)) {
-			$this->presetForm(array('table' => $tableName, 'formName' => $formName));
+			$this->presetForm(['table' => $tableName, 'formName' => $formName]);
 		}
 	}
 
@@ -383,12 +382,12 @@ class PrgComponent extends Component {
  */
 	protected function _parseFromModel(array $arg, $key = null) {
 		if (isset($arg['preset']) && !$arg['preset']) {
-			return array();
+			return [];
 		}
 		if (isset($arg['presetType'])) {
 			$arg['type'] = $arg['presetType'];
 			unset($arg['presetType']);
-		} elseif (!isset($arg['type']) || in_array($arg['type'], array('expression', 'query', 'subquery', 'like', 'type'))) {
+		} elseif (!isset($arg['type']) || in_array($arg['type'], ['finder', 'like', 'type'])) {
 			$arg['type'] = 'value';
 		}
 
@@ -397,7 +396,7 @@ class PrgComponent extends Component {
 		} else {
 			$field = $key;
 		}
-		$res = array('field' => $field, 'type' => $arg['type']);
+		$res = ['field' => $field, 'type' => $arg['type']];
 		if (!empty($arg['encode'])) {
 			$res['encode'] = $arg['encode'];
 		}

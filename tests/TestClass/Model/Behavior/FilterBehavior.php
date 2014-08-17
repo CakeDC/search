@@ -24,10 +24,13 @@ class FilterBehavior extends Behavior {
 /**
  * mostFilterConditions
  *
- * @param array $data
- * @return array
+ * @param Query $query Query to find
+ * @param array $options Options
+ *
+ * @return Query
  */
-	public function mostFilterConditions(Query $query, $data = array()) {
+	public function findMostFilterConditions(Query $query, $options = array()) {
+		$data = $options['data'];
 		$filter = $data['filter'];
 		if (!in_array($filter, array('views', 'comments'))) {
 			return array();
@@ -41,6 +44,7 @@ class FilterBehavior extends Behavior {
 				$cond = $query->repository()->alias() . '.comments > 10';
 				break;
 		}
+
 		return $query->where($cond);
 	}
 

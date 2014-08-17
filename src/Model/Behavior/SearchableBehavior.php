@@ -33,13 +33,13 @@ class SearchableBehavior extends Behavior {
  *
  * @var array
  */
-	protected $_defaultConfig = array(
+	protected $_defaultConfig = [
 		'wildcardAny' => '*', //on windows/unix/mac/google/... thats the default one
 		'wildcardOne' => '?', //on windows/unix/mac thats the default one
-		'like' => array('before' => true, 'after' => true),
+		'like' => ['before' => true, 'after' => true],
 		'connectorAnd' => null,
 		'connectorOr' => null,
-	);
+	];
 
 	protected $_table;
 
@@ -48,8 +48,6 @@ class SearchableBehavior extends Behavior {
  *
  * @param Table $table Table that the behavior is attached too
  * @param array $config Configuration details
- *
- * @return void
  */
 	public function __construct(Table $table, array $config = []) {
 		$this->_defaultConfig = array_merge($this->_defaultConfig, (array)Configure::read('Search.Searchable'));
@@ -60,16 +58,14 @@ class SearchableBehavior extends Behavior {
 /**
  * Validate search
  *
- * @param \Cake\ORM\Entity $entity Entity to validate
+ * @param array $searchData Data to validate
  *
  * @return bool always true
  */
-	public function validateSearch(\Cake\ORM\Entity $entity) {
-		$keys = $entity->visibleProperties();
-		foreach ($keys as $key) {
-			$value = $entity->get($key);
+	public function validateSearch($searchData) {
+		foreach ($searchData as $key => $value) {
 			if (empty($value)) {
-				$entity->unsetProperty($key);
+				unset($searchData[$key]);
 			}
 		}
 
@@ -105,17 +101,16 @@ class SearchableBehavior extends Behavior {
 	}
 
 /**
- * parseCriteria
- * parses the GET data and returns the conditions for the find('all')/paginate
- * we are just going to test if the params are legit
+ * findSearchable
+ * Parses the get parameters into query conditions based on the rules defined in the table filterArgs property
  *
+ * @param Query $query The query to find with
  * @param array $data Criteria of key->value pairs from post/named parameters
  *
- * @return array Array of conditions that express the conditions needed for the search
+ * @return Query
  */
-	public function parseQuery($data) {
+	public function findSearchable(Query $query, $data) {
 		$this->setupFilterArgs();
-		$query = $this->_table->find('all');
 
 		foreach ($this->_table->filterArgs as $field) {
 			// If this field was not passed and a default value exists, use that instead.
@@ -123,14 +118,18 @@ class SearchableBehavior extends Behavior {
 				$data[$field['name']] = $field['defaultValue'];
 			}
 
-			if (in_array($field['type'], array('like'))) {
-				$this->_addCondLike($query, $data, $field);
-			} elseif (in_array($field['type'], array('value', 'lookup'))) {
-				$this->_addCondValue($query, $data, $field);
-			} elseif ($field['type'] === 'query') {
-				$this->_addCondQuery($query, $data, $field);
-			} elseif ($field['type'] === 'subquery') {
-				$this->_addCondSubquery($query, $data, $field);
+			if ($field['type'] === 'like') {
+				$cond = $this->_addCondLike($data, $field);
+				if (!empty($cond)) {
+					$query->where($cond);
+				}
+			} elseif (in_array($field['type'], ['value', 'lookup'])) {
+				$cond = $this->_addCondValue($data, $field);
+				if (!empty($cond)) {
+					$query->where($cond);
+				}
+			} elseif ($field['type'] === 'finder') {
+				$this->_addCondFinder($query, $data, $field);
 			}
 		}
 		return $query;
@@ -146,7 +145,7 @@ class SearchableBehavior extends Behavior {
 	public function passedArgs($vars) {
 		$this->setupFilterArgs($this->_table);
 
-		$result = array();
+		$result = [];
 		foreach ($vars as $var => $val) {
 			if (in_array($var, Hash::extract($this->_table->filterArgs, '{n}.name'))) {
 				$result[$var] = $val;
@@ -165,16 +164,15 @@ class SearchableBehavior extends Behavior {
  *
  * @return array of conditions
  */
-	public function condLike($name, $data, $field = array()) {
-		$conditions = array();
+	public function condLike($name, $data, $field = []) {
 		$field['name'] = $name;
 		if (!is_array($data)) {
-			$data = array($name => $data);
+			$data = [$name => $data];
 		}
 		if (!isset($field['field'])) {
 			$field['field'] = $field['name'];
 		}
-		return $this->_addCondLike($this->_table, $conditions, $data, $field);
+		return $this->_addCondLike($data, $field);
 	}
 
 /**
@@ -186,9 +184,9 @@ class SearchableBehavior extends Behavior {
  *
  * @return string queryLikeString
  */
-	public function formatLike($data, $options = array()) {
+	public function formatLike($data, $options = []) {
 		$options = array_merge($this->_config, $options);
-		$from = $to = $substFrom = $substTo = array();
+		$from = $to = $substFrom = $substTo = [];
 		if ($options['wildcardAny'] !== '%') {
 			$from[] = '%';
 			$to[] = '\%';
@@ -217,31 +215,30 @@ class SearchableBehavior extends Behavior {
  *
  * @return array, [one=>..., any=>...]
  */
-	public function getWildcards($options = array()) {
+	public function getWildcards($options = []) {
 		$options = array_merge($this->_config, $options);
-		return array('any' => $options['wildcardAny'], 'one' => $options['wildcardOne']);
+		return ['any' => $options['wildcardAny'], 'one' => $options['wildcardOne']];
 	}
 
 /**
  * Add Conditions based on fuzzy comparison
  *
- * @param query $query existing query
  * @param array $data Array of data used in search query
  * @param array $field Field definition information
  *
- * @return array Conditions
+ * @return array
  */
-	protected function _addCondLike(Query $query, $data, $field) {
+	protected function _addCondLike($data, $field) {
 		if (!is_array($this->_config['like'])) {
-			$this->_config['like'] = array('before' => $this->_config['like'], 'after' => $this->_config['like']);
+			$this->_config['like'] = ['before' => $this->_config['like'], 'after' => $this->_config['like']];
 		}
 		$field = array_merge($this->_config['like'], $field);
 		if (empty($data[$field['name']])) {
-			return $query;
+			return [];
 		}
 		$fieldNames = (array)$field['field'];
 
-		$cond = array();
+		$cond = [];
 		foreach ($fieldNames as $fieldName) {
 			if (strpos($fieldName, '.') === false) {
 				$fieldName = $this->_table->alias() . '.' . $fieldName;
@@ -255,7 +252,7 @@ class SearchableBehavior extends Behavior {
 			}
 
 			$options = $this->_config;
-			$from = $to = $substFrom = $substTo = array();
+			$from = $to = $substFrom = $substTo = [];
 			if ($options['wildcardAny'] !== '%') {
 				$from[] = '%';
 				$to[] = '\%';
@@ -280,13 +277,12 @@ class SearchableBehavior extends Behavior {
 			}
 		}
 		if (count($cond) > 1) {
-			$cond = array(
+			$cond = [
 				'or' => $cond
-			);
+			];
 		}
-		$query->where($cond);
 
-		return $query;
+		return $cond;
 	}
 
 /**
@@ -300,35 +296,34 @@ class SearchableBehavior extends Behavior {
  * @return array Conditions
  */
 	protected function _connectedLike($value, $field, $fieldName) {
-		$or = array();
+		$or = [];
 		$orValues = String::tokenize($value, $field['connectorOr']);
 		foreach ($orValues as $orValue) {
 			$andValues = String::tokenize($orValue, $field['connectorAnd']);
-			$and = array();
+			$and = [];
 			foreach ($andValues as $andValue) {
-				$and[] = array($fieldName . " LIKE" => $field['before'] . $andValue . $field['after']);
+				$and[] = [$fieldName . " LIKE" => $field['before'] . $andValue . $field['after']];
 			}
 
-			$or[] = array('AND' => $and);
+			$or[] = ['AND' => $and];
 		}
 
-		return array('OR' => $or);
+		return ['OR' => $or];
 	}
 
 /**
  * Add Conditions based on exact comparison
  *
- * @param Query $query existing Conditions collected for the model
  * @param array $data Array of data used in search query
  * @param array $field Field definition information
  *
  * @return array of conditions
  */
-	protected function _addCondValue(Query $query, $data, $field) {
+	protected function _addCondValue($data, $field) {
 		$fieldNames = (array)$field['field'];
 		$fieldValue = isset($data[$field['name']]) ? $data[$field['name']] : null;
 
-		$cond = array();
+		$cond = [];
 		foreach ($fieldNames as $fieldName) {
 			if (strpos($fieldName, '.') === false) {
 				$fieldName = $this->_table->alias() . '.' . $fieldName;
@@ -354,13 +349,12 @@ class SearchableBehavior extends Behavior {
 			}
 		}
 		if (count($cond) > 1) {
-			$cond = array(
+			$cond = [
 				'or' => $cond
-			);
+			];
 		}
-		$query->where($cond);
 
-		return $query;
+		return $cond;
 	}
 
 /**
@@ -372,57 +366,13 @@ class SearchableBehavior extends Behavior {
  *
  * @return array of conditions modified by this method
  */
-	protected function _addCondQuery(Query $query, $data, $field) {
-		if ((method_exists($this->_table, $field['method']) || $this->_checkBehaviorMethods($field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && (string)$data[$field['name']] !== ''))) {
-			$this->_table->{$field['method']}($query, $data, $field);
+	protected function _addCondFinder(Query $query, $data, $field) {
+		if ((!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && (string)$data[$field['name']] !== ''))) {
+			$query->find($field['finder'], [
+				'data' => $data,
+				'field' => $field
+			]);
 		}
 		return $query;
 	}
-
-/**
- * Add Conditions based subquery to search conditions.
- *
- * @param Query $query Query object.
- * @param array $data Data for a field.
- * @param array $field Info for field.
- *
- * @return array of conditions modified by this method
- */
-	protected function _addCondSubquery(Query $query, $data, $field) {
-		$fieldName = $field['field'];
-		if ((method_exists($this->_table, $field['method']) || $this->_checkBehaviorMethods($this->_table, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && (string)$data[$field['name']] !== ''))) {
-			$subquery = $this->_table->{$field['method']}($data, $field);
-			// if our subquery function returns something empty, nothing to merge in
-			if (!empty($subquery)) {
-				$query->where(array(
-					$fieldName => $subquery
-				));
-			}
-		}
-		return $query;
-	}
-
-/**
- * Check if model have some method in attached behaviors
- * 
- * @param string $method Method to check for
- *
- * @return bool, true if method exists in attached and enabled behaviors
- */
-	protected function _checkBehaviorMethods($method) {
-		$behaviors = $this->_table->behaviors()->loaded();
-		$count = count($behaviors);
-		$found = false;
-		for ($i = 0; $i < $count; $i++) {
-			$name = $behaviors[$i];
-			$methods = get_class_methods($this->_table->behaviors()->{$name});
-			$check = array_flip($methods);
-			$found = isset($check[$method]);
-			if ($found) {
-				return true;
-			}
-		}
-		return $found;
-	}
-
 }

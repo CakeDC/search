@@ -3,24 +3,15 @@ Examples
 
 An example of how to implement complex search conditions in your application.
 
-Here is the model code.
+Here is the table code.
 
 ```php
-class Article extends AppModel {
+namespace App\Model\Table;
 
-	public $actsAs = array(
-		'Search.Searchable'
-	);
+use Cake\ORM\Table;
+use Cake\ORM\Query;
 
-	public $belongsTo = array(
-		'User'
-	);
-
-	public $hasAndBelongsToMany = array(
-		'Tag' => array(
-			'with' => 'Tagged'
-		)
-	);
+class ArticlesTable extends Table {
 
 	public $filterArgs = array(
 		'title' => array(
@@ -37,31 +28,32 @@ class Article extends AppModel {
 		),
 		'search' => array(
 			'type' => 'like',
-			'field' => 'Article.description'
+			'field' => 'Articles.description'
 		),
 		'range' => array(
-			'type' => 'expression',
-			'method' => 'makeRangeCondition',
-			'field' => 'Article.views BETWEEN ? AND ?'
+			'type' => 'finder',
+			'method' => 'rangeCondition',
+			'field' => 'Articles.views'
 		),
 		'username' => array(
-			'type' => 'like', 'field' => array(
-				'User.username',
-				'UserInfo.first_name'
+			'type' => 'like',
+			'field' => array(
+				'Users.username',
+				'UserInfos.first_name'
 			)
 		),
 		'tags' => array(
-			'type' => 'subquery',
-			'method' => 'findByTags',
-			'field' => 'Article.id'
+			'type' => 'finder',
+			'finder' => 'byTags',
+			'field' => 'Articles.id'
 		),
 		'filter' => array(
-			'type' => 'query',
-			'method' => 'orConditions'
+			'type' => 'finder',
+			'finder' => 'orConditions'
 		),
 		'year' => array(
-			'type' => 'query',
-			'method' => 'yearRange'
+			'type' => 'finder',
+			'finder' => 'yearRange'
 		),
 		'enhanced_search' => array(
 			'type' => 'like',
@@ -74,49 +66,49 @@ class Article extends AppModel {
 		),
 	);
 
-	public function findByTags($data = array()) {
-		$this->Tagged->Behaviors->attach('Containable', array(
-				'autoFields' => false
-			)
-		);
+	public function initialize(array $options) {
+		$this->belongsTo('Users');
+		$this->belongsToMany('Tags', [
+			'through' => 'Tagged'
+		]);
 
-		$this->Tagged->Behaviors->attach('Search.Searchable');
-		$query = $this->Tagged->getQuery('all', array(
-			'conditions' => array(
-				'Tag.name' => $data['tags']
-			),
-			'fields' => array(
-				'foreign_key'
-			),
-			'contain' => array(
-				'Tag'
-			)
-		));
+		$this->addBehavior('Search.Searchable');
+	}
+
+	public function findByTags(Query $query, $options = []) {
+		$query->matching('Tags', function($q) use ($options) {
+			return $q->where([
+				'Tags.name' => $options['data']['tags']
+			]);
+		});
 		return $query;
 	}
 
 	// Or conditions with like
-	public function orConditions($data = array()) {
-		$filter = $data['filter'];
+	public function findOrConditions(Query $query, $options = []) {
+		$filter = $data['data']['filter'];
 		$condition = array(
 			'OR' => array(
-				$this->alias . '.title LIKE' => '%' . $filter . '%',
-				$this->alias . '.body LIKE' => '%' . $filter . '%',
+				$this->alias() . '.title LIKE' => '%' . $filter . '%',
+				$this->alias() . '.body LIKE' => '%' . $filter . '%',
 			)
 		);
-		return $condition;
+		return $query->where($condition);
 	}
 
 	// Turns 2000 - 2014 into a search between these two years
-	public function yearRange($data = array()) {
-		if (strpos($data['year'], ' - ') !== false){
-			$tmp = explode(' - ', $data['year']);
+	public function findYearRange(Query $query, $options = []) {
+		$conditions = [];
+		if (strpos($options['data']['year'], ' - ') !== false){
+			$tmp = explode(' - ', $options['data']['year']);
 			$tmp[0] = $tmp[0] . '-01-01';
 			$tmp[1] = $tmp[1] . '-12-31';
-			return $tmp;
+			$conditions = $tmp;
 		} else {
-			return array($data['year'] . '-01-01', $data['year']."-12-31");
+			$conditions = [$options['data']['year'] . '-01-01', $options['data']['year']."-12-31"];
 		}
+
+		return $query->where($condition);
 	}
 }
 ```
@@ -124,6 +116,8 @@ class Article extends AppModel {
 Associated snippet for the controller class.
 
 ```php
+namespace App\Controller;
+
 class ArticlesController extends AppController {
 
 	public $components = array(
@@ -132,8 +126,7 @@ class ArticlesController extends AppController {
 
 	public function find() {
 		$this->Prg->commonProcess();
-		$this->Paginator->settings['conditions'] = $this->Article->parseCriteria($this->Prg->parsedParams());
-		$this->set('articles', $this->Paginator->paginate());
+		$this->set('articles', $this->paginate($this->Articles->find('searchable', $this->Prg->parsedParams())));
 	}
 }
 ```
@@ -141,6 +134,8 @@ class ArticlesController extends AppController {
 or verbose (overriding the model configuration)
 
 ```php
+namespace App\Controller;
+
 class ArticlesController extends AppController {
 
 	public $components = array(
@@ -165,8 +160,7 @@ class ArticlesController extends AppController {
 
 	public function find() {
 		$this->Prg->commonProcess();
-		$this->Paginator->settings['conditions'] = $this->Article->parseCriteria($this->Prg->parsedParams());
-		$this->set('articles', $this->Paginator->paginate());
+		$this->set('articles', $this->paginate($this->Articles->find('searchable', $this->Prg->parsedParams())));
 	}
 }
 ```
@@ -174,15 +168,11 @@ class ArticlesController extends AppController {
 The ```find.ctp``` view is the same as ```index.ctp``` with the addition of the search form.
 
 ```php
-echo $this->Form->create('Article', array(
-	'url' => array_merge(
-			array(
-				'action' => 'find'
-			),
-			$this->params['pass']
-		)
-	)
-);
+echo $this->Form->create(null, [
+	'url' => [
+		'action' => 'find'
+	]
+]);
 echo $this->Form->input('title', array(
 		'div' => false
 	)
@@ -218,11 +208,11 @@ echo $this->Form->end();
 In this example the search by OR condition is shown. For this purpose we defined the method ```orConditions()``` and added the filter method.
 
 ```php
-array(
+[
 	'name' => 'filter',
-	'type' => 'query',
-	'method' => 'orConditions'
-)
+	'type' => 'finder',
+	'finder' => 'orConditions'
+]
 ```
 
 Advanced Usage
@@ -337,21 +327,21 @@ public $filterArgs = array(
 			'OtherModel.name'
 			)
 		),
-		'name'=> array(
-		'type' => 'query',
-		'method' => 'searchNameCondition'
+	'name'=> array(
+		'type' => 'finder',
+		'finder' => 'searchNameCondition'
 	)
 );
 
-public function searchNameCondition($data = array()) {
-	$filter = $data['name'];
+public function findSearchNameCondition(Query $query, $options = []) {
+	$filter = $options['data']['name'];
 	$conditions = array(
 		'OR' => array(
 			$this->alias . '.name LIKE' => '' . $this->formatLike($filter) . '',
 			$this->alias . '.invoice_number LIKE' => '' . $this->formatLike($filter) . '',
 		)
 	);
-	return $conditions;
+	return $query->where($conditions);
 }
 ```
 
