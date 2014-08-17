@@ -16,6 +16,7 @@ use Cake\Datasource\ConnectionManager;
 use Cake\Event\Event;
 use Cake\Network\Request;
 use Cake\Network\Response;
+use Cake\Routing\RouteBuilder;
 use Cake\Routing\Router;
 use Cake\ORM\Table;
 use Cake\TestSuite\TestCase;
@@ -131,12 +132,16 @@ class PrgComponentTest extends TestCase {
 			'table' => 'posts',
 			'connection' => $this->connection
 		]);
-		$this->Controller->request->params = array(
-			'named' => array(),
-			'pass' => array(),
-			'url' => array()
-		);
-		$this->Controller->request->query = array();
+		$this->Controller->request->params = [
+			'named' => [],
+			'pass' => [],
+			'url' => []
+		];
+		$this->Controller->request->query = [];
+
+		Router::scope('/', function(RouteBuilder $routes) {
+			$routes->connect('/:controller/:action');
+		});
 	}
 
 /**

@@ -31,6 +31,7 @@ define('DS', DIRECTORY_SEPARATOR);
 define('ROOT', find_root());
 define('APP_DIR', find_app());
 define('WEBROOT_DIR', 'webroot');
+define('CONFIG', ROOT . DS . 'config' . DS);
 define('APP', ROOT . DS . APP_DIR . DS);
 define('WWW_ROOT', ROOT . DS . WEBROOT_DIR . DS);
 define('TESTS', ROOT . DS . 'Test' . DS);
