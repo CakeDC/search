@@ -78,9 +78,10 @@ class SearchableBehavior extends ModelBehavior {
 	}
 
 /**
- * parseCriteria
- * parses the GET data and returns the conditions for the find('all')/paginate
- * we are just going to test if the params are legit
+ * Parse Criteria
+ *
+ * Parses the GET data and returns the conditions for the find('all')/paginate
+ * we are just going to test if the params are legit.
  *
  * @param Model $Model
  * @param array $data Criteria of key->value pairs from post/named parameters
