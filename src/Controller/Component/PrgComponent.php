@@ -89,7 +89,7 @@ class PrgComponent extends Component {
  *
  * @return void
  */
-	public function initialize(Event $event) {
+	public function beforeFilter(Event $event) {
 		$this->controller = $event->subject();
 
 		// fix for not throwing warnings
