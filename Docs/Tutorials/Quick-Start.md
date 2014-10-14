@@ -14,7 +14,7 @@ class UsersController extends AppController {
 
 	public function index() {
 		$this->Prg->commonProcess();
-		$this->Paginator->settings['conditions'] = $this->User->parseCriteria($this->Prg->parsedParams());
+		$this->Paginator->settings['conditions'] = $this->Prg->parseCriteria();
 		$this->set('users', $this->Paginator->paginate());
 	}
 }

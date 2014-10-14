@@ -307,13 +307,40 @@ class PrgComponentTest extends CakeTestCase {
 	}
 
 /**
+ * Test convenience method parseCriteria() returns expected conditions
+ *
+ * @return void
+ * @link https://github.com/CakeDC/search/pull/167
+ */
+	public function testParseCriteria() {
+		$this->Controller->presetVars = array(
+			array('field' => 'title', 'type' => 'value')
+		);
+		$this->Controller->Post->filterArgs = array(
+			array('name' => 'title', 'type' => 'value')
+		);
+
+		$this->Controller->request->params['named'] = array('title' => 'test');
+		$this->Controller->passedArgs = array_merge(
+			$this->Controller->request->params['named'],
+			$this->Controller->request->params['pass']
+		);
+		$this->Controller->Prg->commonProcess('Post');
+
+		$expected = array(
+			'Post.title' => 'test'
+		);
+		$this->assertEquals($expected, $this->Controller->Prg->parseCriteria());
+	}
+
+/**
  * Test search on integer when zero is entered
  *
  * This test checks that the search on an integer type field in the database
  * works correctly when a 0 (zero) is entered in the form.
  *
  * @return void
- * @link http://github.com/CakeDC/Search/issues#issue/3
+ * @link https://github.com/CakeDC/search/issues/3
  */
 	public function testPresetFormWithIntegerField() {
 		$this->Controller->presetVars = array(
