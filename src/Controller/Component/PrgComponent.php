@@ -89,8 +89,8 @@ class PrgComponent extends Component {
  *
  * @return void
  */
-	public function initialize(Event $event) {
-		$this->controller = $event->subject();
+	public function beforeFilter(Event $event) {
+		$this->controller = $this->_registry->getController();
 
 		// fix for not throwing warnings
 		if (!isset($this->controller->presetVars)) {
