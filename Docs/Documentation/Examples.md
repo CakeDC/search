@@ -335,9 +335,9 @@ public $filterArgs = array(
 		'field' => array(
 			'ThisModel.name',
 			'OtherModel.name'
-			)
-		),
-		'name'=> array(
+		)
+	),
+	'name'=> array(
 		'type' => 'query',
 		'method' => 'searchNameCondition'
 	)
