@@ -39,14 +39,14 @@ class PrgComponent extends Component {
 /**
  * Enables encoding on all presetVar fields
  *
- * @var boolean
+ * @var bool
  */
 	public $encode = false;
 
 /**
  * If the current request is an actual search (at least one search value present)
  *
- * @var boolean
+ * @var bool
  */
 	public $isSearch = false;
 
