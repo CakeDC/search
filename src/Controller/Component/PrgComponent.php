@@ -341,7 +341,7 @@ class PrgComponent extends Component {
 
 				$this->controller->redirect($params);
 			} else {
-				$this->controller->Session->setFlash(__d('search', 'Please correct the errors below.'));
+				$this->controller->Flash->error(__d('search', 'Please correct the errors below.'));
 			}
 		} elseif (!empty($this->controller->request->query)) {
 			$this->presetForm(['table' => $tableName, 'formName' => $formName]);
