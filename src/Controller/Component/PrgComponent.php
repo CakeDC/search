@@ -97,7 +97,7 @@ class PrgComponent extends Component {
 			$this->controller->presetVars = true;
 		}
 
-		$table = $this->controller->modelClass;
+		list(, $table) = pluginSplit($this->controller->modelClass);
 		if (!empty($settings['table'])) {
 			$table = $settings['table'];
 		}
@@ -288,7 +288,7 @@ class PrgComponent extends Component {
 		extract(Hash::merge($defaults, $options));
 
 		if (empty($tableName)) {
-			$tableName = $this->controller->modelClass;
+			list(, $tableName) = pluginSplit($this->controller->modelClass);
 		}
 
 		if (empty($action)) {
