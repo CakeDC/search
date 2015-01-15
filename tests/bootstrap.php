@@ -55,7 +55,8 @@ $TMP->create(TMP . 'cache/views', 0777);
 
 $cache = [
 	'default' => [
-		'engine' => 'File'
+		'engine' => 'File',
+		'path' => CACHE
 	],
 	'_cake_core_' => [
 		'className' => 'File',
