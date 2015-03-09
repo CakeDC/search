@@ -74,7 +74,8 @@ class PrgComponent extends Component {
 			'action' => null,
 			'tableMethod' => 'validateSearch',
 			'allowedParams' => [],
-			'filterEmpty' => false
+			'filterEmpty' => false,
+			'autoProcess' => false
 		],
 		'presetForm' => [
 			'table' => null,
@@ -128,6 +129,28 @@ class PrgComponent extends Component {
 				$field['field'] = $key;
 			}
 			$this->controller->presetVars[$key] = $field;
+		}
+		$this->autoProcess();
+	}
+
+/**
+ * Automatic commmon processing of the request.
+ *
+ * @return void
+ */
+	public function autoProcess() {
+		$autoProcess = $this->_config['commonProcess']['autoProcess'];
+		if ($autoProcess === false) {
+			return;
+		}
+		if ($autoProcess === true) {
+			$this->commonProcess();
+		}
+		if (is_array($autoProcess)) {
+			$action = $this->controller->request->action;
+			if (isset($autoProcess[$action])) {
+				$this->commonProcess($autoProcess[$action][0], $autoProcess[$action][1]);
+			}
 		}
 	}
 
