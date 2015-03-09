@@ -39,14 +39,14 @@ class PrgComponent extends Component {
 /**
  * Enables encoding on all presetVar fields
  *
- * @var boolean
+ * @var bool
  */
 	public $encode = false;
 
 /**
  * If the current request is an actual search (at least one search value present)
  *
- * @var boolean
+ * @var bool
  */
 	public $isSearch = false;
 
@@ -97,7 +97,7 @@ class PrgComponent extends Component {
 			$this->controller->presetVars = true;
 		}
 
-		$table = $this->controller->modelClass;
+		list(, $table) = pluginSplit($this->controller->modelClass);
 		if (!empty($settings['table'])) {
 			$table = $settings['table'];
 		}
@@ -288,7 +288,7 @@ class PrgComponent extends Component {
 		extract(Hash::merge($defaults, $options));
 
 		if (empty($tableName)) {
-			$tableName = $this->controller->modelClass;
+			list(, $tableName) = pluginSplit($this->controller->modelClass);
 		}
 
 		if (empty($action)) {
@@ -341,7 +341,7 @@ class PrgComponent extends Component {
 
 				$this->controller->redirect($params);
 			} else {
-				$this->controller->Session->setFlash(__d('search', 'Please correct the errors below.'));
+				$this->controller->Flash->error(__d('search', 'Please correct the errors below.'));
 			}
 		} elseif (!empty($this->controller->request->query)) {
 			$this->presetForm(['table' => $tableName, 'formName' => $formName]);

@@ -15,14 +15,7 @@ use Cake\TestSuite\Fixture\TestFixture;
 /**
  * Tag Fixture
  */
-class TagFixture extends TestFixture {
-
-/**
- * Table
- *
- * @var string $table
- */
-	public $table = 'tags';
+class TagsFixture extends TestFixture {
 
 /**
  * Fields

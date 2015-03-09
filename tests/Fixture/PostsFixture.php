@@ -15,7 +15,7 @@ use Cake\TestSuite\Fixture\TestFixture;
 /**
  * Post Fixture
  */
-class PostFixture extends TestFixture {
+class PostsFixture extends TestFixture {
 
 /**
  * Fields

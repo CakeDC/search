@@ -15,7 +15,7 @@ use Cake\ORM\Behavior;
 use Cake\ORM\Query;
 use Cake\ORM\Table;
 use Cake\Utility\Hash;
-use Cake\Utility\String;
+use Cake\Utility\Text;
 
 /**
  * Searchable behavior
@@ -297,9 +297,9 @@ class SearchableBehavior extends Behavior {
  */
 	protected function _connectedLike($value, $field, $fieldName) {
 		$or = [];
-		$orValues = String::tokenize($value, $field['connectorOr']);
+		$orValues = Text::tokenize($value, $field['connectorOr']);
 		foreach ($orValues as $orValue) {
-			$andValues = String::tokenize($orValue, $field['connectorAnd']);
+			$andValues = Text::tokenize($orValue, $field['connectorAnd']);
 			$and = [];
 			foreach ($andValues as $andValue) {
 				$and[] = [$fieldName . " LIKE" => $field['before'] . $andValue . $field['after']];

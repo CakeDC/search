@@ -45,7 +45,7 @@ class PostsTestController extends Controller {
  *
  * @var array
  */
-	public $components = ['Search.Prg', 'Session'];
+	public $components = ['Search.Prg'];
 
 /**
  * beforeFilter
@@ -106,7 +106,7 @@ class PrgComponentTest extends TestCase {
  *
  * @var array
  */
-	public $fixtures = ['plugin.search.post'];
+	public $fixtures = ['plugin.search.posts'];
 
 /**
  * @var PostTestController
@@ -125,7 +125,6 @@ class PrgComponentTest extends TestCase {
 		Configure::delete('Search');
 
 		$this->Controller = new PostsTestController(new Request(), new Response());
-		$this->Controller->constructClasses();
 		$this->Controller->startupProcess();
 		$this->Controller->Posts = new Posts([
 			'alias' => 'Post',
@@ -557,12 +556,9 @@ class PrgComponentTest extends TestCase {
  * @return void
  */
 	public function testCommonProcessSpecialChars() {
-		$this->Controller->request->query = array_merge(
-			$this->Controller->request->query,
-			[
-				'lang' => 'en',
-			]
-		);
+		$this->Controller->request->query += [
+			'lang' => 'en',
+		];
 		$this->Controller->presetVars = [];
 		$this->Controller->action = 'search';
 		$this->Controller->request->data = [
@@ -654,7 +650,7 @@ class PrgComponentTest extends TestCase {
 		];
 
 		$this->Controller->Prg->__construct($this->Controller->components(), []);
-		$this->Controller->Prg->initialize(new Event('Controller.initialize', $this->Controller));
+		$this->Controller->Prg->beforeFilter(new Event('Controller.initialize', $this->Controller));
 		$this->Controller->request->data = [];
 
 		$this->Controller->request->query = ['title' => 'test'];
@@ -679,7 +675,7 @@ class PrgComponentTest extends TestCase {
 		];
 
 		$this->Controller->Prg->__construct($this->Controller->components(), []);
-		$this->Controller->Prg->initialize(new Event('Controller.initialize', $this->Controller));
+		$this->Controller->Prg->beforeFilter(new Event('Controller.initialize', $this->Controller));
 		$this->Controller->request->data = [];
 
 		$this->Controller->request->query = ['title' => 'test'];

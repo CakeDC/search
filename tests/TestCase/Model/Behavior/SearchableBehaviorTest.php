@@ -131,10 +131,10 @@ class SearchableBehaviorTest extends TestCase {
  * @var array
  */
 	public $fixtures = [
-		'plugin.search.article',
-		'plugin.search.tag',
+		'plugin.search.articles',
+		'plugin.search.tags',
 		'plugin.search.tagged',
-		'core.user'
+		//'core.users'
 	];
 
 /**
