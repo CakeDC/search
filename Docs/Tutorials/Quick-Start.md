@@ -54,7 +54,7 @@ There is no need to make any additional changes in your view, only make sure tha
 	echo $this->Form->input('username');
 	echo $this->Form->input('email');
 	echo $this->Form->input('active', array(
-		'type' => 'checkox'
+		'type' => 'checkbox'
 	));
 	echo $this->Form->submit(__('Submit'));
 	echo $this->Form->end();
