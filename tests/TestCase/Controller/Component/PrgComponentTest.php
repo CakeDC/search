@@ -497,7 +497,6 @@ class PrgComponentTest extends TestCase {
 			]
 		);
 		$expected = [
-			'page' => 2,
 			'sort' => 'name',
 			'direction' => 'asc',
 			'lang' => 'en',

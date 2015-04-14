@@ -339,6 +339,7 @@ class PrgComponent extends Component {
 				$params = $this->controller->request->query;
 				if ($keepPassed) {
 					$params = array_merge($this->controller->request->params['pass'], $params);
+					$params = $this->exclude($params, $excludedParams);
 				}
 
 				$this->serializeParams($searchParams);

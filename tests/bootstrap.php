@@ -42,16 +42,16 @@ define('CAKE_CORE_INCLUDE_PATH', ROOT . '/vendor/cakephp/cakephp');
 define('CORE_PATH', CAKE_CORE_INCLUDE_PATH . DS);
 define('CAKE', CORE_PATH . 'src' . DS);
 
-require ROOT . '/vendor/cakephp/cakephp/src/basics.php';
 require ROOT . '/vendor/autoload.php';
+require CORE_PATH . 'config/bootstrap.php';
 
 Cake\Core\Configure::write('App', ['namespace' => 'App']);
 Cake\Core\Configure::write('debug', 2);
 
-$TMP = new \Cake\Filesystem\Folder(TMP);
-$TMP->create(TMP . 'cache/models', 0777);
-$TMP->create(TMP . 'cache/persistent', 0777);
-$TMP->create(TMP . 'cache/views', 0777);
+$Tmp = new \Cake\Filesystem\Folder(TMP);
+$Tmp->create(TMP . 'cache/models', 0777);
+$Tmp->create(TMP . 'cache/persistent', 0777);
+$Tmp->create(TMP . 'cache/views', 0777);
 
 $cache = [
 	'default' => [
