@@ -16,3 +16,5 @@ or add this to your composer.json configuration:
         }
 }
 ```
+
+Then you will need to load the plugin in your `config/bootstrap.php` with `Plugin::load('Search');`
