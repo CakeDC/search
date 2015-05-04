@@ -46,7 +46,7 @@ class User extends AppModel {
 }
 ```
 
-There is no need to make any additional changes in your view, only make sure that your form includes the fields defined in your ```$filterAgrs``` property, for example:
+There is no need to make any additional changes in your view, only make sure that your form includes the fields defined in your ```$filterArgs``` property, for example:
 
 ```php
 <?php
