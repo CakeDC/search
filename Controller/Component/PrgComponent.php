@@ -148,10 +148,9 @@ class PrgComponent extends Component {
 		}
 		foreach ($this->controller->presetVars as $key => $field) {
 			if ($field === true) {
+				$field = array('type' => 'value');
 				if (isset($this->controller->$model->filterArgs[$key])) {
 					$field = $this->_parseFromModel($this->controller->$model->filterArgs[$key], $key);
-				} else {
-					$field = array('type' => 'value');
 				}
 			}
 			if (!isset($field['field'])) {
