@@ -289,7 +289,7 @@ class SearchableBehavior extends ModelBehavior {
 			$this->settings[$Model->alias][$settingName] = array('before' => $this->settings[$Model->alias][$settingName], 'after' => $this->settings[$Model->alias][$settingName]);
 		}
 		$field = array_merge($this->settings[$Model->alias][$settingName], $field);
-		if (empty($data[$field['name']])) {
+		if (!isset($data[$field['name']]) || (string)$data[$field['name']] === '') {
 			return $conditions;
 		}
 		$fieldNames = (array)$field['field'];
