@@ -326,18 +326,14 @@ class SearchableBehaviorTest extends CakeTestCase {
 		$result = $this->Article->parseCriteria($data);
 		$this->assertEquals(array(), $result);
 
+		$data = array('title' => '');
+		$result = $this->Article->parseCriteria($data);
+		$this->assertEquals(array(), $result);
+
 		$data = array('title' => 0);
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('Article.title LIKE' => '%0%');
 		$this->assertEquals($expected, $result);
-
-		$data = array('title' => false);
-		$result = $this->Article->parseCriteria($data);
-		$this->assertEquals(array(), $result);
-
-		$data = array('title' => null);
-		$result = $this->Article->parseCriteria($data);
-		$this->assertEquals(array(), $result);
 
 		$data = array('title' => 'First');
 		$result = $this->Article->parseCriteria($data);
