@@ -307,7 +307,7 @@ class SearchableBehavior extends ModelBehavior {
 				$field['after'] = '%';
 			}
 
-			$options = $this->settings[$Model->alias];
+			$options = array_merge($this->settings[$Model->alias], $field);
 			$from = $to = $substFrom = $substTo = array();
 			if ($options['wildcardAny'] !== '%') {
 				$from[] = '%';
