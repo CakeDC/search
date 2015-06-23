@@ -12,8 +12,8 @@ env:
     - REQUIRE="phpunit/phpunit:3.7.31"
 
   matrix:
-    - DB=mysql CAKE_VERSION=master
-    - DB=pgsql CAKE_VERSION=master
+    - DB=mysql CAKE_VERSION=2.6
+    - DB=pgsql CAKE_VERSION=2.6
 
 matrix:
   include:
