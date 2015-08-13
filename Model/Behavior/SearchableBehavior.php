@@ -124,6 +124,9 @@ class SearchableBehavior extends ModelBehavior {
 		if (!empty($data)) {
 			$Model->set($data);
 		}
+		if (empty($Model->data[$Model->alias])) {
+			return true;
+		}
 		$keys = array_keys($Model->data[$Model->alias]);
 		foreach ($keys as $key) {
 			if (empty($Model->data[$Model->alias][$key])) {
