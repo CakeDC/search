@@ -255,7 +255,7 @@ public $filterArgs = array(
 	),
 
 	// use and/or connectors ('First + Second, Third'):
-	'Article.title' => array(
+	'title' => array(
 		'type' => 'like',
 		'connectorAnd' => '+', 'connectorOr' => ','
 	)
