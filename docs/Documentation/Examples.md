@@ -255,9 +255,8 @@ public $filterArgs = array(
 	),
 
 	// use and/or connectors ('First + Second, Third'):
-	'search_with_connectors' => array(
+	'Article.title' => array(
 		'type' => 'like',
-		'field' => 'Article.title',
 		'connectorAnd' => '+', 'connectorOr' => ','
 	)
 );
