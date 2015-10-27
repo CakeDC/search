@@ -402,6 +402,10 @@ class PrgComponent extends Component {
 					$params = array_merge($this->controller->request->params['pass'], $params);
 				}
 
+				if (empty($this->controller->request->data[$modelName])) {
+					$this->controller->request->data[$modelName] = array();
+				}
+
 				$searchParams = $this->controller->request->data[$modelName];
 				$this->serializeParams($searchParams);
 
