@@ -28,8 +28,10 @@ class SearchableBehavior extends ModelBehavior {
  * @var array
  */
 	protected $_defaults = array(
-		'wildcardAny' => '*', //on windows/unix/mac/google/... thats the default one
-		'wildcardOne' => '?', //on windows/unix/mac thats the default one
+		'wildcardAny' => '*', // On Windows/Znix/Mac/Google/... thats the default one
+		'wildcardOne' => '?', // On Windows/Unix/Mac thats the default one
+		'escapePrefix' => '\\', // Default for MySQL and PostgreSQL
+		'escapeSuffix' => '', // None for MySQL and PostgreSQL
 		'like' => array('before' => true, 'after' => true),
 		'ilike' => array('before' => true, 'after' => true),
 		'connectorAnd' => null,
@@ -46,6 +48,22 @@ class SearchableBehavior extends ModelBehavior {
 	public function setup(Model $Model, $config = array()) {
 		$this->_defaults = (array)Configure::read('Search.Searchable') + $this->_defaults;
 		$this->settings[$Model->alias] = $config + $this->_defaults;
+
+		$this->_setEscapeChars($Model);
+	}
+
+/**
+ * Set the escape characters depending on the model datasource type
+ *
+ * @param Model $Model The model to inspect.
+ * @return void
+ */
+	protected function _setEscapeChars(Model $Model) {
+		$dataSource = $Model->getDataSource();
+		if ($dataSource instanceof Sqlserver) {
+			$this->settings[$Model->alias]['escapePrefix'] = '[';
+			$this->settings[$Model->alias]['escapeSuffix'] = ']';
+		}
 	}
 
 /**
@@ -244,13 +262,13 @@ class SearchableBehavior extends ModelBehavior {
 		$from = $to = $substFrom = $substTo = array();
 		if ($options['wildcardAny'] !== '%') {
 			$from[] = '%';
-			$to[] = '\%';
+			$to[] = $this->_escape('%', $Model);
 			$substFrom[] = $options['wildcardAny'];
 			$substTo[] = '%';
 		}
 		if ($options['wildcardOne'] !== '_') {
 			$from[] = '_';
-			$to[] = '\_';
+			$to[] = $this->_escape('_', $Model);
 			$substFrom[] = $options['wildcardOne'];
 			$substTo[] = '_';
 		}
@@ -312,13 +330,13 @@ class SearchableBehavior extends ModelBehavior {
 			$from = $to = $substFrom = $substTo = array();
 			if ($options['wildcardAny'] !== '%') {
 				$from[] = '%';
-				$to[] = '\%';
+				$to[] = $this->_escape('%', $Model);
 				$from[] = $options['wildcardAny'];
 				$to[] = '%';
 			}
 			if ($options['wildcardOne'] !== '_') {
 				$from[] = '_';
-				$to[] = '\_';
+				$to[] = $this->_escape('_', $Model);
 				$from[] = $options['wildcardOne'];
 				$to[] = '_';
 			}
@@ -579,6 +597,18 @@ class SearchableBehavior extends ModelBehavior {
 			}
 		}
 		return $found;
+	}
+
+/**
+ * Escape a given string
+ *
+ * @param string $toEscape The string to escape.
+ * @param Model $Model The model.
+ * @return string The escaped string.
+ */
+	protected function _escape($toEscape, Model $Model) {
+		$escaped = $this->settings[$Model->alias]['escapePrefix'] . $toEscape . $this->settings[$Model->alias]['escapeSuffix'];
+		return $escaped;
 	}
 
 }
