@@ -260,6 +260,22 @@ class PrgComponent extends Component {
 	}
 
 /**
+ * Parse Criteria
+ *
+ * Parses the GET data and returns the conditions for the find('all')/paginate
+ * we are just going to test if the params are legit.
+ *
+ * @return array
+ */
+	public function parseCriteria() {
+		$model = $this->controller->modelClass;
+		if (!empty($this->_defaults['presetForm']['model'])) {
+			$model = $this->_defaults['presetForm']['model'];
+		}
+		return $this->controller->{$model}->parseCriteria($this->parsedParams());
+	}
+
+/**
  * Restores form params for checkboxes and other url encoded params
  *
  * @param array
@@ -384,6 +400,10 @@ class PrgComponent extends Component {
 				$params = $this->controller->request->params['named'];
 				if ($keepPassed) {
 					$params = array_merge($this->controller->request->params['pass'], $params);
+				}
+
+				if (empty($this->controller->request->data[$modelName])) {
+					$this->controller->request->data[$modelName] = array();
 				}
 
 				$searchParams = $this->controller->request->data[$modelName];
