@@ -12,22 +12,22 @@ env:
     - REQUIRE="phpunit/phpunit:3.7.31"
 
   matrix:
-    - DB=mysql CAKE_VERSION=2.6
-    - DB=pgsql CAKE_VERSION=2.6
+    - DB=mysql CAKE_VERSION=2.7
+    - DB=pgsql CAKE_VERSION=2.7
 
 matrix:
   include:
     - php: 5.3
       env:
-        - CAKE_VERSION=2.6
+        - CAKE_VERSION=2.7
         - COVERALLS=1
     - php: 5.4
       env:
-        - CAKE_VERSION=2.6
+        - CAKE_VERSION=2.7
         - COVERALLS=1
     - php: 5.5
       env:
-        - CAKE_VERSION=2.6
+        - CAKE_VERSION=2.7
         - COVERALLS=1
 
 before_script:
