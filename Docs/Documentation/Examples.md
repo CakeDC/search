@@ -293,7 +293,7 @@ public $presetVars = array(
 	'category_id' => array(
 		'allowEmpty' => true,
 		'emptyValue' => '0',
-	);
+	),
 );
 ```
 
