@@ -301,13 +301,15 @@ class SearchableBehavior extends Behavior {
 		foreach ($orValues as $orValue) {
 			$andValues = Text::tokenize($orValue, $field['connectorAnd']);
 			$and = [];
+			$andValues = reset($andValues);
+			$andValues = explode(" ", $andValues);
 			foreach ($andValues as $andValue) {
 				$and[] = [$fieldName . " LIKE" => $field['before'] . $andValue . $field['after']];
 			}
 
 			$or[] = ['AND' => $and];
 		}
-
+		
 		return ['OR' => $or];
 	}
 
