@@ -71,7 +71,7 @@ class PostsTestController extends Controller {
  * @return void
  */
 	public function redirect($url, $status = null, $exit = true) {
-		$this->redirectUrl = $url;
+		$this->redirectUrl = Router::url($url);
 	}
 
 }
@@ -172,7 +172,7 @@ class PrgComponentTest extends TestCase {
 			'?' => ['title' => 'test'],
 			'action' => 'search'
 		];
-		$this->assertEquals($expected, $this->Controller->redirectUrl);
+		$this->assertEquals(Router::url($expected), $this->Controller->redirectUrl);
 
 		$this->Controller->request->params = array_merge(
 			$this->Controller->request->params,
@@ -186,14 +186,14 @@ class PrgComponentTest extends TestCase {
 			'action' => 'search',
 			'lang' => 'en'
 		];
-		$this->assertEquals($expected, $this->Controller->redirectUrl);
+		$this->assertEquals(Router::url($expected), $this->Controller->redirectUrl);
 
 		$this->Controller->presetVars = [
 			['field' => 'title', 'type' => 'value']
 		];
 		$this->Controller->Prg->commonProcess('Posts', ['paramType' => 'querystring']);
 		$expected = ['action' => 'search', '?' => ['title' => 'test']];
-		$this->assertEquals($expected, $this->Controller->redirectUrl);
+		$this->assertEquals(Router::url($expected), $this->Controller->redirectUrl);
 	}
 
 /**
@@ -377,7 +377,7 @@ class PrgComponentTest extends TestCase {
 			'?' => ['title' => 'test'],
 			'action' => 'search'
 		];
-		$this->assertEquals($expected, $this->Controller->redirectUrl);
+		$this->assertEquals(Router::url($expected), $this->Controller->redirectUrl);
 
 		$this->Controller->Prg->commonProcess(null, [
 				'tableMethod' => false
@@ -387,7 +387,7 @@ class PrgComponentTest extends TestCase {
 			'?' => ['title' => 'test'],
 			'action' => 'search'
 		];
-		$this->assertEquals($expected, $this->Controller->redirectUrl);
+		$this->assertEquals(Router::url($expected), $this->Controller->redirectUrl);
 
 		$this->Controller->Posts->filterArgs = [
 			['name' => 'title', 'type' => 'value']
@@ -397,7 +397,7 @@ class PrgComponentTest extends TestCase {
 			'?' => ['title' => 'test'],
 			'action' => 'search'
 		];
-		$this->assertEquals($expected, $this->Controller->redirectUrl);
+		$this->assertEquals(Router::url($expected), $this->Controller->redirectUrl);
 
 		$this->Controller->request->data = [
 			'PostForm' => [
@@ -414,7 +414,27 @@ class PrgComponentTest extends TestCase {
 			'?' => ['title' => 'test'],
 			'action' => 'search'
 		];
-		$this->assertEquals($expected, $this->Controller->redirectUrl);
+		$this->assertEquals(Router::url($expected), $this->Controller->redirectUrl);
+
+		$this->Controller->request->data = [
+			'PostForm' => [
+				'title' => 'new_title'
+			]
+		];
+		$this->Controller->request->query = [
+			'title' => 'old_title'
+		];
+		$this->Controller->Posts->filterArgs = [
+			['name' => 'title', 'type' => 'value']
+		];
+		$this->Controller->Prg->commonProcess('Posts', [
+			'formName' => 'PostForm'
+		]);
+		$expected = [
+			'?' => ['title' => 'new_title'],
+			'action' => 'search'
+		];
+		$this->assertEquals(Router::url($expected), $this->Controller->redirectUrl);
 
 	}
 
@@ -438,7 +458,7 @@ class PrgComponentTest extends TestCase {
 			'?' => ['title' => 'test'],
 			'action' => 'search'
 		];
-		$this->assertEquals($expected, $this->Controller->redirectUrl);
+		$this->assertEquals(Router::url($expected), $this->Controller->redirectUrl);
 	}
 
 /**
@@ -468,7 +488,7 @@ class PrgComponentTest extends TestCase {
 			'?' => ['lang' => 'en', 'title' => 'test'],
 			'action' => 'search'
 		];
-		$this->assertEquals($expected, $this->Controller->redirectUrl);
+		$this->assertEquals(Router::url($expected), $this->Controller->redirectUrl);
 	}
 
 /**
@@ -510,7 +530,7 @@ class PrgComponentTest extends TestCase {
 			],
 			'action' => 'search',
 		];
-		$this->assertEquals($expected, $this->Controller->redirectUrl);
+		$this->assertEquals(Router::url($expected), $this->Controller->redirectUrl);
 	}
 
 /**
@@ -546,7 +566,7 @@ class PrgComponentTest extends TestCase {
 			],
 			'action' => 'search'
 		];
-		$this->assertEquals($expected, $this->Controller->redirectUrl);
+		$this->assertEquals(Router::url($expected), $this->Controller->redirectUrl);
 	}
 
 /**
@@ -579,11 +599,7 @@ class PrgComponentTest extends TestCase {
 			],
 			'action' => 'search',
 		];
-		$this->assertEquals($expected, $this->Controller->redirectUrl);
-
-		$url = Router::url($this->Controller->redirectUrl);
-		$expected = '/search?lang=en&title=test%2Fslashes%3F%21';
-		$this->assertEquals($expected, $url);
+		$this->assertEquals(Router::url($expected), $this->Controller->redirectUrl);
 	}
 
 /**
@@ -725,7 +741,7 @@ class PrgComponentTest extends TestCase {
 			'action' => 'search',
 			'?' => ['category_id' => null]
 		];
-		$this->assertEquals($expected, $this->Controller->redirectUrl);
+		$this->assertEquals(Router::url($expected), $this->Controller->redirectUrl);
 	}
 
 /**

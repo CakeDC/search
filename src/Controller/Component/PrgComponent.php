@@ -353,6 +353,7 @@ class PrgComponent extends Component {
 
 				$searchParams = $this->_filter($searchParams);
 
+				$params = array_merge($params, array_intersect_key($searchParams, $params));
 				$params['?'] = $searchParams;
 
 				$params['action'] = $action;
