@@ -233,9 +233,11 @@ class SearchableBehavior extends Behavior {
 			$this->_config['like'] = ['before' => $this->_config['like'], 'after' => $this->_config['like']];
 		}
 		$field = array_merge($this->_config['like'], $field);
-		if (empty($data[$field['name']])) {
+
+		if (empty($data) || $data[$field['name']] === '') {
 			return [];
 		}
+
 		$fieldNames = (array)$field['field'];
 
 		$cond = [];
