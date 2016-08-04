@@ -470,7 +470,7 @@ class PrgComponent extends Component {
 		if (isset($arg['presetType'])) {
 			$arg['type'] = $arg['presetType'];
 			unset($arg['presetType']);
-		} elseif (!isset($arg['type']) || in_array($arg['type'], array('expression', 'query', 'subquery', 'like', 'type', 'ilike'))) {
+		} elseif (!isset($arg['type']) || in_array($arg['type'], array('expression', 'query', 'subquery', 'subqueryExists', 'like', 'type', 'ilike'))) {
 			$arg['type'] = 'value';
 		}
 

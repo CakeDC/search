@@ -108,6 +108,8 @@ class SearchableBehavior extends ModelBehavior {
 				$this->_addCondQuery($Model, $conditions, $data, $field);
 			} elseif ($field['type'] === 'subquery') {
 				$this->_addCondSubquery($Model, $conditions, $data, $field);
+			} elseif ($field['type'] === 'subqueryExists') {
+				$this->_addCondSubqueryExists($Model, $conditions, $data, $field);
 			}
 		}
 		return $conditions;
@@ -478,6 +480,26 @@ class SearchableBehavior extends ModelBehavior {
 			// if our subquery function returns something empty, nothing to merge in
 			if (!empty($subquery)) {
 				$conditions[] = $Model->getDataSource()->expression("$fieldName in ($subquery)");
+			}
+		}
+		return $conditions;
+	}
+
+/**
+ * Add Conditions based subquery to search conditions (in the form WHERE EXISTS ($subquery)
+ *
+ * @param Model $Model  Instance of AppModel
+ * @param array $conditions Existing conditions.
+ * @param array $data Data for a field.
+ * @param array $field Info for field.
+ * @return array of conditions modified by this method
+ */
+	protected function _addCondSubqueryExists(Model $Model, &$conditions, $data, $field) {
+		if ((method_exists($Model, $field['method']) || $this->_checkBehaviorMethods($Model, $field['method'])) && (!empty($field['allowEmpty']) || !empty($data[$field['name']]) || (isset($data[$field['name']]) && (string)$data[$field['name']] !== ''))) {
+			$subquery = $Model->{$field['method']}($data, $field);
+			// if our subquery function returns something empty, nothing to merge in
+			if (!empty($subquery)) {
+				$conditions[] = $Model->getDataSource()->expression("exists ($subquery)");
 			}
 		}
 		return $conditions;
