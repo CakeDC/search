@@ -392,8 +392,18 @@ class SearchableBehaviorTest extends CakeTestCase {
 		$expected = array('Article.title LIKE' => '*First?');
 		$this->assertEquals($expected, $result);
 
+		// now we try to override wildcards * and ?
+		$data = array('faketitle' => '%First_');
+		$this->Article->Behaviors->Searchable->settings['Article']['like']['before'] = false;
+		$this->Article->Behaviors->Searchable->settings['Article']['like']['after'] = false;
+		$this->Article->Behaviors->Searchable->settings['Article']['like']['wildcardAny'] = '*';
+		$this->Article->Behaviors->Searchable->settings['Article']['like']['wildcardOne'] = '?';
+		$result = $this->Article->parseCriteria($data);
+		$expected = array('Article.title LIKE' => '\%First\_');
+		$this->assertEquals($expected, $result);
+
 		// Now it is possible and makes sense to allow wildcards in between (custom wildcard use case)
-		$data = array('faketitle' => '%Fi_st_');
+		$data = array('faketitle' => '*Fi?st?');
 		$result = $this->Article->parseCriteria($data);
 		$expected = array('Article.title LIKE' => '%Fi_st_');
 		$this->assertEquals($expected, $result);
