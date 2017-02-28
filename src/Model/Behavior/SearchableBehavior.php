@@ -11,6 +11,7 @@
 namespace Search\Model\Behavior;
 
 use Cake\Core\Configure;
+use Cake\I18n\I18n;
 use Cake\ORM\Behavior;
 use Cake\ORM\Query;
 use Cake\ORM\Table;
@@ -240,9 +241,8 @@ class SearchableBehavior extends Behavior {
 
 		$cond = [];
 		foreach ($fieldNames as $fieldName) {
-			if (strpos($fieldName, '.') === false) {
-				$fieldName = $this->_table->alias() . '.' . $fieldName;
-			}
+
+			$fieldName = $this->_getFullFieldName($fieldName);
 
 			if ($field['before'] === true) {
 				$field['before'] = '%';
@@ -325,9 +325,9 @@ class SearchableBehavior extends Behavior {
 
 		$cond = [];
 		foreach ($fieldNames as $fieldName) {
-			if (strpos($fieldName, '.') === false) {
-				$fieldName = $this->_table->alias() . '.' . $fieldName;
-			}
+
+            $fieldName = $this->_getFullFieldName($fieldName);
+
 			if (is_array($fieldValue) && empty($fieldValue)) {
 				continue;
 			}
@@ -375,4 +375,32 @@ class SearchableBehavior extends Behavior {
 		}
 		return $query;
 	}
+
+
+    /**
+     * Returns the full field name including the table alias.
+     * If the table has the translate behavior and the field is configured to be
+     * translated, returns the corresponding field to filter by the translated
+     * content.
+     *
+     * @param $fieldName Field name
+     * @return string
+     */
+	protected function _getFullFieldName($fieldName)
+    {
+        // If the fieldName already contains a table alias, do nothing.
+        if (strpos($fieldName, '.') === false) {
+            // If this is a translated field, search in the translated table instead of the original one
+            if ($this->_table->hasBehavior('Translate') &&
+                $this->_table->locale() != I18n::defaultLocale() &&
+                in_array($fieldName, $this->_table->behaviors()->get('Translate')->config('fields'))) {
+                $fieldName = $this->_table->alias() . '_' . $fieldName . '_translation.content';
+            } else {
+                $fieldName = $this->_table->alias() . '.' . $fieldName;
+            }
+        }
+
+        return $fieldName;
+    }
+
 }
