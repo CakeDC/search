@@ -511,12 +511,10 @@ class SearchableBehavior extends ModelBehavior {
  * @return string
  */
 	protected function _queryGet(Model $Model, $queryData = array()) {
-		/** @var DboSource $db  */
 		$db = $Model->getDataSource();
 		$queryData = $this->_scrubQueryData($queryData);
 		$recursive = null;
 		$byPass = false;
-		$null = null;
 		$linkedModels = array();
 
 		if (isset($queryData['recursive'])) {
@@ -552,14 +550,14 @@ class SearchableBehavior extends ModelBehavior {
 					if ($byPass) {
 						$assocData['fields'] = false;
 					}
-					if ($db->generateAssociationQuery($Model, $linkModel, $type, $assoc, $assocData, $queryData, $external, $null) === true) {
+					if ($db->generateAssociationQuery($Model, $linkModel, $type, $assoc, $assocData, $queryData, $external) === true) {
 						$linkedModels[$type . '/' . $assoc] = true;
 					}
 				}
 			}
 		}
 
-		return trim($db->generateAssociationQuery($Model, null, null, null, null, $queryData, false, $null));
+		return trim($db->generateAssociationQuery($Model, null, null, null, null, $queryData, false));
 	}
 
 /**
