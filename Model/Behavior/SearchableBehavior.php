@@ -345,7 +345,7 @@ class SearchableBehavior extends ModelBehavior {
 	}
 
 /**
- * Form AND/OR query array using String::tokenize to separate
+ * Form AND/OR query array using CakeText::tokenize to separate
  * search terms by or/and connectors.
  *
  * @param mixed $value
@@ -355,9 +355,17 @@ class SearchableBehavior extends ModelBehavior {
  */
 	protected function _connectedLike($value, $field, $fieldName, $likeMethod = 'LIKE') {
 		$or = array();
-		$orValues = String::tokenize($value, $field['connectorOr']);
+		if (Configure::version() < '2.7') {
+			$orValues = String::tokenize($value, $field['connectorOr']);
+		} else {
+			$orValues = CakeText::tokenize($value, $field['connectorOr']);
+		}
 		foreach ($orValues as $orValue) {
-			$andValues = String::tokenize($orValue, $field['connectorAnd']);
+			if (Configure::version() < '2.7') {
+				$andValues = String::tokenize($orValue, $field['connectorAnd']);
+			} else {
+				$andValues = CakeText::tokenize($orValue, $field['connectorAnd']);
+			}
 			$and = array();
 			foreach ($andValues as $andValue) {
 				$and[] = array($fieldName . " " . $likeMethod => $field['before'] . $andValue . $field['after']);
