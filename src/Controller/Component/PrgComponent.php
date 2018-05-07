@@ -181,7 +181,7 @@ class PrgComponent extends Component {
 		}
 		extract(Hash::merge($this->_config['presetForm'], $options));
 
-		$args = $this->controller->request->query;
+		$args = $this->controller->request->getQuery();
 
 		$parsedParams = [];
 		$data = [];
@@ -219,9 +219,10 @@ class PrgComponent extends Component {
 		}
 
 		if ($formName) {
-			$this->controller->request->data[$formName] = $data;
+			$newRequest = $this->controller->request->withData($formName, $data);
+			$this->controller->setRequest($newRequest);
 		} else {
-			$this->controller->request->data = $data;
+			$this->controller->request->withParsedBody($data);
 		}
 
 		$this->_parsedParams = $parsedParams;
@@ -315,18 +316,18 @@ class PrgComponent extends Component {
 		}
 
 		if (empty($action)) {
-			$action = $this->controller->request->params['action'];
+			$action = $this->controller->request->getParam('action');
 		}
 
 		if (!empty($formName) && isset($this->controller->request->data[$formName])) {
-			$searchParams = $this->controller->request->data[$formName];
-		} elseif (isset($this->controller->request->data[$tableName])) {
-			$searchParams = $this->controller->request->data[$tableName];
+			$searchParams = $this->controller->request->getData($formName);
+		} elseif ($this->controller->request->getData($tableName)) {
+			$searchParams = $this->controller->request->getData($tableName);
 			if (empty($formName)) {
 				$formName = $tableName;
 			}
 		} else {
-			$searchParams = $this->controller->request->data;
+			$searchParams = $this->controller->request->getData();
 		}
 
 		if (!empty($searchParams)) {
@@ -368,7 +369,7 @@ class PrgComponent extends Component {
 			} else {
 				$this->controller->Flash->error(__d('search', 'Please correct the errors below.'));
 			}
-		} elseif (!empty($this->controller->request->query)) {
+		} elseif ($this->controller->request->getQuery()) {
 			$this->presetForm(['table' => $tableName, 'formName' => $formName]);
 		}
 	}
