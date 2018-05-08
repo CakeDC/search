@@ -74,7 +74,7 @@ $cache = [
 	]
 ];
 
-Cake\Cache\Cache::config($cache);
+Cake\Cache\Cache::setConfig($cache);
 Cake\Core\Plugin::load('Search', ['path' => './']);
 
 // Ensure default test connection is defined
