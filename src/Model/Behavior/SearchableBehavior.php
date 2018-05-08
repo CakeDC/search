@@ -241,7 +241,7 @@ class SearchableBehavior extends Behavior {
 		$cond = [];
 		foreach ($fieldNames as $fieldName) {
 			if (strpos($fieldName, '.') === false) {
-				$fieldName = $this->_table->alias() . '.' . $fieldName;
+				$fieldName = $this->_table->getAlias() . '.' . $fieldName;
 			}
 
 			if ($field['before'] === true) {
@@ -326,7 +326,7 @@ class SearchableBehavior extends Behavior {
 		$cond = [];
 		foreach ($fieldNames as $fieldName) {
 			if (strpos($fieldName, '.') === false) {
-				$fieldName = $this->_table->alias() . '.' . $fieldName;
+				$fieldName = $this->_table->getAlias() . '.' . $fieldName;
 			}
 			if (is_array($fieldValue) && empty($fieldValue)) {
 				continue;
