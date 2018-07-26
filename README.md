@@ -20,8 +20,7 @@ As mentioned before, this plugin helps you to implement searching for data using
 Requirements
 ------------
 
-* CakePHP 2.5+
-* PHP 5.2.8+
+* CakePHP 3.0+
 
 Documentation
 -------------
