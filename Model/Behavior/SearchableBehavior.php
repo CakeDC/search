@@ -355,13 +355,13 @@ class SearchableBehavior extends ModelBehavior {
  */
 	protected function _connectedLike($value, $field, $fieldName, $likeMethod = 'LIKE') {
 		$or = array();
-		if (Configure::version() < '2.7') {
+		if (version_compare(Configure::version(), '2.7') < 0) {
 			$orValues = String::tokenize($value, $field['connectorOr']);
 		} else {
 			$orValues = CakeText::tokenize($value, $field['connectorOr']);
 		}
 		foreach ($orValues as $orValue) {
-			if (Configure::version() < '2.7') {
+			if (version_compare(Configure::version(), '2.7') < 0) {
 				$andValues = String::tokenize($orValue, $field['connectorAnd']);
 			} else {
 				$andValues = CakeText::tokenize($orValue, $field['connectorAnd']);
