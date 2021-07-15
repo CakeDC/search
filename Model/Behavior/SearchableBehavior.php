@@ -5,8 +5,8 @@
  * Licensed under The MIT License
  * Redistributions of files must retain the above copyright notice.
  *
- * @copyright Copyright 2009 - 2013, Cake Development Corporation (http://cakedc.com)
- * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
+ * @copyright Copyright 2009 - 2014, Cake Development Corporation (http://cakedc.com)
+ * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
 App::uses('ModelBehavior', 'Model');
 
@@ -21,6 +21,7 @@ class SearchableBehavior extends ModelBehavior {
  * - wildcardAny: the character used instead of % (% is a normal character then)
  * - wildcardOne: the character used instead of _ (_ is a normal character then)
  * - like: auto add % wildcard to beginning, end or both (both false => user can enter wildcards himself)
+ * - ilike: auto add % wildcard to beginning, end or both (both false => user can enter wildcards himself)
  * - connectorAnd: the character between search terms to specify an "and" relationship (binds stronger than or, similar to * and + in math)
  * - connectorOr: the character between search terms to specify an "or" relationship
  *
@@ -30,6 +31,7 @@ class SearchableBehavior extends ModelBehavior {
 		'wildcardAny' => '*', //on windows/unix/mac/google/... thats the default one
 		'wildcardOne' => '?', //on windows/unix/mac thats the default one
 		'like' => array('before' => true, 'after' => true),
+		'ilike' => array('before' => true, 'after' => true),
 		'connectorAnd' => null,
 		'connectorOr' => null,
 	);
@@ -42,10 +44,24 @@ class SearchableBehavior extends ModelBehavior {
  * @return void
  */
 	public function setup(Model $Model, $config = array()) {
-		$this->_defaults = array_merge($this->_defaults, (array)Configure::read('Search.Searchable'));
-		$this->settings[$Model->alias] = array_merge($this->_defaults, $config);
+		$this->_defaults = (array)Configure::read('Search.Searchable') + $this->_defaults;
+		$this->settings[$Model->alias] = $config + $this->_defaults;
+	}
+
+/**
+ * Prepares the filter args based on the model information and calls
+ * Model::getFilterArgs if present to set up the filterArgs with proper model
+ * aliases.
+ *
+ * @param Model $Model
+ * @return boolean|array
+ */
+	public function setupFilterArgs(Model $Model) {
+		if (method_exists($Model, 'getFilterArgs')) {
+			$Model->getFilterArgs();
+		}
 		if (empty($Model->filterArgs)) {
-			return;
+			return false;
 		}
 		foreach ($Model->filterArgs as $key => $val) {
 			if (!isset($val['name'])) {
@@ -58,6 +74,7 @@ class SearchableBehavior extends ModelBehavior {
 				$Model->filterArgs[$key]['type'] = 'value';
 			}
 		}
+		return $Model->filterArgs;
 	}
 
 /**
@@ -70,7 +87,9 @@ class SearchableBehavior extends ModelBehavior {
  * @return array Array of conditions that express the conditions needed for the search
  */
 	public function parseCriteria(Model $Model, $data) {
+		$this->setupFilterArgs($Model);
 		$conditions = array();
+
 		foreach ($Model->filterArgs as $field) {
 			// If this field was not passed and a default value exists, use that instead.
 			if (!array_key_exists($field['name'], $data) && array_key_exists('defaultValue', $field)) {
@@ -78,8 +97,10 @@ class SearchableBehavior extends ModelBehavior {
 			}
 
 			if (in_array($field['type'], array('like'))) {
-				$this->_addCondLike($Model, $conditions, $data, $field);
-			} elseif (in_array($field['type'], array('value'))) {
+				$this->_addCondLike($Model, $conditions, $data, $field, 'LIKE');
+			} elseif (in_array($field['type'], array('ilike'))) {
+				$this->_addCondLike($Model, $conditions, $data, $field, 'ILIKE');
+			} elseif (in_array($field['type'], array('value', 'lookup'))) {
 				$this->_addCondValue($Model, $conditions, $data, $field);
 			} elseif ($field['type'] === 'expression') {
 				$this->_addCondExpression($Model, $conditions, $data, $field);
@@ -120,9 +141,11 @@ class SearchableBehavior extends ModelBehavior {
  * @return array, filtered args
  */
 	public function passedArgs(Model $Model, $vars) {
+		$this->setupFilterArgs($Model);
+
 		$result = array();
 		foreach ($vars as $var => $val) {
-			if (in_array($var, Set::extract($Model->filterArgs, '{n}.name'))) {
+			if (in_array($var, Hash::extract($Model->filterArgs, '{n}.name'))) {
 				$result[$var] = $val;
 			}
 		}
@@ -164,6 +187,28 @@ class SearchableBehavior extends ModelBehavior {
 
 /**
  * For custom queries inside the model
+ * example "makePhoneCondition": $cond = array('OR' => array_merge($this->condIlike('cell_number', $filter), $this->condIlike('landline_number', $filter, array('before' => false))));
+ *
+ * @param Model $Model
+ * @param $name
+ * @param $data
+ * @param array $field
+ * @return array of conditions
+ */
+	public function condIlike(Model $Model, $name, $data, $field = array()) {
+		$conditions = array();
+		$field['name'] = $name;
+		if (!is_array($data)) {
+			$data = array($name => $data);
+		}
+		if (!isset($field['field'])) {
+			$field['field'] = $field['name'];
+		}
+		return $this->_addCondLike($Model, $conditions, $data, $field, 'ILIKE');
+	}
+
+/**
+ * For custom queries inside the model
  * example "makePhoneCondition": $cond = array('OR' => array_merge($this->condLike('cell_number', $filter), $this->condLike('landline_number', $filter, array('before' => false))));
  *
  * @param Model $Model
@@ -181,7 +226,7 @@ class SearchableBehavior extends ModelBehavior {
 		if (!isset($field['field'])) {
 			$field['field'] = $field['name'];
 		}
-		return $this->_addCondLike($Model, $conditions, $data, $field);
+		return $this->_addCondLike($Model, $conditions, $data, $field, 'LIKE');
 	}
 
 /**
@@ -218,7 +263,7 @@ class SearchableBehavior extends ModelBehavior {
 	}
 
 /**
- * Return the current chars for querying LIKE statements on this model
+ * Return the current chars for querying LIKE/ILIKE statements on this model
  *
  * @param Model $Model Reference to the model
  * @param array $options
@@ -238,11 +283,12 @@ class SearchableBehavior extends ModelBehavior {
  * @param array $field Field definition information
  * @return array Conditions
  */
-	protected function _addCondLike(Model $Model, &$conditions, $data, $field) {
-		if (!is_array($this->settings[$Model->alias]['like'])) {
-			$this->settings[$Model->alias]['like'] = array('before' => $this->settings[$Model->alias]['like'], 'after' => $this->settings[$Model->alias]['like']);
+	protected function _addCondLike(Model $Model, &$conditions, $data, $field, $likeMethod = 'LIKE') {
+		$settingName = strtolower($likeMethod);
+		if (!is_array($this->settings[$Model->alias][$settingName])) {
+			$this->settings[$Model->alias][$settingName] = array('before' => $this->settings[$Model->alias][$settingName], 'after' => $this->settings[$Model->alias][$settingName]);
 		}
-		$field = array_merge($this->settings[$Model->alias]['like'], $field);
+		$field = array_merge($this->settings[$Model->alias][$settingName], $field);
 		if (empty($data[$field['name']])) {
 			return $conditions;
 		}
@@ -260,37 +306,30 @@ class SearchableBehavior extends ModelBehavior {
 			if ($field['after'] === true) {
 				$field['after'] = '%';
 			}
-			//if both before and after are false, LIKE allows custom placeholders, % and _ are always treated as normal chars
+
 			$options = $this->settings[$Model->alias];
 			$from = $to = $substFrom = $substTo = array();
-			if ($options['wildcardAny'] !== '%' || ($field['before'] !== false || $field['after'] !== false)) {
+			if ($options['wildcardAny'] !== '%') {
 				$from[] = '%';
 				$to[] = '\%';
+				$from[] = $options['wildcardAny'];
+				$to[] = '%';
 			}
-			if ($options['wildcardOne'] !== '_' || ($field['before'] !== false || $field['after'] !== false)) {
+			if ($options['wildcardOne'] !== '_') {
 				$from[] = '_';
 				$to[] = '\_';
+				$from[] = $options['wildcardOne'];
+				$to[] = '_';
 			}
 			$value = $data[$field['name']];
 			if (!empty($from)) {
 				$value = str_replace($from, $to, $value);
 			}
-			if ($field['before'] === false && $field['after'] === false) {
-				if ($options['wildcardAny'] !== '%') {
-					$substFrom[] = $options['wildcardAny'];
-					$substTo[] = '%';
-				}
-				if ($options['wildcardOne'] !== '_') {
-					$substFrom[] = $options['wildcardOne'];
-					$substTo[] = '_';
-				}
-				$value = str_replace($substFrom, $substTo, $value);
-			}
 
 			if (!empty($field['connectorAnd']) || !empty($field['connectorOr'])) {
-				$cond[] = $this->_connectedLike($value, $field, $fieldName);
+				$cond[] = $this->_connectedLike($value, $field, $fieldName, $likeMethod);
 			} else {
-				$cond[$fieldName . " LIKE"] = $field['before'] . $value . $field['after'];
+				$cond[$fieldName . " " . $likeMethod] = $field['before'] . $value . $field['after'];
 			}
 		}
 		if (count($cond) > 1) {
@@ -306,7 +345,7 @@ class SearchableBehavior extends ModelBehavior {
 	}
 
 /**
- * Form AND/OR query array using String::tokenize to separate
+ * Form AND/OR query array using CakeText::tokenize to separate
  * search terms by or/and connectors.
  *
  * @param mixed $value
@@ -314,14 +353,22 @@ class SearchableBehavior extends ModelBehavior {
  * @param string $fieldName
  * @return array Conditions
  */
-	protected function _connectedLike($value, $field, $fieldName) {
+	protected function _connectedLike($value, $field, $fieldName, $likeMethod = 'LIKE') {
 		$or = array();
-		$orValues = String::tokenize($value, $field['connectorOr']);
+		if (Configure::version() < '2.7') {
+			$orValues = String::tokenize($value, $field['connectorOr']);
+		} else {
+			$orValues = CakeText::tokenize($value, $field['connectorOr']);
+		}
 		foreach ($orValues as $orValue) {
-			$andValues = String::tokenize($orValue, $field['connectorAnd']);
+			if (Configure::version() < '2.7') {
+				$andValues = String::tokenize($orValue, $field['connectorAnd']);
+			} else {
+				$andValues = CakeText::tokenize($orValue, $field['connectorAnd']);
+			}
 			$and = array();
 			foreach ($andValues as $andValue) {
-				$and[] = array($fieldName . " LIKE" => $field['before'] . $andValue . $field['after']);
+				$and[] = array($fieldName . " " . $likeMethod => $field['before'] . $andValue . $field['after']);
 			}
 
 			$or[] = array('AND' => $and);
@@ -417,7 +464,7 @@ class SearchableBehavior extends ModelBehavior {
 			$conditionsAdd = $Model->{$field['method']}($data, $field);
 			// if our conditions function returns something empty, nothing to merge in
 			if (!empty($conditionsAdd)) {
-				$conditions = Set::merge($conditions, (array)$conditionsAdd);
+				$conditions = Hash::merge($conditions, (array)$conditionsAdd);
 			}
 		}
 		return $conditions;
@@ -466,7 +513,6 @@ class SearchableBehavior extends ModelBehavior {
 		}
 
 		if ($recursive !== null) {
-			$_recursive = $Model->recursive;
 			$Model->recursive = $recursive;
 		}
 

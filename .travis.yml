@@ -3,28 +3,47 @@ language: php
 php:
   - 5.3
   - 5.4
+  - 5.5
 
 env:
-  - CAKE_VERSION=master
-  - CAKE_VERSION=2.5
+  global:
+    - PLUGIN_NAME=Search
+    - DB=mysql
+    - REQUIRE="phpunit/phpunit:3.7.31"
+
+  matrix:
+    - DB=mysql CAKE_VERSION=master
+    - DB=pgsql CAKE_VERSION=master
+
+matrix:
+  include:
+    - php: 5.3
+      env:
+        - CAKE_VERSION=master
+        - COVERALLS=1
+    - php: 5.4
+      env:
+        - CAKE_VERSION=master
+        - COVERALLS=1
+    - php: 5.5
+      env:
+        - CAKE_VERSION=master
+        - COVERALLS=1
 
 before_script:
-  - git clone --depth 1 --branch $CAKE_VERSION git://github.com/cakephp/cakephp ../cakephp && cd ../cakephp
-  - cp -R ../search plugins/Search
-  - sh -c "mysql -e 'CREATE DATABASE cakephp_test;'"
-  - echo "<?php
-    class DATABASE_CONFIG {
-    public \$test = array(
-      'datasource' => 'Database/Mysql',
-      'database' => 'cakephp_test',
-      'host' => '0.0.0.0',
-      'login' => 'travis',
-      'persistent' => false,
-    );
-    }" > app/Config/database.php
-  - cd app
+  - git clone https://github.com/burzum/travis.git --depth 1 ../travis
+  - ../travis/before_script.sh
+  - if [ "$PHPCS" != 1 ]; then
+            echo "
+                require_once APP . DS . 'vendor' . DS . 'phpunit' . DS . 'phpunit' . DS . 'PHPUnit' . DS . 'Autoload.php';
+            " >> ../cakephp/app/Config/bootstrap.php;
+    fi
+
 script:
-  - ../lib/Cake/Console/cake test Search AllSearchPlugin --stderr
+  - ../travis/script.sh
+
+after_success:
+  - ../travis/after_success.sh
 
 notifications:
   email: false
